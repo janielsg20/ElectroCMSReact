@@ -1,5 +1,6 @@
 import { ConflictError, PersistenceError } from '../../domain';
 import { assertCanonicalProject, type CanonicalProject, type ProjectSummary } from '../../project';
+import { hydrateProjectPayload } from '../migrations/project-v0-to-v1';
 import type { ProjectHydrator, ProjectRepository } from '../project-repository';
 import {
   DEFAULT_ELECTROCMS_DB_NAME,
@@ -31,7 +32,7 @@ export class IndexedDbProjectRepository implements ProjectRepository {
   constructor(
     private readonly indexedDbFactory: IDBFactory = globalThis.indexedDB,
     private readonly databaseName = DEFAULT_ELECTROCMS_DB_NAME,
-    private readonly hydrate: ProjectHydrator = assertCanonicalProject,
+    private readonly hydrate: ProjectHydrator = hydrateProjectPayload,
   ) {}
 
   async create(project: CanonicalProject): Promise<void> {
