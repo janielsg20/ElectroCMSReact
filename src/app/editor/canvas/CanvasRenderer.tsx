@@ -43,6 +43,7 @@ function DropZone({ parentId, index, onMoveNode }: DropZoneProps) {
 
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
+    event.stopPropagation();
     const nodeId = event.dataTransfer.getData(NODE_MIME) || event.dataTransfer.getData('text/plain');
     if (nodeId) onMoveNode(nodeId, parentId, index);
   };
@@ -139,13 +140,12 @@ function CanvasNodeView({
       data-hidden={node.hidden ? 'true' : 'false'}
       draggable={Boolean(onMoveNode) && !node.locked}
       onDragStart={onMoveNode ? handleDragStart : undefined}
-      onClick={onSelectNode ? handleSelect : undefined}
       onKeyDown={onSelectNode ? handleKeyDown : undefined}
       tabIndex={onSelectNode ? 0 : undefined}
       aria-selected={onSelectNode ? selected : undefined}
       role={onSelectNode ? 'option' : undefined}
     >
-      <header className="canvas-node-label">
+      <header className="canvas-node-label" onClick={onSelectNode ? handleSelect : undefined}>
         <span>{nodeLabel(node)}</span>
         <code>{node.type}</code>
       </header>
