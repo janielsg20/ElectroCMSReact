@@ -82,9 +82,14 @@ function EditorApplicationShell() {
 }
 
 export function App({ initialProject, preferencesRepository }: AppProps) {
+  const preferencesProviderProps = preferencesRepository
+    ? { repository: preferencesRepository }
+    : {};
+  const projectProviderProps = initialProject ? { initialProject } : {};
+
   return (
-    <WorkspacePreferencesProvider repository={preferencesRepository}>
-      <ProjectSessionProvider initialProject={initialProject}>
+    <WorkspacePreferencesProvider {...preferencesProviderProps}>
+      <ProjectSessionProvider {...projectProviderProps}>
         <EditorApplicationShell />
       </ProjectSessionProvider>
     </WorkspacePreferencesProvider>
