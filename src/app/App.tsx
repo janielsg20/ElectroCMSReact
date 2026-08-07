@@ -27,6 +27,7 @@ function EditorApplicationShell() {
   const navigate = useCallback(
     (workspaceId: WorkspaceId) => {
       setLastWorkspace(workspaceId);
+      setNavigationOpen(false);
       route.navigate(workspaceId);
     },
     [route, setLastWorkspace],
@@ -41,10 +42,6 @@ function EditorApplicationShell() {
       setLastWorkspace(route.workspaceId);
     }
   }, [preferences.lastWorkspace, route, setLastWorkspace]);
-
-  useEffect(() => {
-    if (!compactLayout) setNavigationOpen(false);
-  }, [compactLayout]);
 
   return (
     <div
@@ -72,7 +69,7 @@ function EditorApplicationShell() {
       >
         <WorkspaceNavigation
           compactLayout={compactLayout}
-          open={navigationOpen}
+          open={compactLayout && navigationOpen}
           activeWorkspace={activeWorkspace}
           onNavigate={navigate}
           onClose={() => setNavigationOpen(false)}
