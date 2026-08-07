@@ -1,14 +1,14 @@
 # TRACKING.md — Estado de ejecución
 
 ## Estado global
-- Estado: READY
-- Fase completada: F02 — Editor shell y workspace responsive
-- Siguiente fase: F03 — Canvas, nodos, DnD e historial
-- Siguiente microfase: MF-019 — Document node tree engine
-- Último quality gate completo: GitHub Actions run #150 PASS
-- Último build válido: GitHub Actions run #150 PASS
+- Estado: IN_PROGRESS
+- Fase actual: F03 — Canvas, nodos, DnD e historial
+- Microfase completada: MF-019 — Document node tree engine
+- Siguiente microfase: MF-020 — Canvas renderer base
+- Último quality gate completo: GitHub Actions run #195 PASS
+- Último build válido: GitHub Actions run #195 PASS
 - Repositorio oficial: `janielsg20/ElectroCMSReact`
-- PR de fase: #3 `agent/f02-editor-shell -> main`
+- PR de fase: #4 `agent/f03-canvas-history -> main`
 
 ## F00
 | Microfase | Estado | Evidencia |
@@ -41,25 +41,37 @@
 | MF-017 | DONE | Workspace preferences schema v1 en storage separado de `CanonicalProject`; reload E2E |
 | MF-018 | DONE | Editor light/dark/auto persistente e independiente de frontend/backend theme IDs |
 
-## Quality gates F02
+## F03
+| Microfase | Estado | Evidencia |
+|---|---|---|
+| MF-019 | DONE | Motor inmutable de árbol, parent/depth indexes, traversals, CRUD de nodo/subárbol, invariants y property-style test de 240 operaciones; run #195 PASS |
+| MF-020 | IN_PROGRESS | Canvas renderer base pendiente de implementación/validación |
+| MF-021 | TODO | Insert/reorder/nesting y DnD |
+| MF-022 | TODO | Selection y multi-selection |
+| MF-023 | TODO | Commands + undo/redo |
+| MF-024 | TODO | Clipboard/group/lock/hide |
+| MF-025 | TODO | Resize/position/guides/snapping |
+| MF-026 | TODO | Autosave integration del editor |
+
+## Quality gates MF-019
 - `npm run verify:repo` — PASS
 - `npm run lint` — PASS
 - `npm run typecheck` — PASS
-- `npm run test` — PASS (22 unit/integration tests)
+- `npm run test` — PASS, incluyendo random CRUD/property-style sequence
 - `npm run test:coverage` — PASS
-- `npm run test:e2e` — PASS (6 Playwright tests)
 - `npm run build` — PASS
+- `npm run test:e2e` — PASS (regresión F02)
 
-## Incidencias resueltas en F02
-- Separados providers de hooks/context para cumplir Fast Refresh sin desactivar lint.
-- `useMediaQuery` usa `useSyncExternalStore`, evitando sincronización manual de estado en effects.
-- `exactOptionalPropertyTypes` se conserva; providers omiten props opcionales cuando no existen.
-- El harness global hace `cleanup()` entre component tests para impedir contaminación de DOM.
-- El header compacto usa scroll horizontal local y `contain: inline-size paint`; el contenido interno ya no crea overflow del `documentElement` en 390px.
-- El layout tablet conserva documento, breakpoint, zoom, exportación y navegación mediante drawer.
+## Invariantes nuevas F03
+- Parent/depth son índices derivados; no se añade `parentId` al schema persistido.
+- Un nodo no puede tener múltiples padres.
+- Root no puede ser child.
+- Missing child, duplicate child, cycles y orphans son inválidos.
+- CRUD estructural es inmutable y revalida invariantes después de cada operación.
+- `updateDocumentNode` no puede cambiar `id` ni `children`; estructura se cambia mediante operaciones dedicadas.
 
-## Evidencia funcional de cierre
-GitHub Actions `ElectroCMS Quality Gates`, run #150, commit `411cf937771171e3d1d0f8bed25fb90a0b23ef4c`: `success`.
+## Evidencia actual
+GitHub Actions `ElectroCMS Quality Gates`, run #195, commit `ec9f5e6c6d9fe98c4d9dbe6f7d8e15c4466e127e`: `success`.
 
 ## Regla de salida
-F02 queda completada funcionalmente. Los cambios documentales de cierre deben volver a pasar el gate completo antes de integrar PR #3. Después puede comenzar F03/MF-019.
+MF-019 está cerrada. F03 continúa en MF-020; la fase completa no puede integrarse hasta MF-026 y el gate final verde.
