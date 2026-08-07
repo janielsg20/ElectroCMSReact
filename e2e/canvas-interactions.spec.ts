@@ -45,3 +45,26 @@ test('click insertion plus drag and drop nests and reorders canonical nodes', as
   await expect(rootChildren.nth(1)).toHaveAttribute('data-canvas-node-id', secondId);
   await expect(page.getByText('Unsaved changes')).toBeVisible();
 });
+
+test('canvas supports single and additive multi-selection and Escape clear', async ({ page }) => {
+  await page.goto('/editor');
+  const insertButton = page.getByRole('button', { name: 'Insert container' });
+  await insertButton.click();
+  await insertButton.click();
+
+  const nodes = page.locator('[data-canvas-node-type="core/container"]');
+  await nodes.nth(0).click();
+  await expect(nodes.nth(0)).toHaveAttribute('data-selected', 'true');
+  await expect(nodes.nth(1)).toHaveAttribute('data-selected', 'false');
+  await expect(page.getByTestId('canvas-overlay-layer')).toHaveAttribute('data-selection-count', '1');
+
+  await nodes.nth(1).click({ modifiers: ['Control'] });
+  await expect(nodes.nth(0)).toHaveAttribute('data-selected', 'true');
+  await expect(nodes.nth(1)).toHaveAttribute('data-selected', 'true');
+  await expect(page.getByTestId('canvas-overlay-layer')).toHaveAttribute('data-selection-count', '2');
+
+  await page.keyboard.press('Escape');
+  await expect(nodes.nth(0)).toHaveAttribute('data-selected', 'false');
+  await expect(nodes.nth(1)).toHaveAttribute('data-selected', 'false');
+  await expect(page.getByTestId('canvas-overlay-layer')).toHaveAttribute('data-selection-count', '0');
+});
