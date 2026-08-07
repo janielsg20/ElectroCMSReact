@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createCanonicalProject } from './project-factory';
+import type { DocumentNode } from './project-model';
 import { validateCanonicalProject } from './project-validator';
 
 const ids = [
@@ -11,6 +12,17 @@ const ids = [
 function deterministicUuid(): () => string {
   let index = 0;
   return () => ids[index++] ?? `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`;
+}
+
+function testNode(id: string, children: string[] = []): DocumentNode {
+  return {
+    id,
+    type: 'test/box',
+    version: 1,
+    props: {},
+    styles: {},
+    children,
+  };
 }
 
 describe('canonical project model', () => {
@@ -50,5 +62,46 @@ describe('canonical project model', () => {
       expect(validation.error.issues.some((issue) => issue.code === 'MISSING_CHILD')).toBe(true);
     }
     expect(root.children).toEqual(['node_missing']);
+  });
+
+  it('rejects a canonical document when one node has multiple parents', () => {
+    const project = createCanonicalProject({ name: 'Multiple parents', randomUuid: deterministicUuid() });
+    const document = project.documents[project.documentOrder[0] ?? ''];
+    if (!document) throw new Error('Expected initial document.');
+
+    document.nodes = {
+      node_root: testNode('node_root', ['node_a', 'node_b']),
+      node_a: testNode('node_a', ['node_shared']),
+      node_b: testNode('node_b', ['node_shared']),
+      node_shared: testNode('node_shared'),
+    };
+    document.rootNodeId = 'node_root';
+
+    const validation = validateCanonicalProject(project);
+
+    expect(validation.ok).toBe(false);
+    if (!validation.ok) {
+      expect(validation.error.issues.some((issue) => issue.code === 'MULTIPLE_PARENTS')).toBe(true);
+    }
+  });
+
+  it('rejects a canonical document when the root is referenced as a child', () => {
+    const project = createCanonicalProject({ name: 'Root parent', randomUuid: deterministicUuid() });
+    const document = project.documents[project.documentOrder[0] ?? ''];
+    if (!document) throw new Error('Expected initial document.');
+
+    document.nodes = {
+      node_root: testNode('node_root', ['node_a']),
+      node_a: testNode('node_a', ['node_root']),
+    };
+    document.rootNodeId = 'node_root';
+
+    const validation = validateCanonicalProject(project);
+
+    expect(validation.ok).toBe(false);
+    if (!validation.ok) {
+      expect(validation.error.issues.some((issue) => issue.code === 'ROOT_HAS_PARENT')).toBe(true);
+      expect(validation.error.issues.some((issue) => issue.code === 'NODE_CYCLE')).toBe(true);
+    }
   });
 });
