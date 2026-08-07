@@ -1,0 +1,16 @@
+@media (max-width: 960px) {
+  .app-header {
+    width: 100%;
+    max-width: 100vw;
+    min-width: 0;
+  }
+
+  .header-controls {
+    width: 100%;
+    max-width: calc(100vw - 16px);
+    min-width: 0;
+    justify-self: stretch;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+}
