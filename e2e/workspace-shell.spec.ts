@@ -82,16 +82,42 @@ test('mobile keeps navigation available through an accessible drawer without roo
   await expect(page.getByRole('heading', { name: 'Preview workspace' })).toBeVisible();
 
   const layout = await page.evaluate(() => {
+    const viewportWidth = document.documentElement.clientWidth;
     const controls = document.querySelector<HTMLElement>('.header-controls');
+    const outsideRoot = [...document.querySelectorAll<HTMLElement>('body *')]
+      .map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          tag: element.tagName.toLowerCase(),
+          className: typeof element.className === 'string' ? element.className : '',
+          parentClassName:
+            element.parentElement && typeof element.parentElement.className === 'string'
+              ? element.parentElement.className
+              : '',
+          insideHeaderControls: Boolean(element.closest('.header-controls')),
+          left: Math.round(rect.left),
+          right: Math.round(rect.right),
+          width: Math.round(rect.width),
+          overflowX: getComputedStyle(element).overflowX,
+        };
+      })
+      .filter((rect) => rect.width > 0 && (rect.left < -1 || rect.right > viewportWidth + 1))
+      .slice(0, 24);
+
     return {
-      viewportWidth: document.documentElement.clientWidth,
+      viewportWidth,
       rootScrollWidth: document.documentElement.scrollWidth,
+      bodyScrollWidth: document.body.scrollWidth,
       headerClientWidth: controls?.clientWidth ?? 0,
       headerScrollWidth: controls?.scrollWidth ?? 0,
+      outsideRoot,
     };
   });
 
-  expect(layout.rootScrollWidth).toBe(layout.viewportWidth);
+  expect(
+    layout.rootScrollWidth,
+    JSON.stringify(layout, null, 2),
+  ).toBe(layout.viewportWidth);
   expect(layout.headerClientWidth).toBeLessThanOrEqual(layout.viewportWidth);
   expect(layout.headerScrollWidth).toBeGreaterThanOrEqual(layout.headerClientWidth);
 });
