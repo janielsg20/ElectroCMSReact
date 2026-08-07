@@ -156,7 +156,7 @@ export function inspectDocumentTree(document: CanonicalDocument): DocumentTreeIn
       issues.push(
         issue('ROOT_HAS_PARENT', `Root node ${nodeId} cannot have a parent.`, {
           nodeId,
-          parentId: parents[0],
+          parentId: parents[0]!,
         }),
       );
     }
@@ -165,7 +165,7 @@ export function inspectDocumentTree(document: CanonicalDocument): DocumentTreeIn
         issue(
           'MULTIPLE_PARENTS',
           `Node ${nodeId} is referenced by multiple parents: ${parents.join(', ')}.`,
-          { nodeId, parentId: parents[0] },
+          { nodeId, parentId: parents[0]! },
         ),
       );
     }
