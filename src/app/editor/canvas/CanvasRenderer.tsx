@@ -2,34 +2,33 @@ import type { DragEvent } from 'react';
 import { inspectDocumentTree, type CanonicalDocument, type DocumentNode } from '../../../core/project';
 
 const NODE_MIME = 'application/x-electrocms-node-id';
+type MoveNodeHandler = (nodeId: string, parentId: string, index: number) => boolean;
 
 export interface CanvasRendererProps {
   document: CanonicalDocument;
   viewportWidth: number;
   zoom: number;
-  onMoveNode?: (nodeId: string, parentId: string, index: number) => boolean;
+  onMoveNode?: MoveNodeHandler;
 }
 
 interface CanvasNodeViewProps {
   document: CanonicalDocument;
   node: DocumentNode;
   depth: number;
-  onMoveNode?: (nodeId: string, parentId: string, index: number) => boolean;
+  onMoveNode: MoveNodeHandler | undefined;
+}
+
+interface DropZoneProps {
+  parentId: string;
+  index: number;
+  onMoveNode: MoveNodeHandler | undefined;
 }
 
 function nodeLabel(node: DocumentNode): string {
   return node.name?.trim() || node.type;
 }
 
-function DropZone({
-  parentId,
-  index,
-  onMoveNode,
-}: {
-  parentId: string;
-  index: number;
-  onMoveNode?: (nodeId: string, parentId: string, index: number) => boolean;
-}) {
+function DropZone({ parentId, index, onMoveNode }: DropZoneProps) {
   if (!onMoveNode) return null;
 
   const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
@@ -144,8 +143,6 @@ export function CanvasRenderer({ document, viewportWidth, zoom, onMoveNode }: Ca
     '--canvas-zoom': String(scale),
   } as React.CSSProperties;
 
-  const nodeViewProps = onMoveNode ? { onMoveNode } : {};
-
   return (
     <div
       className="canvas-renderer"
@@ -156,7 +153,12 @@ export function CanvasRenderer({ document, viewportWidth, zoom, onMoveNode }: Ca
       data-zoom={zoom}
     >
       <div className="canvas-scaled-document">
-        <CanvasNodeView document={document} node={rootNode} depth={0} {...nodeViewProps} />
+        <CanvasNodeView
+          document={document}
+          node={rootNode}
+          depth={0}
+          onMoveNode={onMoveNode}
+        />
       </div>
     </div>
   );
