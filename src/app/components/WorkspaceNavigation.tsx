@@ -1,9 +1,12 @@
-import { useEffect, useRef, type KeyboardEvent, type PointerEvent } from 'react';
 import {
-  getWorkspaceDefinition,
-  type WorkspaceId,
-} from '../routing/workspaces';
-import { useWorkspacePreferences } from '../workspace/workspace-preferences-context';
+  useEffect,
+  useRef,
+  type CSSProperties,
+  type KeyboardEvent,
+  type PointerEvent,
+} from 'react';
+import { getWorkspaceDefinition, type WorkspaceId } from '../routing/workspaces';
+import { useWorkspacePreferences } from '../workspace/workspace-preferences-store';
 import type { IconName } from './Icon';
 import { Icon } from './Icon';
 
@@ -88,7 +91,7 @@ export function WorkspaceNavigation({
       data-collapsed={collapsed ? 'true' : 'false'}
       data-display-mode={displayMode}
       aria-label="Workspace navigation"
-      style={{ '--navigation-width': `${preferences.navigationWidth}px` } as React.CSSProperties}
+      style={{ '--navigation-width': `${preferences.navigationWidth}px` } as CSSProperties}
     >
       <div className="navigation-heading">
         <div className="navigation-title-wrap">
