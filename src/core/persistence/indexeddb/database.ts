@@ -16,7 +16,6 @@ export function transactionDone(transaction: IDBTransaction): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     transaction.oncomplete = () => resolve();
     transaction.onabort = () => reject(transaction.error ?? new PersistenceError('IndexedDB transaction aborted.'));
-    transaction.onerror = () => reject(transaction.error ?? new PersistenceError('IndexedDB transaction failed.'));
   });
 }
 
