@@ -19,6 +19,7 @@
     justify-self: stretch;
     overflow-x: auto;
     overflow-y: hidden;
-    contain: inline-size;
+    overscroll-behavior-inline: contain;
+    contain: inline-size paint;
   }
 }
