@@ -435,7 +435,7 @@ export function removeDocumentNode(
     if (removed.has(currentId)) continue;
     nextNodes[currentId] =
       currentId === parentId
-        ? { ...currentNode, children: currentNode.children.filter((childId) => childId !== nodeId) }
+        ? { ...parent, children: parent.children.filter((childId) => childId !== nodeId) }
         : currentNode;
   }
 
