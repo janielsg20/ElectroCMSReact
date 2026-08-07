@@ -1,21 +1,26 @@
-import type { DragEvent } from 'react';
+import type { DragEvent, KeyboardEvent, MouseEvent } from 'react';
 import { inspectDocumentTree, type CanonicalDocument, type DocumentNode } from '../../../core/project';
 
 const NODE_MIME = 'application/x-electrocms-node-id';
 type MoveNodeHandler = (nodeId: string, parentId: string, index: number) => boolean;
+type SelectNodeHandler = (nodeId: string, additive: boolean) => void;
 
 export interface CanvasRendererProps {
   document: CanonicalDocument;
   viewportWidth: number;
   zoom: number;
+  selectedNodeIds?: readonly string[];
   onMoveNode?: MoveNodeHandler;
+  onSelectNode?: SelectNodeHandler;
 }
 
 interface CanvasNodeViewProps {
   document: CanonicalDocument;
   node: DocumentNode;
   depth: number;
+  selectedNodeIds: ReadonlySet<string>;
   onMoveNode: MoveNodeHandler | undefined;
+  onSelectNode: SelectNodeHandler | undefined;
 }
 
 interface DropZoneProps {
@@ -54,7 +59,14 @@ function DropZone({ parentId, index, onMoveNode }: DropZoneProps) {
   );
 }
 
-function CanvasNodeView({ document, node, depth, onMoveNode }: CanvasNodeViewProps) {
+function CanvasNodeView({
+  document,
+  node,
+  depth,
+  selectedNodeIds,
+  onMoveNode,
+  onSelectNode,
+}: CanvasNodeViewProps) {
   const children = node.children
     .map((childId) => document.nodes[childId])
     .filter((child): child is DocumentNode => Boolean(child));
@@ -68,7 +80,9 @@ function CanvasNodeView({ document, node, depth, onMoveNode }: CanvasNodeViewPro
             document={document}
             node={child}
             depth={depth + 1}
+            selectedNodeIds={selectedNodeIds}
             onMoveNode={onMoveNode}
+            onSelectNode={onSelectNode}
           />
           <DropZone parentId={node.id} index={index + 1} onMoveNode={onMoveNode} />
         </div>
@@ -96,10 +110,22 @@ function CanvasNodeView({ document, node, depth, onMoveNode }: CanvasNodeViewPro
     );
   }
 
+  const selected = selectedNodeIds.has(node.id);
   const handleDragStart = (event: DragEvent<HTMLElement>) => {
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData(NODE_MIME, node.id);
     event.dataTransfer.setData('text/plain', node.id);
+  };
+  const handleSelect = (event: MouseEvent<HTMLElement>) => {
+    if (!onSelectNode) return;
+    event.stopPropagation();
+    onSelectNode(node.id, event.ctrlKey || event.metaKey);
+  };
+  const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (!onSelectNode || (event.key !== 'Enter' && event.key !== ' ')) return;
+    event.preventDefault();
+    event.stopPropagation();
+    onSelectNode(node.id, event.ctrlKey || event.metaKey);
   };
 
   return (
@@ -108,10 +134,16 @@ function CanvasNodeView({ document, node, depth, onMoveNode }: CanvasNodeViewPro
       data-canvas-node-id={node.id}
       data-canvas-node-type={node.type}
       data-depth={depth}
+      data-selected={selected ? 'true' : 'false'}
       data-locked={node.locked ? 'true' : 'false'}
       data-hidden={node.hidden ? 'true' : 'false'}
       draggable={Boolean(onMoveNode) && !node.locked}
       onDragStart={onMoveNode ? handleDragStart : undefined}
+      onClick={onSelectNode ? handleSelect : undefined}
+      onKeyDown={onSelectNode ? handleKeyDown : undefined}
+      tabIndex={onSelectNode ? 0 : undefined}
+      aria-selected={onSelectNode ? selected : undefined}
+      role={onSelectNode ? 'option' : undefined}
     >
       <header className="canvas-node-label">
         <span>{nodeLabel(node)}</span>
@@ -124,7 +156,14 @@ function CanvasNodeView({ document, node, depth, onMoveNode }: CanvasNodeViewPro
   );
 }
 
-export function CanvasRenderer({ document, viewportWidth, zoom, onMoveNode }: CanvasRendererProps) {
+export function CanvasRenderer({
+  document,
+  viewportWidth,
+  zoom,
+  selectedNodeIds = [],
+  onMoveNode,
+  onSelectNode,
+}: CanvasRendererProps) {
   const inspection = inspectDocumentTree(document);
   const rootNode = document.nodes[document.rootNodeId];
 
@@ -142,6 +181,7 @@ export function CanvasRenderer({ document, viewportWidth, zoom, onMoveNode }: Ca
     '--canvas-document-width': `${viewportWidth}px`,
     '--canvas-zoom': String(scale),
   } as React.CSSProperties;
+  const selectedSet = new Set(selectedNodeIds);
 
   return (
     <div
@@ -151,13 +191,18 @@ export function CanvasRenderer({ document, viewportWidth, zoom, onMoveNode }: Ca
       data-document-id={document.id}
       data-viewport-width={viewportWidth}
       data-zoom={zoom}
+      role={onSelectNode ? 'listbox' : undefined}
+      aria-label={onSelectNode ? 'Canvas nodes' : undefined}
+      aria-multiselectable={onSelectNode ? true : undefined}
     >
       <div className="canvas-scaled-document">
         <CanvasNodeView
           document={document}
           node={rootNode}
           depth={0}
+          selectedNodeIds={selectedSet}
           onMoveNode={onMoveNode}
+          onSelectNode={onSelectNode}
         />
       </div>
     </div>
