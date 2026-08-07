@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import type { WorkspaceId } from '../routing/workspaces';
 import {
   BrowserWorkspacePreferencesRepository,
@@ -20,21 +13,7 @@ import {
   type WorkspaceDensity,
   type WorkspacePreferences,
 } from './workspace-preferences';
-
-export interface WorkspacePreferencesState {
-  preferences: WorkspacePreferences;
-  setNavigationPosition(position: NavigationPosition): void;
-  setNavigationWidth(width: number): void;
-  setNavigationCollapsed(collapsed: boolean): void;
-  setNavigationDisplayMode(mode: NavigationDisplayMode): void;
-  moveWorkspace(workspaceId: WorkspaceId, direction: -1 | 1): void;
-  setDensity(density: WorkspaceDensity): void;
-  setLastWorkspace(workspaceId: WorkspaceId): void;
-  setEditorThemeMode(mode: EditorThemeMode): void;
-  reset(): void;
-}
-
-const WorkspacePreferencesContext = createContext<WorkspacePreferencesState | null>(null);
+import { WorkspacePreferencesContext, type WorkspacePreferencesState } from './workspace-preferences-store';
 
 export interface WorkspacePreferencesProviderProps {
   children: ReactNode;
@@ -147,10 +126,4 @@ export function WorkspacePreferencesProvider({
       {children}
     </WorkspacePreferencesContext.Provider>
   );
-}
-
-export function useWorkspacePreferences(): WorkspacePreferencesState {
-  const value = useContext(WorkspacePreferencesContext);
-  if (!value) throw new Error('useWorkspacePreferences must be used inside WorkspacePreferencesProvider.');
-  return value;
 }
