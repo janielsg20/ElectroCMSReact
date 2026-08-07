@@ -1,29 +1,6 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { createCanonicalProject, type CanonicalProject } from '../../core/project';
-
-export type ProjectSaveState = 'saved' | 'dirty' | 'saving' | 'error';
-
-export interface ProjectSessionState {
-  project: CanonicalProject;
-  activeDocumentId: string;
-  activeBreakpointId: string;
-  zoom: number;
-  saveState: ProjectSaveState;
-  canUndo: boolean;
-  canRedo: boolean;
-  setActiveDocumentId(documentId: string): void;
-  setActiveBreakpointId(breakpointId: string): void;
-  setZoom(zoom: number): void;
-}
-
-const ProjectSessionContext = createContext<ProjectSessionState | null>(null);
+import { ProjectSessionContext, type ProjectSessionState } from './project-session-context';
 
 function createDefaultSessionProject(): CanonicalProject {
   return createCanonicalProject({
@@ -93,10 +70,4 @@ export function ProjectSessionProvider({ children, initialProject }: ProjectSess
   );
 
   return <ProjectSessionContext.Provider value={value}>{children}</ProjectSessionContext.Provider>;
-}
-
-export function useProjectSession(): ProjectSessionState {
-  const value = useContext(ProjectSessionContext);
-  if (!value) throw new Error('useProjectSession must be used inside ProjectSessionProvider.');
-  return value;
 }
