@@ -62,17 +62,21 @@ export function ProjectSessionProvider({ children, initialProject }: ProjectSess
   const replaceDocument = useCallback(
     (document: CanonicalDocument): boolean => {
       if (!(document.id in project.documents)) return false;
+      const now = new Date().toISOString();
       const nextProject: CanonicalProject = {
         ...project,
+        metadata: {
+          ...project.metadata,
+          updatedAt: now,
+        },
         documents: {
           ...project.documents,
           [document.id]: structuredClone(document),
         },
-        updatedAt: new Date().toISOString(),
       };
       const validation = validateCanonicalProject(nextProject);
-      if (!validation.valid) return false;
-      setProject(nextProject);
+      if (!validation.ok) return false;
+      setProject(validation.value);
       setSaveState('dirty');
       return true;
     },
