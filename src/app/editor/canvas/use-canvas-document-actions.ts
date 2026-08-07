@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
+import { createEntityId } from '../../../core/domain';
 import {
-  createEntityId,
   insertDocumentNode,
   moveDocumentNode,
   type DocumentNode,
-} from '../../../core';
+} from '../../../core/project';
 import { useProjectSession } from '../../project/project-session-context';
 
 export interface CanvasDocumentActions {
