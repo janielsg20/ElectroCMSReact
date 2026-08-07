@@ -1,4 +1,4 @@
-import { ConflictError, PersistenceError } from '../../domain';
+import { ConflictError, ElectroCmsError, PersistenceError } from '../../domain';
 import { assertCanonicalProject, type CanonicalProject, type ProjectSummary } from '../../project';
 import { hydrateProjectPayload } from '../migrations/project-v0-to-v1';
 import type { ProjectHydrator, ProjectRepository } from '../project-repository';
@@ -24,7 +24,7 @@ function normalizePersistenceError(error: unknown, operation: string): Error {
   if (error instanceof Error && error.name === 'ConstraintError') {
     return new ConflictError(`IndexedDB ${operation} conflicted with an existing record.`, { cause: error });
   }
-  if (error instanceof ConflictError || error instanceof PersistenceError) return error;
+  if (error instanceof ElectroCmsError) return error;
   return new PersistenceError(`IndexedDB ${operation} failed.`, { cause: error });
 }
 
