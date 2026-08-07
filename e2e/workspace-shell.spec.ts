@@ -81,8 +81,32 @@ test('mobile keeps navigation available through an accessible drawer without hor
   await expect(drawer).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Preview workspace' })).toBeVisible();
 
-  const hasHorizontalOverflow = await page.evaluate(() =>
-    document.documentElement.scrollWidth > document.documentElement.clientWidth,
-  );
-  expect(hasHorizontalOverflow).toBe(false);
+  const layout = await page.evaluate(() => {
+    const viewportWidth = document.documentElement.clientWidth;
+    const overflowingElements = [...document.querySelectorAll<HTMLElement>('body *')]
+      .map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          tag: element.tagName.toLowerCase(),
+          className: element.className,
+          left: Math.round(rect.left),
+          right: Math.round(rect.right),
+          width: Math.round(rect.width),
+        };
+      })
+      .filter((rect) => rect.width > 0 && (rect.left < -1 || rect.right > viewportWidth + 1))
+      .slice(0, 20);
+
+    return {
+      viewportWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+      overflowingElements,
+    };
+  });
+
+  expect(
+    layout.overflowingElements,
+    `viewport=${layout.viewportWidth} scrollWidth=${layout.scrollWidth}`,
+  ).toEqual([]);
+  expect(layout.scrollWidth).toBe(layout.viewportWidth);
 });
