@@ -46,8 +46,34 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - Recovery snapshots son limitados por configuración.
 - Estado transitorio del editor nunca se serializa en el proyecto.
 
-## Última fase cerrada
-F01 — Foundation, estado y persistencia. Evidencia funcional: GitHub Actions run #72 PASS. El commit documental de cierre debe volver a pasar CI antes del merge.
+## Editor shell F02
+- Routing interno usa History API + `useSyncExternalStore`, sin dependencia de router externa.
+- Rutas estables: `/editor`, `/preview`, `/backend`, `/export`.
+- `ProjectSessionProvider` vive por encima del outlet lógico; cambiar workspace no remonta proyecto, documento activo, breakpoint ni zoom.
+- Undo/Redo están visibles pero deshabilitados hasta que F03 implemente command history real.
+- El header superior está conectado al estado real de proyecto/documento/breakpoint/zoom y al routing Preview/Export.
+
+## Workspace preferences
+- `WorkspacePreferences.schemaVersion = 1`.
+- Se persisten en `electrocms:workspace-preferences:v1`, separadas de `CanonicalProject`.
+- Incluyen posición, ancho, collapse, icon/text mode, orden, density, last workspace y editor theme mode.
+- La separación es no negociable: apariencia/layout del editor no altera el frontend o backend generado.
+
+## Responsive shell
+- El threshold compacto del shell es `960px`; es una decisión de layout del editor y NO un breakpoint canónico del proyecto generado.
+- Desktop usa navegación lateral simultánea.
+- Tablet/móvil usan drawer accesible; funciones principales permanecen disponibles.
+- En móvil, la segunda fila del header conserva controles mediante scroll horizontal local.
+- `contain: inline-size paint` impide que ese scroll interno cree overflow del documento raíz.
+- Playwright valida 820×1180 y 390×844 sin overflow raíz.
+
+## Editor theme base
+- Modos `light`, `dark`, `auto` resuelven solo la apariencia de ElectroCMS.
+- Se mantienen independientes de `frontendThemeId` y `backendThemeId`.
+- La UI base usa tokens CSS y respeta `prefers-reduced-motion`.
+
+## Última fase cerrada funcionalmente
+F02 — Editor shell y workspace responsive. Evidencia funcional: GitHub Actions run #150 PASS. El commit documental de cierre debe volver a pasar CI antes del merge.
 
 ## Siguiente trabajo
-F02 — Editor shell y workspace responsive, comenzando en MF-013 — App shell y routing interno.
+F03 — Canvas, nodos, DnD e historial, comenzando en MF-019 — Document node tree engine. No introducir scope de F04 (widgets/inspector/themes avanzados) durante F03.
