@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 import './styles.css';
 import './app/workspace/workspace-responsive.css';
+import './app/editor/canvas/canvas.css';
+import './app/editor/canvas/canvas-interactions.css';
 
 const rootElement = document.getElementById('root');
 
