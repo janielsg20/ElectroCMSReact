@@ -59,26 +59,25 @@ export function ProjectSessionProvider({ children, initialProject }: ProjectSess
     setZoomState(clampZoom(nextZoom));
   }, []);
 
-  const replaceDocument = useCallback((document: CanonicalDocument): boolean => {
-    let replaced = false;
-    setProject((currentProject) => {
-      if (!(document.id in currentProject.documents)) return currentProject;
+  const replaceDocument = useCallback(
+    (document: CanonicalDocument): boolean => {
+      if (!(document.id in project.documents)) return false;
       const nextProject: CanonicalProject = {
-        ...currentProject,
+        ...project,
         documents: {
-          ...currentProject.documents,
+          ...project.documents,
           [document.id]: structuredClone(document),
         },
         updatedAt: new Date().toISOString(),
       };
       const validation = validateCanonicalProject(nextProject);
-      if (!validation.valid) return currentProject;
-      replaced = true;
-      return nextProject;
-    });
-    if (replaced) setSaveState('dirty');
-    return replaced;
-  }, []);
+      if (!validation.valid) return false;
+      setProject(nextProject);
+      setSaveState('dirty');
+      return true;
+    },
+    [project],
+  );
 
   const value = useMemo<ProjectSessionState>(
     () => ({
