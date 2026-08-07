@@ -130,7 +130,7 @@ describe('document node tree engine', () => {
     expect(() => removeDocumentNode(document, 'node_root')).toThrow(/root cannot be removed/i);
   });
 
-  it('diagnoses missing children, multiple parents, cycles, root parents and orphans', () => {
+  it('diagnoses missing children, multiple parents, cycles and orphans', () => {
     const malformed: CanonicalDocument = {
       ...documentFixture(),
       nodes: {
@@ -146,13 +146,26 @@ describe('document node tree engine', () => {
     const codes = new Set(inspection.issues.map((entry) => entry.code));
 
     expect(inspection.valid).toBe(false);
-    expect(codes).toEqual(
-      expect.objectContaining ? codes : codes,
-    );
     expect(codes.has('MISSING_CHILD')).toBe(true);
     expect(codes.has('MULTIPLE_PARENTS')).toBe(true);
     expect(codes.has('NODE_CYCLE')).toBe(true);
     expect(codes.has('ORPHAN_NODE')).toBe(true);
+  });
+
+  it('detects a root referenced as a child', () => {
+    const malformed: CanonicalDocument = {
+      ...documentFixture(),
+      nodes: {
+        node_root: node('node_root', ['node_a']),
+        node_a: node('node_a', ['node_root']),
+      },
+    };
+
+    const inspection = inspectDocumentTree(malformed);
+    const codes = new Set(inspection.issues.map((entry) => entry.code));
+
+    expect(codes.has('ROOT_HAS_PARENT')).toBe(true);
+    expect(codes.has('NODE_CYCLE')).toBe(true);
   });
 
   it('rejects duplicate ids, non-leaf single inserts and invalid indexes', () => {
