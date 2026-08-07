@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { CanonicalProject } from '../../core/project';
+import type { CanonicalDocument, CanonicalProject } from '../../core/project';
 
 export type ProjectSaveState = 'saved' | 'dirty' | 'saving' | 'error';
 
@@ -14,6 +14,7 @@ export interface ProjectSessionState {
   setActiveDocumentId(documentId: string): void;
   setActiveBreakpointId(breakpointId: string): void;
   setZoom(zoom: number): void;
+  replaceDocument(document: CanonicalDocument): boolean;
 }
 
 export const ProjectSessionContext = createContext<ProjectSessionState | null>(null);
