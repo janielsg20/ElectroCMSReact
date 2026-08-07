@@ -1,0 +1,25 @@
+@media (max-width: 960px) {
+  .app-header {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+    overflow-x: clip;
+  }
+
+  .header-actions {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .header-controls {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    justify-self: stretch;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-inline: contain;
+    contain: inline-size paint;
+  }
+}
