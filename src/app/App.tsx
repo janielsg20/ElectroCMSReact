@@ -8,8 +8,9 @@ import { useWorkspaceRoute } from './routing/use-workspace-route';
 import type { WorkspaceId } from './routing/workspaces';
 import { useResolvedEditorTheme } from './workspace/editor-theme';
 import { useMediaQuery } from './workspace/use-media-query';
-import { WorkspacePreferencesProvider, useWorkspacePreferences } from './workspace/workspace-preferences-context';
+import { WorkspacePreferencesProvider } from './workspace/workspace-preferences-context';
 import type { WorkspacePreferencesRepository } from './workspace/workspace-preferences-repository';
+import { useWorkspacePreferences } from './workspace/workspace-preferences-store';
 
 export interface AppProps {
   initialProject?: CanonicalProject;
