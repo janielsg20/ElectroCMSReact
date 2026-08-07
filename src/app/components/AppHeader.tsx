@@ -1,6 +1,6 @@
+import { useProjectSession } from '../project/project-session-context';
 import type { WorkspaceId } from '../routing/workspaces';
-import { useProjectSession } from '../project/project-session';
-import { useWorkspacePreferences } from '../workspace/workspace-preferences-context';
+import { useWorkspacePreferences } from '../workspace/workspace-preferences-store';
 import { Icon } from './Icon';
 
 export interface AppHeaderProps {
