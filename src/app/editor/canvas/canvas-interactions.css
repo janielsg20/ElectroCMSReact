@@ -1,0 +1,100 @@
+.canvas-command-bar {
+  position: sticky;
+  z-index: 8;
+  top: 8px;
+  justify-self: center;
+  align-self: start;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: -28px 0 10px;
+  padding: 3px;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--surface-raised) 94%, transparent);
+  box-shadow: 0 8px 24px var(--shadow);
+}
+
+.canvas-command-bar button {
+  height: 26px;
+  padding: 0 9px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  border-radius: 5px;
+  color: var(--text-strong);
+  background: var(--accent-soft);
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.canvas-command-bar button:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface-hover));
+}
+
+.canvas-command-bar span {
+  padding-right: 6px;
+  color: var(--text-faint);
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.canvas-child-entry {
+  min-width: 0;
+  display: contents;
+}
+
+.canvas-drop-zone {
+  position: relative;
+  min-height: 8px;
+  margin: -2px 0;
+  border-radius: 4px;
+  transition: min-height 90ms ease, background 90ms ease;
+}
+
+.canvas-drop-zone::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: transparent;
+  transform: translateY(-50%);
+}
+
+.canvas-drop-zone:has(+ .canvas-node),
+.canvas-child-entry > .canvas-drop-zone {
+  margin-block: 0;
+}
+
+.canvas-drop-zone:hover,
+.canvas-drop-zone[data-drag-active="true"] {
+  min-height: 14px;
+  background: var(--accent-soft);
+}
+
+.canvas-drop-zone:hover::after,
+.canvas-drop-zone[data-drag-active="true"]::after {
+  background: var(--accent);
+}
+
+.canvas-node[draggable="true"] > .canvas-node-label {
+  cursor: grab;
+}
+
+.canvas-node[draggable="true"]:active > .canvas-node-label {
+  cursor: grabbing;
+}
+
+@media (max-width: 640px) {
+  .canvas-command-bar {
+    max-width: calc(100vw - 36px);
+    overflow-x: auto;
+  }
+
+  .canvas-command-bar span {
+    display: none;
+  }
+}
