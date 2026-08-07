@@ -1,5 +1,5 @@
+import { useProjectSession } from '../project/project-session-context';
 import { getWorkspaceDefinition, type WorkspaceId } from '../routing/workspaces';
-import { useProjectSession } from '../project/project-session';
 
 export interface WorkspaceSurfaceProps {
   workspaceId: WorkspaceId;
