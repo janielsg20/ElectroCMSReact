@@ -72,8 +72,9 @@ export class IndexedDbProjectRepository implements ProjectRepository {
       const database = await openElectroCmsDatabase(this.indexedDbFactory, this.databaseName);
       try {
         const transaction = database.transaction(PROJECTS_STORE, 'readonly');
+        const done = transactionDone(transaction);
         const payload = await requestToPromise(transaction.objectStore(PROJECTS_STORE).get(projectId));
-        await transactionDone(transaction);
+        await done;
         return payload === undefined ? null : structuredClone(this.hydrate(payload));
       } finally {
         database.close();
@@ -88,8 +89,9 @@ export class IndexedDbProjectRepository implements ProjectRepository {
       const database = await openElectroCmsDatabase(this.indexedDbFactory, this.databaseName);
       try {
         const transaction = database.transaction(PROJECTS_STORE, 'readonly');
+        const done = transactionDone(transaction);
         const payloads = await requestToPromise(transaction.objectStore(PROJECTS_STORE).getAll());
-        await transactionDone(transaction);
+        await done;
         return payloads
           .map((payload) => toSummary(this.hydrate(payload)))
           .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt) || left.id.localeCompare(right.id));
