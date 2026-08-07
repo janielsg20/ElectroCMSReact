@@ -1,4 +1,5 @@
 import { EditorCanvas } from '../editor/canvas/EditorCanvas';
+import { useCanvasDocumentActions } from '../editor/canvas/use-canvas-document-actions';
 import { useProjectSession } from '../project/project-session-context';
 import { getWorkspaceDefinition, type WorkspaceId } from '../routing/workspaces';
 
@@ -15,6 +16,7 @@ const workspaceNotes: Record<WorkspaceId, string> = {
 
 export function WorkspaceSurface({ workspaceId }: WorkspaceSurfaceProps) {
   const session = useProjectSession();
+  const canvasActions = useCanvasDocumentActions();
   const definition = getWorkspaceDefinition(workspaceId);
   const document = session.project.documents[session.activeDocumentId];
   const breakpoint = session.project.breakpoints.find(
@@ -36,7 +38,15 @@ export function WorkspaceSurface({ workspaceId }: WorkspaceSurfaceProps) {
       </div>
 
       {workspaceId === 'editor' && document && breakpoint ? (
-        <EditorCanvas document={document} viewportWidth={breakpoint.width} zoom={session.zoom} />
+        <EditorCanvas
+          document={document}
+          viewportWidth={breakpoint.width}
+          zoom={session.zoom}
+          onInsertContainer={() => {
+            canvasActions.insertContainer();
+          }}
+          onMoveNode={canvasActions.moveNode}
+        />
       ) : (
         <section className="workspace-stage" aria-label={`${definition.label} workspace stage`}>
           <div className="stage-ruler stage-ruler-horizontal" aria-hidden="true" />
