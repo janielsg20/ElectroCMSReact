@@ -42,8 +42,7 @@ describe('EditorCanvas', () => {
 
     const root = container.querySelector('[data-canvas-node-id="node_root"]');
     if (!root) throw new Error('Expected rendered root.');
-    const directChildren = [...root.children]
-      .filter((element) => element.hasAttribute('data-canvas-node-id'))
+    const directChildren = [...root.querySelectorAll('[data-canvas-node-id][data-depth="1"]')]
       .map((element) => element.getAttribute('data-canvas-node-id'));
 
     expect(directChildren).toEqual(['node_a', 'node_b']);
