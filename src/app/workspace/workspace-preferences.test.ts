@@ -25,6 +25,7 @@ describe('workspace preferences', () => {
 
     expect(normalized.navigationPosition).toBe('right');
     expect(normalized.navigationWidth).toBe(360);
+    expect(normalized.navigationCollapsed).toBe(true);
     expect(normalized.workspaceOrder).toEqual(['editor', 'preview', 'backend', 'export']);
     expect(normalized.editorThemeMode).toBe('dark');
   });
@@ -34,6 +35,7 @@ describe('workspace preferences', () => {
     const preferences = createDefaultWorkspacePreferences();
     preferences.navigationPosition = 'right';
     preferences.navigationWidth = 312;
+    preferences.navigationCollapsed = true;
     preferences.lastWorkspace = 'preview';
     preferences.editorThemeMode = 'dark';
 
@@ -42,6 +44,7 @@ describe('workspace preferences', () => {
     expect(repository.load()).toMatchObject({
       navigationPosition: 'right',
       navigationWidth: 312,
+      navigationCollapsed: true,
       lastWorkspace: 'preview',
       editorThemeMode: 'dark',
     });
