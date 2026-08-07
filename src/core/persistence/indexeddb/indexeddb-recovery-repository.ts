@@ -22,9 +22,10 @@ export class IndexedDbRecoveryRepository implements RecoveryRepository {
     const database = await openElectroCmsDatabase(this.indexedDbFactory, this.databaseName);
     try {
       const transaction = database.transaction(RECOVERY_STORE, 'readonly');
+      const done = transactionDone(transaction);
       const index = transaction.objectStore(RECOVERY_STORE).index('projectId');
       const snapshots = await requestToPromise(index.getAll(projectId));
-      await transactionDone(transaction);
+      await done;
       return (snapshots as RecoverySnapshot[]).sort(newestFirst).map((snapshot) => structuredClone(snapshot));
     } finally {
       database.close();
