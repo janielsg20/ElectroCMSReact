@@ -1,6 +1,15 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { createCanonicalProject, type CanonicalProject } from '../../core/project';
-import { ProjectSessionContext, type ProjectSessionState } from './project-session-context';
+import {
+  createCanonicalProject,
+  validateCanonicalProject,
+  type CanonicalDocument,
+  type CanonicalProject,
+} from '../../core/project';
+import {
+  ProjectSessionContext,
+  type ProjectSaveState,
+  type ProjectSessionState,
+} from './project-session-context';
 
 function createDefaultSessionProject(): CanonicalProject {
   return createCanonicalProject({
@@ -20,10 +29,15 @@ export interface ProjectSessionProviderProps {
 }
 
 export function ProjectSessionProvider({ children, initialProject }: ProjectSessionProviderProps) {
-  const [project] = useState<CanonicalProject>(() => structuredClone(initialProject ?? createDefaultSessionProject()));
+  const [project, setProject] = useState<CanonicalProject>(() =>
+    structuredClone(initialProject ?? createDefaultSessionProject()),
+  );
   const [activeDocumentId, setActiveDocumentIdState] = useState(() => project.documentOrder[0] ?? '');
-  const [activeBreakpointId, setActiveBreakpointIdState] = useState(() => project.breakpoints[0]?.id ?? 'desktop');
+  const [activeBreakpointId, setActiveBreakpointIdState] = useState(
+    () => project.breakpoints[0]?.id ?? 'desktop',
+  );
   const [zoom, setZoomState] = useState(100);
+  const [saveState, setSaveState] = useState<ProjectSaveState>('saved');
 
   const setActiveDocumentId = useCallback(
     (documentId: string) => {
@@ -45,23 +59,47 @@ export function ProjectSessionProvider({ children, initialProject }: ProjectSess
     setZoomState(clampZoom(nextZoom));
   }, []);
 
+  const replaceDocument = useCallback((document: CanonicalDocument): boolean => {
+    let replaced = false;
+    setProject((currentProject) => {
+      if (!(document.id in currentProject.documents)) return currentProject;
+      const nextProject: CanonicalProject = {
+        ...currentProject,
+        documents: {
+          ...currentProject.documents,
+          [document.id]: structuredClone(document),
+        },
+        updatedAt: new Date().toISOString(),
+      };
+      const validation = validateCanonicalProject(nextProject);
+      if (!validation.valid) return currentProject;
+      replaced = true;
+      return nextProject;
+    });
+    if (replaced) setSaveState('dirty');
+    return replaced;
+  }, []);
+
   const value = useMemo<ProjectSessionState>(
     () => ({
       project,
       activeDocumentId,
       activeBreakpointId,
       zoom,
-      saveState: 'saved',
+      saveState,
       canUndo: false,
       canRedo: false,
       setActiveDocumentId,
       setActiveBreakpointId,
       setZoom,
+      replaceDocument,
     }),
     [
       activeBreakpointId,
       activeDocumentId,
       project,
+      replaceDocument,
+      saveState,
       setActiveBreakpointId,
       setActiveDocumentId,
       setZoom,
