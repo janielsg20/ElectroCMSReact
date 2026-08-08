@@ -1,4 +1,5 @@
 import { isWorkspaceId, WORKSPACE_IDS, type WorkspaceId } from '../routing/workspaces';
+import { isEditorThemePresetId, type EditorThemePresetId } from './editor-theme-presets';
 
 export const WORKSPACE_PREFERENCES_SCHEMA_VERSION = 1 as const;
 
@@ -17,6 +18,7 @@ export interface WorkspacePreferences {
   density: WorkspaceDensity;
   lastWorkspace: WorkspaceId;
   editorThemeMode: EditorThemeMode;
+  editorThemePresetId: EditorThemePresetId;
 }
 
 export const MIN_NAVIGATION_WIDTH = 196;
@@ -37,6 +39,7 @@ export function createDefaultWorkspacePreferences(): WorkspacePreferences {
     density: 'compact',
     lastWorkspace: 'editor',
     editorThemeMode: 'auto',
+    editorThemePresetId: 'high-density',
   };
 }
 
@@ -69,20 +72,18 @@ export function normalizeWorkspacePreferences(input: unknown): WorkspacePreferen
         ? value.navigationCollapsed
         : defaults.navigationCollapsed,
     navigationDisplayMode:
-      value.navigationDisplayMode === 'icons' ||
-      value.navigationDisplayMode === 'labels' ||
-      value.navigationDisplayMode === 'both'
+      value.navigationDisplayMode === 'icons' || value.navigationDisplayMode === 'labels' || value.navigationDisplayMode === 'both'
         ? value.navigationDisplayMode
         : defaults.navigationDisplayMode,
-    workspaceOrder: isExactWorkspaceOrder(value.workspaceOrder)
-      ? [...value.workspaceOrder]
-      : defaults.workspaceOrder,
-    density:
-      value.density === 'comfortable' || value.density === 'compact' ? value.density : defaults.density,
+    workspaceOrder: isExactWorkspaceOrder(value.workspaceOrder) ? [...value.workspaceOrder] : defaults.workspaceOrder,
+    density: value.density === 'comfortable' || value.density === 'compact' ? value.density : defaults.density,
     lastWorkspace: isWorkspaceId(value.lastWorkspace) ? value.lastWorkspace : defaults.lastWorkspace,
     editorThemeMode:
       value.editorThemeMode === 'light' || value.editorThemeMode === 'dark' || value.editorThemeMode === 'auto'
         ? value.editorThemeMode
         : defaults.editorThemeMode,
+    editorThemePresetId: isEditorThemePresetId(value.editorThemePresetId)
+      ? value.editorThemePresetId
+      : defaults.editorThemePresetId,
   };
 }
