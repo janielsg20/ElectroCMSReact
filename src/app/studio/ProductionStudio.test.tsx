@@ -29,11 +29,40 @@ describe('ProductionStudio', () => {
     expect(screen.getByTestId('editor-canvas')).toBeInTheDocument();
 
     await user.click(within(modules).getByRole('button', { name: 'Pages' }));
-    expect(screen.getByRole('heading', { name: 'Pages' })).toBeInTheDocument();
-    expect(screen.getByText('Display conditions')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Pages, templates & assets' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /pages/i })).toHaveAttribute('aria-selected', 'true');
 
     await user.click(within(modules).getByRole('button', { name: 'Builder' }));
     expect(screen.getByTestId('editor-canvas')).toBeInTheDocument();
+  });
+
+  it('opens a canonical page from Pages and returns to the real Builder', async () => {
+    window.history.replaceState({}, '', '/editor');
+    const user = userEvent.setup();
+    render(<App initialProject={makeProject()} preferencesRepository={new MemoryWorkspacePreferencesRepository()} />);
+
+    const modules = screen.getByRole('navigation', { name: 'Studio modules' });
+    await user.click(within(modules).getByRole('button', { name: 'Pages' }));
+
+    const resources = screen.getByRole('region', { name: 'Pages and assets workspace' });
+    expect(within(resources).getByText('Home')).toBeInTheDocument();
+    await user.click(within(resources).getByRole('button', { name: /Home/i }));
+
+    expect(screen.getByTestId('editor-canvas')).toBeInTheDocument();
+    expect(screen.getByLabelText('Active document')).toHaveDisplayValue('Home');
+  });
+
+  it('switches Media to the canonical Assets view without inventing resources', async () => {
+    window.history.replaceState({}, '', '/editor');
+    const user = userEvent.setup();
+    render(<App initialProject={makeProject()} preferencesRepository={new MemoryWorkspacePreferencesRepository()} />);
+
+    const modules = screen.getByRole('navigation', { name: 'Studio modules' });
+    await user.click(within(modules).getByRole('button', { name: 'Media' }));
+
+    expect(screen.getByRole('tab', { name: /assets/i })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByText('No assets found')).toBeInTheDocument();
+    expect(screen.getByLabelText('Search project resources')).toHaveAttribute('placeholder', 'Search assets…');
   });
 
   it('keeps Preview, Backend and Export in the real workspace navigation', async () => {
