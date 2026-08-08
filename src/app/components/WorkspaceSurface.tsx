@@ -1,3 +1,4 @@
+import { DynamicContentManager } from '../content/DynamicContentManager';
 import { EditorCanvas } from '../editor/canvas/EditorCanvas';
 import { useCanvasDocumentActions } from '../editor/canvas/use-canvas-document-actions';
 import { useProjectSession } from '../project/project-session-context';
@@ -69,8 +70,17 @@ export function WorkspaceSurface({ workspaceId }: WorkspaceSurfaceProps) {
                 <div><dt>Storage</dt><dd>Local-first</dd></div>
               </dl>
               {workspaceId === 'preview' ? <ProjectThemeControls scope="frontend" /> : null}
-              {workspaceId === 'backend' ? <ProjectThemeControls scope="backend" /> : null}
-              <p className="stage-boundary-note">This workspace remains a shell until its dedicated renderer is implemented.</p>
+              {workspaceId === 'backend' ? (
+                <>
+                  <DynamicContentManager />
+                  <ProjectThemeControls scope="backend" />
+                </>
+              ) : null}
+              <p className="stage-boundary-note">
+                {workspaceId === 'backend'
+                  ? 'Content Types and Taxonomies are active; field definitions, records and final generated backend rendering remain in later F05/F06 microphases.'
+                  : 'This workspace remains a shell until its dedicated renderer is implemented.'}
+              </p>
             </div>
           </article>
         </section>

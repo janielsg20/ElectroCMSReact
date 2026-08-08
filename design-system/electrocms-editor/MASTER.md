@@ -47,17 +47,35 @@ Individual editor presets may reinterpret shape/color/elevation, but they must p
 ## No-code builder anatomy
 Desktop authoring is organized around a stable four-zone model:
 1. **Top command/header bar** — project state, document, breakpoint, zoom, history, preview/export.
-2. **Left navigation / future insert-library zone** — workspace navigation and discoverability of building blocks.
+2. **Left insert/library zone** — primary catalog for elements, widgets, structures and reusable blocks, plus secondary workspace/layer navigation where appropriate.
 3. **Central canvas** — dominant working surface and primary spatial context.
 4. **Right contextual inspector** — properties/styles/responsive controls for current selection.
 
+This interaction model should feel immediately familiar to users of professional visual page builders such as Elementor, while keeping ElectroCMS visual identity, terminology, architecture and implementation original.
+
+### Insert / Elements Library contract
+The left builder panel is a first-class authoring surface, not a generic navigation sidebar.
+
+Required behavior as the relevant phases are implemented:
+- searchable catalog of elements/widgets;
+- category/group navigation;
+- compact visual rows or tiles with recognizable icon + label;
+- click-to-insert and drag-to-canvas insertion paths where structurally valid;
+- clear disabled/modeled state when a component contract exists but runtime behavior is not ready;
+- recently used/favorites when the library becomes large enough to justify them;
+- reusable blocks/templates exposed through the same discoverable insertion mental model;
+- optional panel modes/tabs for **Elements**, **Layers/Navigator**, **Templates/Blocks** and context-specific resources without replacing the central canvas;
+- insertion always produces canonical nodes/data through registries/factories; the panel never mutates the DOM as state.
+
 Rules:
 - Canvas always receives the largest flexible area.
-- Common property edits stay in the inspector; avoid modal dialogs for routine edits.
+- The insert library remains visible/persistent on desktop whenever space permits; collapse it before removing access on smaller layouts.
+- Common property edits stay in the right inspector; avoid modal dialogs for routine edits.
 - Selection must remain visually obvious while inspecting.
 - Layers, hierarchy and nesting must be inferable without reading internal IDs.
 - Structural actions must be reversible with Undo/Redo.
 - Never make the DOM the source of truth; editor visuals project the canonical model.
+- Do not redesign ElectroCMS as a collection of dashboard cards when the primary task is visual composition; builder anatomy takes precedence.
 
 ## Density scale
 Use an 4px base micro-grid and an 8px primary rhythm.
@@ -187,15 +205,17 @@ Editor responsiveness and generated-site breakpoints are separate systems.
 Desktop:
 - full multi-panel no-code workflow;
 - dense controls;
-- persistent canvas context.
+- persistent insert library + canvas + contextual inspector when space permits;
+- canvas remains dominant even with both side panels open.
 
 Tablet:
 - collapse secondary chrome before removing functionality;
 - drawers/sheets can replace persistent sidebars;
-- preserve canvas actions and inspector access.
+- preserve insert-library, canvas actions and inspector access.
 
 Mobile:
 - prioritize inspect/edit workflows rather than pretending a desktop canvas fits unchanged;
+- insert library and inspector may become drawers/sheets, but must remain reachable;
 - critical touch targets ≥44px;
 - local horizontal scrolling is permitted for dense toolbars when contained;
 - root document must not overflow horizontally.
@@ -222,6 +242,7 @@ Editor presets may not change:
 ## Quality checklist for every editor UI microphase
 Before marking a UI microphase DONE:
 - [ ] Primary task is obvious without tutorial text.
+- [ ] Builder-style tasks expose insertion/discovery through the left library rather than burying components in settings.
 - [ ] Keyboard path exists for primary controls.
 - [ ] Focus treatment is visible.
 - [ ] No control is hover-only.

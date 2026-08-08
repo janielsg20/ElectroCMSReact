@@ -1,10 +1,13 @@
 name: ElectroCMS Quality Gates
 
 on:
+  # Normal agent/* development commits intentionally do not run the expensive gate.
+  # Microphase gates are requested through the dedicated quality/f05 branch / PR.
   push:
-    branches: [main, 'agent/**']
+    branches: [main, quality/f05]
   pull_request:
     branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review]
   workflow_dispatch:
 
 permissions:

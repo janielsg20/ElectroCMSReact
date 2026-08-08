@@ -1,0 +1,570 @@
+.taxonomy-editor {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-subtle);
+}
+
+.taxonomy-editor-header,
+.taxonomy-form-toolbar,
+.taxonomy-editor-status,
+.taxonomy-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.taxonomy-editor-header > div:first-child {
+  min-width: 0;
+}
+
+.taxonomy-editor-eyebrow {
+  display: inline-block;
+  margin-bottom: 4px;
+  color: var(--text-faint);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.taxonomy-editor h3,
+.taxonomy-editor p {
+  margin: 0;
+}
+
+.taxonomy-editor h3 {
+  color: var(--text-strong);
+  font-size: 15px;
+}
+
+.taxonomy-editor p {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.taxonomy-editor-summary {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  gap: 0 5px;
+}
+
+.taxonomy-editor-summary strong {
+  color: var(--text-strong);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.taxonomy-editor-summary span {
+  color: var(--text-faint);
+  font-size: 9px;
+}
+
+.taxonomy-editor-summary button,
+.taxonomy-detail-empty button {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--accent-contrast, #fff);
+  background: var(--accent);
+  font-size: 9.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.taxonomy-editor-summary button {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+
+.taxonomy-editor-summary button:disabled,
+.taxonomy-detail-empty button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.taxonomy-prerequisite {
+  display: grid;
+  gap: 3px;
+  padding: 9px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface-raised));
+}
+
+.taxonomy-prerequisite strong {
+  color: var(--text-strong);
+  font-size: 10px;
+}
+
+.taxonomy-prerequisite span {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.taxonomy-editor-grid {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.taxonomy-list,
+.taxonomy-detail {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface-raised);
+}
+
+.taxonomy-list-heading {
+  min-height: 34px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.taxonomy-list-heading code {
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.taxonomy-list-items {
+  display: grid;
+  max-height: 560px;
+  overflow: auto;
+}
+
+.taxonomy-list-item {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  padding: 9px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-strong);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.taxonomy-list-item:last-child {
+  border-bottom: 0;
+}
+
+.taxonomy-list-item:hover {
+  background: var(--surface-hover);
+}
+
+.taxonomy-list-item[data-selected="true"] {
+  box-shadow: inset 2px 0 0 var(--accent);
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface-raised));
+}
+
+.taxonomy-list-item-main,
+.taxonomy-list-item-meta {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.taxonomy-list-item-main strong {
+  overflow: hidden;
+  font-size: 10.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taxonomy-list-item-main code,
+.taxonomy-list-item-meta {
+  color: var(--text-faint);
+  font-size: 8.5px;
+}
+
+.taxonomy-empty-list,
+.taxonomy-detail-empty {
+  display: grid;
+  gap: 5px;
+  padding: 16px;
+  color: var(--text-muted);
+}
+
+.taxonomy-empty-list strong,
+.taxonomy-detail-empty strong {
+  color: var(--text-strong);
+  font-size: 11px;
+}
+
+.taxonomy-empty-list span,
+.taxonomy-detail-empty p {
+  font-size: 9.5px;
+  line-height: 1.4;
+}
+
+.taxonomy-detail-empty {
+  min-height: 260px;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+}
+
+.taxonomy-detail-empty > span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  color: var(--accent);
+  background: var(--surface-subtle);
+  font-size: 16px;
+}
+
+.taxonomy-form {
+  display: grid;
+}
+
+.taxonomy-form-toolbar {
+  min-height: 44px;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.taxonomy-form-toolbar > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.taxonomy-form-toolbar span {
+  color: var(--text-faint);
+  font-size: 8.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.taxonomy-form-toolbar strong {
+  overflow: hidden;
+  color: var(--text-strong);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taxonomy-form-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.taxonomy-form-actions button {
+  min-height: 30px;
+  padding: 0 9px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.taxonomy-save {
+  border: 1px solid var(--accent);
+  color: var(--accent-contrast, #fff);
+  background: var(--accent);
+}
+
+.taxonomy-save:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.taxonomy-delete {
+  border: 1px solid var(--border-strong);
+  color: var(--danger);
+  background: var(--surface-raised);
+}
+
+.taxonomy-delete[data-armed="true"] {
+  border-color: var(--danger);
+  color: var(--danger-contrast, #fff);
+  background: var(--danger);
+}
+
+.taxonomy-form-section {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.taxonomy-form-section-heading {
+  display: grid;
+  gap: 2px;
+}
+
+.taxonomy-form-section-heading strong {
+  color: var(--text-strong);
+  font-size: 10.5px;
+}
+
+.taxonomy-form-section-heading span {
+  color: var(--text-faint);
+  font-size: 9px;
+}
+
+.taxonomy-field-grid,
+.taxonomy-association-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.taxonomy-field {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.taxonomy-field--wide {
+  grid-column: 1 / -1;
+}
+
+.taxonomy-field > span,
+.taxonomy-field small {
+  font-size: 8.5px;
+}
+
+.taxonomy-field > span {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.taxonomy-field small {
+  min-height: 12px;
+  color: var(--text-faint);
+  line-height: 1.35;
+}
+
+.taxonomy-field input,
+.taxonomy-field textarea,
+.taxonomy-field select,
+.taxonomy-slug-control {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  color: var(--text-strong);
+  background: var(--surface-raised);
+  font: inherit;
+}
+
+.taxonomy-field input,
+.taxonomy-field select {
+  min-height: 32px;
+  padding: 0 8px;
+}
+
+.taxonomy-field textarea {
+  padding: 7px 8px;
+  resize: vertical;
+}
+
+.taxonomy-field input:disabled {
+  color: var(--text-faint);
+  background: var(--surface-subtle);
+}
+
+.taxonomy-field input[aria-invalid="true"],
+.taxonomy-field textarea[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.taxonomy-field:has([aria-invalid="true"]) small,
+.taxonomy-inline-error {
+  color: var(--danger);
+}
+
+.taxonomy-slug-control {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  overflow: hidden;
+}
+
+.taxonomy-slug-control > span {
+  padding-left: 8px;
+  color: var(--text-faint);
+  font-size: 10px;
+}
+
+.taxonomy-slug-control input {
+  border: 0;
+  border-radius: 0;
+}
+
+.taxonomy-toggle,
+.taxonomy-association {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-subtle);
+  cursor: pointer;
+}
+
+.taxonomy-toggle input,
+.taxonomy-association input {
+  margin: 2px 0 0;
+}
+
+.taxonomy-toggle > span,
+.taxonomy-association > span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.taxonomy-toggle strong,
+.taxonomy-association strong {
+  color: var(--text-strong);
+  font-size: 9.5px;
+}
+
+.taxonomy-toggle small,
+.taxonomy-association small,
+.taxonomy-inline-error,
+.taxonomy-scope-note {
+  font-size: 8.5px;
+  line-height: 1.35;
+}
+
+.taxonomy-toggle small,
+.taxonomy-association small,
+.taxonomy-scope-note {
+  color: var(--text-faint);
+}
+
+.taxonomy-scope-note {
+  padding: 8px 10px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface-subtle);
+}
+
+.taxonomy-validation-summary {
+  margin: 0 12px 12px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--danger) 50%, var(--border));
+  border-radius: 6px;
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 7%, var(--surface-raised));
+  font-size: 9px;
+}
+
+.taxonomy-editor-status {
+  min-height: 28px;
+  padding: 0 2px;
+  color: var(--text-faint);
+  font-size: 9px;
+}
+
+.taxonomy-editor-status[data-tone="success"] span {
+  color: var(--success);
+}
+
+.taxonomy-editor-status[data-tone="error"] span {
+  color: var(--danger);
+}
+
+.taxonomy-editor-status code {
+  padding: 2px 5px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  background: var(--surface-raised);
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+.taxonomy-editor button:focus-visible,
+.taxonomy-editor input:focus-visible,
+.taxonomy-editor textarea:focus-visible,
+.taxonomy-editor select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 960px) {
+  .taxonomy-editor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .taxonomy-list-items {
+    max-height: 220px;
+  }
+}
+
+@media (max-width: 640px) {
+  .taxonomy-editor {
+    padding: 10px;
+  }
+
+  .taxonomy-editor-header,
+  .taxonomy-form-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .taxonomy-editor-summary {
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+  }
+
+  .taxonomy-editor-summary button {
+    grid-column: auto;
+    min-height: 44px;
+    margin-top: 0;
+    justify-self: end;
+  }
+
+  .taxonomy-field-grid,
+  .taxonomy-association-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .taxonomy-field--wide {
+    grid-column: auto;
+  }
+
+  .taxonomy-form-actions {
+    width: 100%;
+  }
+
+  .taxonomy-form-actions button,
+  .taxonomy-detail-empty button,
+  .taxonomy-list-item {
+    min-height: 44px;
+  }
+
+  .taxonomy-form-actions button {
+    flex: 1 1 0;
+  }
+}

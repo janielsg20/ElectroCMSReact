@@ -1,4 +1,16 @@
 import { createContext, useContext } from 'react';
+import type {
+  ContentRecordDefinition,
+  ContentRecordMutationErrorCode,
+  ContentTypeDefinition,
+  ContentTypeMutationErrorCode,
+  FieldGroupDefinition,
+  FieldGroupMutationErrorCode,
+  RelationDefinition,
+  RelationMutationErrorCode,
+  TaxonomyDefinition,
+  TaxonomyMutationErrorCode,
+} from '../../core/content';
 import type { CanonicalProject } from '../../core/project';
 import type {
   ProjectThemePackageResources,
@@ -13,6 +25,26 @@ export type ProjectSaveState = 'saved' | 'dirty' | 'saving' | 'error';
 export type ProjectThemeResourceApplyResult =
   | { ok: true; report: ThemePackageMergeReport; changed: boolean }
   | { ok: false; message: string };
+
+export type ContentTypeSessionMutationResult =
+  | { ok: true; value: ContentTypeDefinition; changed: boolean }
+  | { ok: false; code: ContentTypeMutationErrorCode; message: string };
+
+export type TaxonomySessionMutationResult =
+  | { ok: true; value: TaxonomyDefinition; changed: boolean }
+  | { ok: false; code: TaxonomyMutationErrorCode; message: string };
+
+export type RelationSessionMutationResult =
+  | { ok: true; value: RelationDefinition; changed: boolean }
+  | { ok: false; code: RelationMutationErrorCode; message: string };
+
+export type FieldGroupSessionMutationResult =
+  | { ok: true; value: FieldGroupDefinition; changed: boolean }
+  | { ok: false; code: FieldGroupMutationErrorCode; message: string };
+
+export type ContentRecordSessionMutationResult =
+  | { ok: true; value: ContentRecordDefinition; changed: boolean }
+  | { ok: false; code: ContentRecordMutationErrorCode; message: string };
 
 export interface ProjectSessionState {
   project: CanonicalProject;
@@ -30,6 +62,21 @@ export interface ProjectSessionState {
     resources: ProjectThemePackageResources | undefined,
     selection: ThemePackageResourceSelection,
   ): ProjectThemeResourceApplyResult;
+  createContentType(input: unknown): ContentTypeSessionMutationResult;
+  updateContentType(id: string, input: unknown): ContentTypeSessionMutationResult;
+  removeContentType(id: string): ContentTypeSessionMutationResult;
+  createTaxonomy(input: unknown): TaxonomySessionMutationResult;
+  updateTaxonomy(id: string, input: unknown): TaxonomySessionMutationResult;
+  removeTaxonomy(id: string): TaxonomySessionMutationResult;
+  createRelation(input: unknown): RelationSessionMutationResult;
+  updateRelation(id: string, input: unknown): RelationSessionMutationResult;
+  removeRelation(id: string): RelationSessionMutationResult;
+  createFieldGroup(input: unknown): FieldGroupSessionMutationResult;
+  updateFieldGroup(id: string, input: unknown): FieldGroupSessionMutationResult;
+  removeFieldGroup(id: string): FieldGroupSessionMutationResult;
+  createContentRecord(input: unknown): ContentRecordSessionMutationResult;
+  updateContentRecord(id: string, input: unknown): ContentRecordSessionMutationResult;
+  removeContentRecord(id: string): ContentRecordSessionMutationResult;
   executeDocumentCommand(command: DocumentCommand): boolean;
   undo(): boolean;
   redo(): boolean;

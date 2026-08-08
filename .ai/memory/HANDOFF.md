@@ -1,46 +1,99 @@
 # HANDOFF.md
 
 ## Current state
-F04 implementation is functionally complete on `agent/f04-widgets-inspector-themes` / PR #5. GitHub Actions run #688 is fully green for the definitive original contract, including widget registry, inspector, style/breakpoint, editable/versioned themes and selective non-destructive theme package transfer. Closing documentation/hygiene must pass one final CI run before merge.
+F04 is fully closed and merged into `main` by squash at `57798d9e00f4a3bb87867a847c3bccfccc82f764` after GitHub Actions run #712 PASS.
 
-## Durable F04 facts
-- Widget contracts are framework-neutral in `src/core/widgets`; React preview binding lives in `src/app/widgets`.
-- Widgets resolve by `type@version`; adding a plugin widget must not require branching `CanvasRenderer` by type.
-- Built-ins include 10 structural + 16 basic/content + 19 modeled dynamic/commerce/form/filter contracts.
-- Dynamic/commerce/form/filter remain honestly `modeled`; do not fake F05/F06 behavior inside F04 widgets.
-- Inspector is generated from widget schema and writes validated reversible commands only.
-- `DocumentNode.styles` / `ResponsiveStyleSet` remains the only responsive style source.
-- Breakpoint engine resolves wider/narrower and dynamic inherited values.
-- DnD hit areas remain stable during a native drag; transient `data-*` paint state is allowed, React rerender during `dragstart` is not.
-- Editor design source of truth: `design-system/electrocms-editor/MASTER.md` + `pages/editor.md`.
-- Design references selected from `nextlevelbuilder/ui-ux-pro-max-skill`: `ui-ux-pro-max`, `design-system`, `ui-styling`.
-- Editor product archetype: productivity tool + component/design-system tooling + data-dense SaaS; it must feel like a professional no-code builder, not a generic card dashboard.
-- Editor mode/preset are workspace preferences and never alter generated project themes.
-- `frontendThemeId` and `backendThemeId` are canonical project data and autosave independently.
-- `ProjectThemeRegistry` validates scope, IDs, versions and portable JSON tokens.
-- Built-in project themes: 8 frontend + 7 backend; built-ins are immutable.
-- `Duplicate to edit` creates local collision-safe copies; each edit increments version.
-- Theme packages use `kind=electrocms-theme-package`, `schemaVersion=1`, max 256 KB.
-- Imported/duplicated theme definitions live locally at `electrocms:project-theme-packages:v1`; canonical projects store only selected IDs.
-- Theme package transfer supports selective Pages/Templates, Content Models, Queries/Forms/Filters, Roles/Backend and optional Demo Data.
-- Demo Data is off by default.
-- Choosing an import file only validates/reviews; no project change occurs until explicit apply.
-- Resource merge is non-destructive: existing IDs/keys are preserved and reported, never overwritten.
-- Users, credentials and media binaries are out of scope for F04 packages.
-- Vercel auto-deploy is disabled. Never deploy unless the user explicitly asks.
+F05 — Contenido dinámico is active on `agent/f05-dynamic-content` / draft PR #6.
+
+Completed:
+- MF-037 CPT — run #730; docs #740.
+- MF-038 Taxonomy — run #766; docs #776.
+- MF-039 Field type registry — run #786; docs #800.
+- MF-040 Custom field groups — run #834; docs #850.
+- MF-041 Records CRUD — run #901; docs #915; evidence-sync #921.
+
+**MF-042 — Advanced fields is IN_PROGRESS.** Implementation is substantially complete and has received additional static hardening, but it MUST NOT be marked DONE until a real full quality gate executes. MF-043 remains BLOCKED.
+
+## MF-042 implemented state
+- `core/repeater`, `core/group`, `core/calculated`, `core/conditional` have v2 `available` definitions in `createContentFieldTypeRegistry()`; v1 historical definitions remain registered as modeled contracts.
+- `core/relation`, `core/user`, `core/taxonomy` remain v1 `modeled` for MF-043.
+- `advanced-field-runtime.ts`: React-free portable runtime, safe calculation tokenizer/parser/evaluator, conditional operators, nested Group/Repeater normalization/validation, max depth 8 and max Repeater items 100.
+- `isMf042AdvancedField()` makes runtime activation version-aware so historical modeled definitions are not silently interpreted as the MF-042 runtime.
+- Nested Group/Repeater payloads normalize canonically before persistence; nested Calculated values are recomputed and nested Conditional values resolve after sibling defaults are available.
+- Calculated expressions may reference sibling Number/Currency only. Calculated→Calculated chaining is rejected so output is independent of schema order.
+- Conditional sources must be non-advanced siblings. `greaterThan`/`lessThan` additionally require Number/Currency sources and finite numeric `compareValue`; `equals`/`notEquals` require `compareValue`; `truthy`/`falsy` do not.
+- `advanced-field-group.ts`: contextual references, calculation source rules, condition source rules, cycle protection and reference-depth protection.
+- `advanced-field-group-integrity.ts`: deleting a Field Group is blocked while another advanced field references it.
+- `field-group-update-integrity.ts`: updating a Field Group is blocked when the candidate schema would invalidate an existing Record. Dependency detection is transitive through nested Group/Repeater/Conditional references, preventing persisted Records from disappearing from list views after an incompatible schema edit.
+- Public `updateFieldGroup` is routed through the record-integrity wrapper; low-level `updateAdvancedFieldGroup` remains the schema mutation primitive.
+- `advanced-content-record.ts`: advanced record normalization is version-aware and staged structural → calculated → conditional.
+- Field Group authoring remains one path: Field Library → Stored Order → Inspector. There is no duplicate Advanced Fields top-level editor.
+- Records uses `AdvancedRecordFieldControl` for nested Group, Repeater rows, Calculated read-only and Conditional reactive UI. The control refuses to execute modeled/historical field versions as MF-042 runtime.
+- `e2e/advanced-fields.spec.ts` covers reusable groups, schema configuration, calculation, condition activation/deactivation, Repeater rows and durable IndexedDB reload.
+- Unit/safety coverage now includes registry caps, safe expression syntax, compare-value rules, numeric conditional-source compatibility, nested canonical normalization, runtime version boundary, direct record-integrity during schema updates and transitive nested record-integrity.
+
+## Critical MF-042 invariants
+- Core content runtime remains React-free.
+- No parallel stores: `CanonicalProject.fieldGroups` and `CanonicalProject.records` remain authoritative.
+- Advanced field behavior must resolve by type + version, never by type name alone.
+- Historical modeled v1 contracts are not automatically migrated or executed as v2.
+- Repeater hard cap is 100 rows; nested reference depth is 8.
+- Calculated never uses `eval`, `Function` or dynamic code execution.
+- Record values derived from a Field Group must remain valid after schema updates. Incompatible schema updates are rejected instead of hiding invalid records.
+- Field Group deletion guards remain chained: advanced references → record assignments → taxonomy assignments.
+- `relation`, `user`, `taxonomy` must remain modeled until MF-043.
+
+## Quality-gate strategy
+Normal `agent/**` development commits do not run the expensive workflow. `main` retains the final gate and dedicated quality PRs are used for microphase checks.
+
+Primary manual gate:
+- branch: `quality/f05`;
+- PR #7 `quality/f05 -> main`;
+- move `quality/f05` to the exact MF HEAD, reopen #7 once, inspect, then close without merge.
+
+Additional diagnostic gate:
+- fresh PR #8 was created from a fresh quality branch specifically to test `pull_request.opened`.
+- PR #8 triggered run #1018, but both jobs failed before executing any step (`steps=[]`) and job log download returned `BlobNotFound`.
+- This proves the failure is not caused by reusing PR #7 or by a missing opened/reopened event.
+
+## Current Actions blocker
+- Earlier runs #986/#990/#994/#1000/#1002 failed before any job step.
+- Manual run #1014 also failed before any step.
+- Fresh opened-event run #1018 also failed before any step; no usable job log exists.
+- A later attempt on the newest MF-042 HEAD again produced zero workflow/check status at inspection time.
+- Zero-step/no-run attempts are neither PASS nor FAIL evidence for code.
+- Local execution cannot replace CI: the container cannot resolve `github.com`, and its npm mirror does not contain the project dependencies.
+- Vercel Sandbox is not exposed as an executable connected runner here. Do not turn a deployment into CI; deployments remain manual-only by user rule.
+
+## Durable F05 facts
+- Canonical persistence collections remain `contentTypes`, `taxonomies`, `fieldGroups`, `records`; `relations` begins only in MF-043.
+- Field behavior resolves through versioned `FieldTypeRegistry`; callbacks/definitions are not serialized into `CanonicalProject`.
+- Advanced nested fields reference reusable Field Groups by ID rather than duplicating schemas.
+- Project mutations go through `ProjectSession` / `projectRef.current` and existing autosave/recovery.
+- Durable persistence E2E polls IndexedDB before reload when correctness depends on storage visibility.
+
+## Editor design direction
+- Source: `design-system/electrocms-editor/MASTER.md` + `pages/editor.md`.
+- Visual builder anatomy: top commands + left Insert/Elements Library + dominant canvas + right inspector.
+- Backend data CRUD may use dense master-detail.
+- Advanced fields are integrated in Field Groups + Records, not a duplicate top-level editor.
+- No forced Tailwind/shadcn migration.
 
 ## Resume protocol
-1. Read `AI_ENTRYPOINT.md`, `RULES.md`, `MEMORY.md`, `TRACKING.md`, then this handoff.
-2. Confirm PR #5 final closing CI is green.
-3. Merge PR #5 to `main` by squash only after that final gate.
-4. Re-read the exact F05 phase README/microphase contract from `phases/`; do not infer its scope from F04.
-5. Create a fresh F05 branch from merged `main`.
-6. Preserve widget registry, inspector, responsive style engine, theme registries and package boundaries; do not introduce parallel versions.
-7. Apply `design-system/electrocms-editor/MASTER.md` to every new editor UI surface.
-8. Keep Preview/Backend/Export scope honest until their dedicated render/export phases.
+1. Read `AI_ENTRYPOINT.md`, `RULES.md`, `MEMORY.md`, `TRACKING.md`, this handoff, `DECISIONS.md`, `.ai/memory/DECISIONS_LOG.md`, `KNOWN_ISSUES.md` and `QUALITY_GATES.md`.
+2. Resolve the exact current `agent/f05-dynamic-content` HEAD before any gate attempt.
+3. Check whether GitHub Actions hosted runners are usable for the repo/account.
+4. For one gate attempt, move `quality/f05` to that exact HEAD, reopen PR #7 once, require actual executed steps/logs, then close #7 without merge.
+5. Fix any real verify/lint/TypeScript/unit/coverage/Playwright/build failure; never infer code failure from zero-step jobs.
+6. Only after all required checks PASS, update MEMORY/IMPLEMENTATION_MEMORY/DECISIONS/TRACKING/HANDOFF with the exact gate and mark MF-042 DONE.
+7. Only then recover the exact MF-043 Relations contract and begin it.
 
-## Next phase
-F05 — resolve exact title from the phase contract before implementation.
-
-## Next microphase
-Resolve the first MF listed by the F05 README after merge; do not guess the identifier or title.
+## Phase sequence
+- MF-037 — DONE
+- MF-038 — DONE
+- MF-039 — DONE
+- MF-040 — DONE
+- MF-041 — DONE
+- MF-042 — IN_PROGRESS; implementation + hardening present, executable gate blocked externally
+- MF-043 — BLOCKED
+- MF-044 — BLOCKED
