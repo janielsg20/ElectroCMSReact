@@ -1,7 +1,9 @@
 import { useState, type FocusEvent } from 'react';
 import type { JsonValue } from '../../../core/domain';
 import {
+  getNearestWiderBreakpoint,
   resolveResponsiveStyle,
+  type BreakpointDefinition,
   type DocumentNode,
 } from '../../../core/project';
 import type { CanvasStyleEditResult } from '../canvas/use-canvas-document-actions';
@@ -28,8 +30,10 @@ const STYLE_FIELDS: readonly StyleField[] = [
 export interface WidgetStyleInspectorProps {
   node: DocumentNode;
   breakpointId: string;
+  breakpoints?: readonly BreakpointDefinition[];
   onSetStyle?: (nodeId: string, key: string, value: JsonValue) => CanvasStyleEditResult;
   onUnsetStyle?: (nodeId: string, key: string) => CanvasStyleEditResult;
+  onInheritStyle?: (nodeId: string, key: string, fromBreakpointId: string) => CanvasStyleEditResult;
 }
 
 function formattedValue(value: JsonValue | undefined): string {
@@ -39,10 +43,15 @@ function formattedValue(value: JsonValue | undefined): string {
 export function WidgetStyleInspector({
   node,
   breakpointId,
+  breakpoints = [],
   onSetStyle,
   onUnsetStyle,
+  onInheritStyle,
 }: WidgetStyleInspectorProps) {
   const [issues, setIssues] = useState<Readonly<Record<string, string>>>({});
+  const widerBreakpoint = breakpoints.length > 0
+    ? getNearestWiderBreakpoint(breakpoints, breakpointId)
+    : null;
 
   const commit = (field: StyleField, rawValue: string) => {
     if (!onSetStyle) return;
@@ -90,6 +99,27 @@ export function WidgetStyleInspector({
     commit(field, event.currentTarget.value);
   };
 
+  const inherit = (field: StyleField) => {
+    if (!onInheritStyle || !widerBreakpoint) return;
+    const result = onInheritStyle(node.id, field.key, widerBreakpoint.id);
+    setIssues((current) => {
+      const next = { ...current };
+      if (result.applied) delete next[field.key];
+      else next[field.key] = result.message ?? 'Style inheritance failed.';
+      return next;
+    });
+  };
+
+  const unset = (field: StyleField) => {
+    const result = onUnsetStyle?.(node.id, field.key);
+    setIssues((current) => {
+      const next = { ...current };
+      if (result?.applied) delete next[field.key];
+      else next[field.key] = result?.message ?? 'Style reset failed.';
+      return next;
+    });
+  };
+
   return (
     <fieldset className="widget-inspector-section widget-style-inspector">
       <legend>Styles · {breakpointId}</legend>
@@ -99,28 +129,50 @@ export function WidgetStyleInspector({
         const inherited = currentSlot?.state === 'inherited';
         const issue = issues[field.key];
         return (
-          <label className="widget-inspector-field widget-style-field" key={field.key}>
-            <span>{field.label}</span>
-            <input
-              key={`${node.id}-${breakpointId}-${field.key}-${formattedValue(resolved?.value)}`}
-              aria-label={`Style ${field.label}`}
-              type={field.kind === 'number' ? 'number' : 'text'}
-              defaultValue={formattedValue(resolved?.value)}
-              placeholder={field.placeholder}
-              {...(field.min === undefined ? {} : { min: field.min })}
-              {...(field.max === undefined ? {} : { max: field.max })}
-              {...(field.step === undefined ? {} : { step: field.step })}
-              onBlur={commitBlur(field)}
-            />
-            <small>
-              {resolved
-                ? inherited
-                  ? `Inherited from ${resolved.sourceBreakpointId}`
-                  : `Explicit on ${resolved.sourceBreakpointId}`
-                : 'Unset'}
-            </small>
-            {issue ? <span className="widget-inspector-error" role="alert">{issue}</span> : null}
-          </label>
+          <div className="widget-style-row" key={field.key}>
+            <label className="widget-inspector-field widget-style-field">
+              <span>{field.label}</span>
+              <input
+                key={`${node.id}-${breakpointId}-${field.key}-${formattedValue(resolved?.value)}`}
+                aria-label={`Style ${field.label}`}
+                type={field.kind === 'number' ? 'number' : 'text'}
+                defaultValue={formattedValue(resolved?.value)}
+                placeholder={field.placeholder}
+                {...(field.min === undefined ? {} : { min: field.min })}
+                {...(field.max === undefined ? {} : { max: field.max })}
+                {...(field.step === undefined ? {} : { step: field.step })}
+                onBlur={commitBlur(field)}
+              />
+              <small>
+                {resolved
+                  ? inherited
+                    ? `Inherited from ${resolved.sourceBreakpointId}`
+                    : `Explicit on ${resolved.sourceBreakpointId}`
+                  : 'Unset'}
+              </small>
+              {issue ? <span className="widget-inspector-error" role="alert">{issue}</span> : null}
+            </label>
+            <div className="widget-style-actions">
+              {widerBreakpoint ? (
+                <button
+                  type="button"
+                  aria-label={`Inherit ${field.label} from ${widerBreakpoint.label}`}
+                  disabled={!onInheritStyle}
+                  onClick={() => inherit(field)}
+                >
+                  Inherit
+                </button>
+              ) : null}
+              <button
+                type="button"
+                aria-label={`Unset ${field.label}`}
+                disabled={!onUnsetStyle}
+                onClick={() => unset(field)}
+              >
+                Unset
+              </button>
+            </div>
+          </div>
         );
       })}
     </fieldset>
