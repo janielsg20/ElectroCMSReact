@@ -1,49 +1,62 @@
 :root {
-  /* ElectroCMS V2 — primitive palette */
-  --color-ec-graphite-950: #101312;
-  --color-ec-graphite-900: #171b19;
-  --color-ec-graphite-800: #222824;
-  --color-ec-graphite-700: #303833;
-  --color-ec-graphite-600: #48524b;
-  --color-ec-graphite-500: #68736b;
+  color-scheme: dark;
 
-  --color-ec-porcelain-50: #fbfcfa;
-  --color-ec-porcelain-100: #f5f6f2;
-  --color-ec-porcelain-200: #e9ece5;
-  --color-ec-porcelain-300: #d9ddd5;
+  /* ElectroCMS Bento Density — one application theme */
+  --color-ec-graphite-1000: #080b0f;
+  --color-ec-graphite-950: #0d1117;
+  --color-ec-graphite-900: #121821;
+  --color-ec-graphite-850: #171e28;
+  --color-ec-graphite-800: #1d2631;
+  --color-ec-graphite-700: #2b3643;
+  --color-ec-graphite-600: #465363;
+  --color-ec-graphite-500: #6d7988;
+  --color-ec-graphite-400: #909aa7;
+  --color-ec-graphite-300: #b7bec8;
+  --color-ec-graphite-100: #eef1f5;
+  --color-ec-white: #fbfcfe;
 
-  --color-ec-teal-700: #0f6f68;
-  --color-ec-teal-600: #13877e;
-  --color-ec-teal-500: #18a096;
-  --color-ec-teal-400: #35b8ae;
-  --color-ec-teal-100: #dff4f1;
+  --color-ec-teal-700: #0b8f89;
+  --color-ec-teal-600: #18aaa2;
+  --color-ec-teal-500: #31c6bc;
+  --color-ec-teal-400: #58d7ce;
+  --color-ec-teal-100: #153c3b;
 
-  --color-ec-violet-600: #6556c7;
-  --color-ec-violet-100: #ece9fb;
+  --color-ec-violet-600: #7867e8;
+  --color-ec-violet-500: #9484ff;
+  --color-ec-violet-100: #292548;
 
-  --color-ec-danger-600: #b5413b;
-  --color-ec-warning-600: #9b6a19;
-  --color-ec-success-600: #397b4a;
+  --color-ec-danger-600: #ff746d;
+  --color-ec-warning-600: #e7b453;
+  --color-ec-success-600: #58c978;
 
-  /* Semantic color roles */
-  --color-ec-app: var(--color-ec-porcelain-100);
-  --color-ec-surface: #ffffff;
-  --color-ec-surface-subtle: var(--color-ec-porcelain-50);
-  --color-ec-surface-muted: var(--color-ec-porcelain-200);
-  --color-ec-border: var(--color-ec-porcelain-300);
-  --color-ec-text: var(--color-ec-graphite-950);
-  --color-ec-text-muted: var(--color-ec-graphite-500);
-  --color-ec-accent: var(--color-ec-teal-600);
+  /* Semantic roles */
+  --color-ec-app: var(--color-ec-graphite-1000);
+  --color-ec-surface: var(--color-ec-graphite-900);
+  --color-ec-surface-subtle: var(--color-ec-graphite-850);
+  --color-ec-surface-muted: var(--color-ec-graphite-800);
+  --color-ec-surface-raised: #202a36;
+  --color-ec-border: rgb(183 190 200 / 0.13);
+  --color-ec-border-strong: rgb(183 190 200 / 0.22);
+  --color-ec-text: var(--color-ec-white);
+  --color-ec-text-muted: var(--color-ec-graphite-400);
+  --color-ec-text-faint: var(--color-ec-graphite-500);
+  --color-ec-accent: var(--color-ec-teal-500);
+  --color-ec-accent-strong: var(--color-ec-teal-400);
   --color-ec-accent-soft: var(--color-ec-teal-100);
-  --color-ec-chrome: var(--color-ec-graphite-950);
-  --color-ec-chrome-raised: var(--color-ec-graphite-900);
+  --color-ec-secondary: var(--color-ec-violet-500);
+  --color-ec-secondary-soft: var(--color-ec-violet-100);
+  --color-ec-chrome: #0a0e13;
+  --color-ec-chrome-raised: #111821;
+  --color-ec-canvas-stage: #090d12;
+  --color-ec-canvas-dot: rgb(144 154 167 / 0.18);
 
-  /* Dense, but still readable. Reserve 10px for metadata only. */
+  /* Dense typography with accessible minimums */
   --ec-font-micro: 10px;
   --ec-font-xs: 11px;
   --ec-font-sm: 12px;
   --ec-font-md: 14px;
   --ec-font-lg: 18px;
+  --ec-font-xl: 22px;
 
   --ec-space-1: 4px;
   --ec-space-2: 8px;
@@ -52,23 +65,26 @@
   --ec-space-5: 20px;
   --ec-space-6: 24px;
 
-  --ec-radius-xs: 4px;
-  --ec-radius-sm: 6px;
-  --ec-radius-md: 9px;
-  --ec-radius-lg: 12px;
-  --ec-radius-xl: 16px;
+  --ec-radius-xs: 5px;
+  --ec-radius-sm: 7px;
+  --ec-radius-md: 10px;
+  --ec-radius-lg: 14px;
+  --ec-radius-xl: 18px;
 
   --ec-control-compact: 28px;
   --ec-control-default: 32px;
   --ec-control-touch: 44px;
 
-  --ec-shadow-panel: 0 1px 2px rgb(16 19 18 / 0.06), 0 8px 24px rgb(16 19 18 / 0.04);
-  --ec-shadow-float: 0 12px 36px rgb(16 19 18 / 0.16);
+  --ec-shadow-panel: 0 1px 0 rgb(255 255 255 / 0.025) inset, 0 12px 28px rgb(0 0 0 / 0.18);
+  --ec-shadow-float: 0 20px 58px rgb(0 0 0 / 0.42), 0 1px 0 rgb(255 255 255 / 0.04) inset;
+  --ec-shadow-canvas: 0 30px 90px rgb(0 0 0 / 0.45), 0 0 0 1px rgb(0 0 0 / 0.22);
 
-  --ec-focus-ring: 0 0 0 3px rgb(24 160 150 / 0.18);
-  --ec-motion-fast: 120ms;
-  --ec-motion-normal: 180ms;
+  --ec-focus-ring: 0 0 0 3px rgb(49 198 188 / 0.22);
+  --ec-motion-fast: 130ms;
+  --ec-motion-normal: 200ms;
+  --ec-motion-slow: 280ms;
   --ec-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ec-ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
   --ec-z-canvas-overlay: 20;
   --ec-z-sticky: 30;
@@ -77,60 +93,49 @@
   --ec-z-toast: 90;
 }
 
-[data-theme="dark"] {
-  --color-ec-app: #111512;
-  --color-ec-surface: #171c19;
-  --color-ec-surface-subtle: #1d231f;
-  --color-ec-surface-muted: #252c27;
-  --color-ec-border: #333c36;
-  --color-ec-text: #f4f7f2;
-  --color-ec-text-muted: #a4aea6;
-  --color-ec-accent: #35b8ae;
-  --color-ec-accent-soft: #173a36;
-  --color-ec-chrome: #0b0e0c;
-  --color-ec-chrome-raised: #121713;
-}
-
 @layer base {
   ::selection {
-    background: color-mix(in srgb, var(--color-ec-accent) 24%, transparent);
+    background: rgb(49 198 188 / 0.3);
+    color: var(--color-ec-text);
   }
 }
 
-/* Always provide a visible keyboard focus indicator, even on controls that do
- * not opt in to the richer ec-focus-ring component treatment. */
 .electrocms-app :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 2px solid var(--color-ec-accent);
   outline-offset: 2px;
 }
 
 @layer components {
-  .ec-focus-ring:focus-visible {
-    box-shadow: var(--ec-focus-ring);
-  }
-
-  .ec-panel {
+  .ec-panel,
+  .ec-bento-card {
     border: 1px solid var(--color-ec-border);
     border-radius: var(--ec-radius-lg);
-    background: var(--color-ec-surface);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.025), transparent 54%), var(--color-ec-surface);
     box-shadow: var(--ec-shadow-panel);
+  }
+
+  .ec-focus-ring:focus-visible {
+    box-shadow: var(--ec-focus-ring);
   }
 
   .ec-control {
     min-height: var(--ec-control-default);
     border: 1px solid var(--color-ec-border);
     border-radius: var(--ec-radius-md);
-    background: var(--color-ec-surface);
+    background: var(--color-ec-surface-subtle);
     color: var(--color-ec-text);
     transition:
+      transform var(--ec-motion-fast) var(--ec-ease-standard),
       background-color var(--ec-motion-fast) var(--ec-ease-standard),
       border-color var(--ec-motion-fast) var(--ec-ease-standard),
+      color var(--ec-motion-fast) var(--ec-ease-standard),
       box-shadow var(--ec-motion-fast) var(--ec-ease-standard);
   }
 
   .ec-control:hover:not(:disabled) {
-    border-color: color-mix(in srgb, var(--color-ec-text-muted) 45%, var(--color-ec-border));
-    background: var(--color-ec-surface-subtle);
+    border-color: var(--color-ec-border-strong);
+    background: var(--color-ec-surface-muted);
+    color: var(--color-ec-text);
   }
 
   .ec-control:focus-visible {
@@ -140,16 +145,54 @@
 
   .ec-control:disabled {
     cursor: not-allowed;
-    opacity: 0.42;
+    opacity: 0.38;
+  }
+
+  .ec-action {
+    transition:
+      transform var(--ec-motion-fast) var(--ec-ease-spring),
+      background-color var(--ec-motion-fast) var(--ec-ease-standard),
+      border-color var(--ec-motion-fast) var(--ec-ease-standard),
+      color var(--ec-motion-fast) var(--ec-ease-standard),
+      box-shadow var(--ec-motion-fast) var(--ec-ease-standard),
+      filter var(--ec-motion-fast) var(--ec-ease-standard);
+  }
+
+  .ec-action:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .ec-action:active:not(:disabled) {
+    transform: translateY(0) scale(0.975);
+  }
+
+  .ec-action svg,
+  .studio-rail button svg,
+  .studio-library button svg,
+  .canvas-command-bar button svg,
+  .widget-inspector button svg {
+    transform-origin: center;
+    transition: transform var(--ec-motion-normal) var(--ec-ease-spring), color var(--ec-motion-fast) var(--ec-ease-standard);
+  }
+
+  .ec-action:hover:not(:disabled) svg,
+  .studio-rail button:hover:not(:disabled) svg,
+  .studio-library button:hover:not(:disabled) svg,
+  .canvas-command-bar button:hover:not(:disabled) svg,
+  .widget-inspector button:hover:not(:disabled) svg {
+    transform: translateY(-1px) scale(1.08);
+  }
+
+  .ec-action:active:not(:disabled) svg,
+  .studio-rail button:active:not(:disabled) svg,
+  .studio-library button:active:not(:disabled) svg,
+  .canvas-command-bar button:active:not(:disabled) svg,
+  .widget-inspector button:active:not(:disabled) svg {
+    transform: scale(0.9);
   }
 }
 
-/*
- * Temporary V2 typography bridge. Many migrated Studio surfaces still carry
- * their original Tailwind arbitrary pixel classes. Clamp those legacy values
- * to the new readable dense scale until each component adopts semantic type
- * tokens directly.
- */
+/* Clamp remaining arbitrary microcopy to the single readable dense scale. */
 .electrocms-app .text-\[7px\],
 .electrocms-app .text-\[8px\],
 .electrocms-app .text-\[8\.5px\] {
@@ -162,12 +205,28 @@
   font-size: var(--ec-font-xs) !important;
 }
 
+@keyframes ec-nav-enter {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes ec-pop-enter {
+  from { opacity: 0; transform: translateY(5px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes ec-active-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(49 198 188 / 0); }
+  50% { box-shadow: 0 0 0 5px rgb(49 198 188 / 0.08); }
+}
+
 @media (max-width: 720px) {
   :root {
     --ec-control-default: var(--ec-control-touch);
+    --ec-radius-lg: 12px;
+    --ec-radius-xl: 15px;
   }
 
-  /* WCAG-friendly touch floor for the responsive editor shell. */
   .electrocms-app :where(button, summary, select) {
     min-width: 44px;
     min-height: 44px;
@@ -182,5 +241,15 @@
   :root {
     --ec-motion-fast: 0.01ms;
     --ec-motion-normal: 0.01ms;
+    --ec-motion-slow: 0.01ms;
+  }
+
+  .electrocms-app *,
+  .electrocms-app *::before,
+  .electrocms-app *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
