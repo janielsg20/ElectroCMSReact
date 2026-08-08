@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { CanonicalProject } from '../core/project';
+import type { ProjectThemeRegistry } from '../core/themes';
 import { AppHeader } from './components/AppHeader';
 import { WorkspaceNavigation } from './components/WorkspaceNavigation';
 import { WorkspaceSurface } from './components/WorkspaceSurface';
@@ -7,6 +8,7 @@ import type { EditorProjectPersistence } from './project/editor-project-persiste
 import { ProjectSessionProvider } from './project/project-session';
 import { useWorkspaceRoute } from './routing/use-workspace-route';
 import type { WorkspaceId } from './routing/workspaces';
+import { ProjectThemeRegistryProvider } from './themes/ProjectThemeRegistryProvider';
 import { EditorWidgetRegistryProvider } from './widgets/EditorWidgetRegistryProvider';
 import type { EditorWidgetRegistry } from './widgets/editor-widget-registry';
 import { useResolvedEditorTheme } from './workspace/editor-theme';
@@ -21,6 +23,7 @@ export interface AppProps {
   projectPersistence?: EditorProjectPersistence | null;
   preferencesRepository?: WorkspacePreferencesRepository;
   widgetRegistry?: EditorWidgetRegistry;
+  projectThemeRegistry?: ProjectThemeRegistry;
 }
 
 function EditorApplicationShell() {
@@ -86,20 +89,29 @@ function EditorApplicationShell() {
   );
 }
 
-export function App({ initialProject, projectPersistence, preferencesRepository, widgetRegistry }: AppProps) {
+export function App({
+  initialProject,
+  projectPersistence,
+  preferencesRepository,
+  widgetRegistry,
+  projectThemeRegistry,
+}: AppProps) {
   const preferencesProviderProps = preferencesRepository ? { repository: preferencesRepository } : {};
   const projectProviderProps = {
     ...(initialProject ? { initialProject } : {}),
     ...(projectPersistence === undefined ? {} : { persistence: projectPersistence }),
   };
   const widgetProviderProps = widgetRegistry ? { registry: widgetRegistry } : {};
+  const themeProviderProps = projectThemeRegistry ? { registry: projectThemeRegistry } : {};
 
   return (
     <WorkspacePreferencesProvider {...preferencesProviderProps}>
       <EditorWidgetRegistryProvider {...widgetProviderProps}>
-        <ProjectSessionProvider {...projectProviderProps}>
-          <EditorApplicationShell />
-        </ProjectSessionProvider>
+        <ProjectThemeRegistryProvider {...themeProviderProps}>
+          <ProjectSessionProvider {...projectProviderProps}>
+            <EditorApplicationShell />
+          </ProjectSessionProvider>
+        </ProjectThemeRegistryProvider>
       </EditorWidgetRegistryProvider>
     </WorkspacePreferencesProvider>
   );
