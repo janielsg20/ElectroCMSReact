@@ -42,10 +42,7 @@ export function WorkspaceSurface({ workspaceId }: WorkspaceSurfaceProps) {
           document={document}
           viewportWidth={breakpoint.width}
           zoom={session.zoom}
-          onInsertContainer={() => {
-            canvasActions.insertContainer();
-          }}
-          onMoveNode={canvasActions.moveNode}
+          actions={canvasActions}
         />
       ) : (
         <section className="workspace-stage" aria-label={`${definition.label} workspace stage`}>
