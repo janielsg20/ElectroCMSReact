@@ -6,6 +6,8 @@ import type {
   ContentTypeMutationErrorCode,
   FieldGroupDefinition,
   FieldGroupMutationErrorCode,
+  RelationDefinition,
+  RelationMutationErrorCode,
   TaxonomyDefinition,
   TaxonomyMutationErrorCode,
 } from '../../core/content';
@@ -31,6 +33,10 @@ export type ContentTypeSessionMutationResult =
 export type TaxonomySessionMutationResult =
   | { ok: true; value: TaxonomyDefinition; changed: boolean }
   | { ok: false; code: TaxonomyMutationErrorCode; message: string };
+
+export type RelationSessionMutationResult =
+  | { ok: true; value: RelationDefinition; changed: boolean }
+  | { ok: false; code: RelationMutationErrorCode; message: string };
 
 export type FieldGroupSessionMutationResult =
   | { ok: true; value: FieldGroupDefinition; changed: boolean }
@@ -62,6 +68,9 @@ export interface ProjectSessionState {
   createTaxonomy(input: unknown): TaxonomySessionMutationResult;
   updateTaxonomy(id: string, input: unknown): TaxonomySessionMutationResult;
   removeTaxonomy(id: string): TaxonomySessionMutationResult;
+  createRelation(input: unknown): RelationSessionMutationResult;
+  updateRelation(id: string, input: unknown): RelationSessionMutationResult;
+  removeRelation(id: string): RelationSessionMutationResult;
   createFieldGroup(input: unknown): FieldGroupSessionMutationResult;
   updateFieldGroup(id: string, input: unknown): FieldGroupSessionMutationResult;
   removeFieldGroup(id: string): FieldGroupSessionMutationResult;
