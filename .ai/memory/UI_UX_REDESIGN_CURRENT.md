@@ -6,9 +6,9 @@
 - This redesign is presentation-only. Functional phases/tracking remain independent.
 
 ## Current UI phase
-**UI-01 — Foundation / Product Shell — DONE**
+**UI-02 — Builder Workspace — DONE pending final documented-HEAD gate and merge**
 
-Next: **UI-02 — Builder Workspace**.
+Next after merge: **UI-03 — Pages / Templates / Assets**.
 
 ## Durable decisions
 - Tailwind CSS v4 is the official visual styling foundation for the ElectroCMS application chrome.
@@ -21,22 +21,31 @@ Next: **UI-02 — Builder Workspace**.
 - Canvas remains the dominant editor surface.
 
 ## UI-01 completed
-- Added `.ai/UI_UX_REDESIGN_UI01_AUDIT.md`.
-- Added `src/app/ui/ui-foundation.css` with semantic design tokens and shared control/panel foundation.
-- Loaded the V2 foundation from `src/main.tsx`.
-- Rebuilt `AppHeader` as the V2 Project Bar while preserving document, breakpoint, zoom, history, theme-mode, Preview and Publish controls.
-- Rebuilt `ProductionStudio` shell, workspace navigation and module navigation.
-- Migrated Insert Library shell styling while preserving the real widget registry and insertion behavior.
-- Migrated Preview, Backend and Export shell surfaces to the V2 identity.
-- Removed `ImplementationState`, `ImplementationDot` and all red development-state indicators from the product UI.
-- Preserved workspace position/collapse/display/density/order preferences and responsive drawer behavior.
-- Quality Gate #1132 PASS: verify:repo, lint, TypeScript, unit, coverage, build and Playwright E2E all green.
+- Added semantic V2 UI foundation and durable redesign documentation.
+- Rebuilt Project Bar and Production Studio shell/navigation.
+- Removed development-state dots/badges.
+- Preserved workspace preferences and responsive navigation.
+- Final validation: Quality Gate #1134 PASS.
 
-## UI-02 target
-Redesign the real Builder Workspace around a canvas-first professional no-code workflow:
-1. Recompose Insert Library / Layers / Canvas / Inspector relationships.
-2. Reduce permanent chrome around the canvas.
-3. Create contextual editing surfaces instead of static tool clutter.
-4. Redesign selection, commands, geometry and inspector presentation without changing canonical behavior.
-5. Preserve drag/drop, selection, multiselection, snapping, responsive styles, undo/redo and generated inspector contracts.
-6. Validate desktop/tablet/mobile plus the full GitHub Actions quality gate before UI-03.
+## UI-02 completed
+- Re-composed the real EditorCanvas command bar into Insert, Selection and Geometry clusters without changing command implementations.
+- Added `role="toolbar"` / `Canvas commands` as the accessible command surface.
+- Added a floating Layers navigator generated directly from `CanonicalDocument.rootNodeId`, `nodes` and `children`.
+- Layers reuses `useCanvasSelection`; no parallel selection state or structural store exists.
+- Reorganized Widget Inspector into Content and Style tabs while keeping schema-driven props and the existing responsive style engine.
+- Refined Inherit/Unset responsive style controls using semantic V2 tokens.
+- Added `builder-v2.css` and Builder finishing overrides for the professional canvas-first layout.
+- Desktop keeps the canvas dominant with a compact right inspector; tablet/mobile move the inspector below the canvas.
+- Redundant non-functional UI-01 Builder buttons are no longer visible.
+- Added unit coverage for Layers -> canonical selection -> Content/Style inspector flow.
+- Existing style-engine and breakpoint-engine E2E tests were updated only for the intentional UX step of opening Style; their functional assertions remain unchanged.
+- Implementation validation: Quality Gate #1146 PASS — verify:repo, lint, TypeScript, 105/105 unit, coverage, build and 21/21 Playwright E2E.
+
+## UI-03 target
+Redesign Pages / Templates / Assets as professional production-management surfaces while preserving canonical document/template/media contracts:
+1. page/document navigator and hierarchy;
+2. template organization and reusable parts;
+3. asset/media browsing patterns;
+4. search/filter/sort and dense list/grid modes;
+5. responsive management views;
+6. full gate before UI-04.
