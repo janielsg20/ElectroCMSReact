@@ -73,7 +73,7 @@ export function validateProjectThemeDefinition(input: unknown): ProjectThemeVali
   const scope = value.scope;
   const label = typeof value.label === 'string' ? value.label.trim() : '';
   const description = typeof value.description === 'string' ? value.description.trim() : '';
-  const tokensArePortable = isPortableJsonObject(value.tokens);
+  const portableTokens = isPortableJsonObject(value.tokens) ? value.tokens : null;
 
   if (!THEME_ID_PATTERN.test(id)) {
     issues.push({
@@ -93,14 +93,14 @@ export function validateProjectThemeDefinition(input: unknown): ProjectThemeVali
   if (!description) {
     issues.push({ code: 'INVALID_DESCRIPTION', message: 'Theme description is required.' });
   }
-  if (!tokensArePortable) {
+  if (!portableTokens) {
     issues.push({
       code: 'INVALID_TOKENS',
       message: 'Theme tokens must be a portable plain JSON object.',
     });
   }
 
-  if (issues.length > 0 || (scope !== 'frontend' && scope !== 'backend') || !tokensArePortable) {
+  if (issues.length > 0 || (scope !== 'frontend' && scope !== 'backend') || !portableTokens) {
     return { valid: false, issues };
   }
 
@@ -112,7 +112,7 @@ export function validateProjectThemeDefinition(input: unknown): ProjectThemeVali
       scope,
       label,
       description,
-      tokens: structuredClone(value.tokens),
+      tokens: structuredClone(portableTokens),
     },
   };
 }
