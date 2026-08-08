@@ -9,13 +9,22 @@ import {
   pasteDocumentClipboard,
   setDocumentNodesHidden,
   setDocumentNodesLocked,
+  setNodeGeometry,
+  snapNodeGeometryPatch,
   ungroupDocumentNode,
   type CanonicalDocument,
   type DocumentClipboardPayload,
   type DocumentNode,
+  type NodeGeometryPatch,
+  type SnapGuide,
 } from '../../../core/project';
 import { createDocumentCommand } from '../../project/document-command-history';
 import { useProjectSession } from '../../project/project-session-context';
+
+export interface CanvasGeometryEditResult {
+  applied: boolean;
+  guides: readonly SnapGuide[];
+}
 
 export interface CanvasDocumentActions {
   insertContainer(parentId?: string, index?: number): string | null;
@@ -31,6 +40,7 @@ export interface CanvasDocumentActions {
   ungroupNode(groupId: string): boolean;
   setLocked(nodeIds: readonly string[], locked: boolean): boolean;
   setHidden(nodeIds: readonly string[], hidden: boolean): boolean;
+  setGeometry(nodeId: string, patch: NodeGeometryPatch, viewportWidth: number): CanvasGeometryEditResult;
 }
 
 function createContainerNode(id: string, ordinal: number): DocumentNode {
@@ -215,6 +225,29 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
     [execute, getActiveDocument],
   );
 
+  const setGeometry = useCallback(
+    (nodeId: string, patch: NodeGeometryPatch, viewportWidth: number): CanvasGeometryEditResult => {
+      const document = getActiveDocument();
+      if (!document) return { applied: false, guides: [] };
+      try {
+        const snapped = snapNodeGeometryPatch(patch, viewportWidth);
+        const nextDocument = setNodeGeometry(
+          document,
+          nodeId,
+          session.activeBreakpointId,
+          snapped.patch,
+        );
+        return {
+          applied: execute('Update node geometry', document, nextDocument),
+          guides: snapped.guides,
+        };
+      } catch {
+        return { applied: false, guides: [] };
+      }
+    },
+    [execute, getActiveDocument, session.activeBreakpointId],
+  );
+
   return {
     insertContainer,
     moveNode,
@@ -225,5 +258,6 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
     ungroupNode,
     setLocked,
     setHidden,
+    setGeometry,
   };
 }
