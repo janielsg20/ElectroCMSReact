@@ -14,12 +14,12 @@ import {
   ungroupDocumentNode,
   type CanonicalDocument,
   type DocumentClipboardPayload,
-  type DocumentNode,
   type NodeGeometryPatch,
   type SnapGuide,
 } from '../../../core/project';
 import { createDocumentCommand } from '../../project/document-command-history';
 import { useProjectSession } from '../../project/project-session-context';
+import { useEditorWidgetRegistry } from '../../widgets/editor-widget-registry-context';
 
 export interface CanvasGeometryEditResult {
   applied: boolean;
@@ -27,6 +27,7 @@ export interface CanvasGeometryEditResult {
 }
 
 export interface CanvasDocumentActions {
+  insertWidget(type: string, parentId?: string, index?: number): string | null;
   insertContainer(parentId?: string, index?: number): string | null;
   moveNode(nodeId: string, parentId: string, index?: number): boolean;
   copyNodes(nodeIds: readonly string[]): DocumentClipboardPayload | null;
@@ -43,32 +44,9 @@ export interface CanvasDocumentActions {
   setGeometry(nodeId: string, patch: NodeGeometryPatch, viewportWidth: number): CanvasGeometryEditResult;
 }
 
-function createContainerNode(id: string, ordinal: number): DocumentNode {
-  return {
-    id,
-    type: 'core/container',
-    version: 1,
-    name: `Container ${ordinal}`,
-    props: {},
-    styles: {},
-    children: [],
-  };
-}
-
-function createGroupNode(id: string): DocumentNode {
-  return {
-    id,
-    type: 'core/group',
-    version: 1,
-    name: 'Group',
-    props: {},
-    styles: {},
-    children: [],
-  };
-}
-
 export function useCanvasDocumentActions(): CanvasDocumentActions {
   const session = useProjectSession();
+  const widgetRegistry = useEditorWidgetRegistry();
   const activeDocumentId = session.activeDocumentId;
   const activeBreakpointId = session.activeBreakpointId;
   const documents = session.project.documents;
@@ -85,19 +63,34 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
     [executeDocumentCommand],
   );
 
-  const insertContainer = useCallback(
-    (parentId?: string, index?: number): string | null => {
+  const insertWidget = useCallback(
+    (type: string, parentId?: string, index?: number): string | null => {
       const document = getActiveDocument();
-      if (!document) return null;
-      const id = createEntityId('node');
-      const ordinal = Object.keys(document.nodes).length;
-      const nextDocument = insertDocumentNode(document, createContainerNode(id, ordinal), {
-        parentId: parentId ?? document.rootNodeId,
-        ...(index === undefined ? {} : { index }),
-      });
-      return execute('Insert container', document, nextDocument) ? id : null;
+      if (!document || !widgetRegistry.has(type)) return null;
+      try {
+        const id = createEntityId('node');
+        const ordinal = Object.keys(document.nodes).length;
+        const definition = widgetRegistry.core.resolve(type);
+        const node = widgetRegistry.createNode(type, {
+          id,
+          name: `${definition.metadata.name} ${ordinal}`,
+        });
+        const nextDocument = insertDocumentNode(document, node, {
+          parentId: parentId ?? document.rootNodeId,
+          ...(index === undefined ? {} : { index }),
+        });
+        return execute(`Insert ${definition.metadata.name}`, document, nextDocument) ? id : null;
+      } catch {
+        return null;
+      }
     },
-    [execute, getActiveDocument],
+    [execute, getActiveDocument, widgetRegistry],
+  );
+
+  const insertContainer = useCallback(
+    (parentId?: string, index?: number): string | null =>
+      insertWidget('core/container', parentId, index),
+    [insertWidget],
   );
 
   const moveNode = useCallback(
@@ -171,16 +164,17 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
   const groupNodes = useCallback(
     (nodeIds: readonly string[]): string | null => {
       const document = getActiveDocument();
-      if (!document) return null;
+      if (!document || !widgetRegistry.has('core/group')) return null;
       try {
         const groupId = createEntityId('node');
-        const nextDocument = groupDocumentNodes(document, nodeIds, createGroupNode(groupId));
+        const groupNode = widgetRegistry.createNode('core/group', { id: groupId, name: 'Group' });
+        const nextDocument = groupDocumentNodes(document, nodeIds, groupNode);
         return execute('Group nodes', document, nextDocument) ? groupId : null;
       } catch {
         return null;
       }
     },
-    [execute, getActiveDocument],
+    [execute, getActiveDocument, widgetRegistry],
   );
 
   const ungroupNode = useCallback(
@@ -249,6 +243,7 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
   );
 
   return {
+    insertWidget,
     insertContainer,
     moveNode,
     copyNodes,
