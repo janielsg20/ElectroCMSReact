@@ -1,0 +1,150 @@
+@theme {
+  /* ElectroCMS V2 — primitive palette */
+  --color-ec-graphite-950: #101312;
+  --color-ec-graphite-900: #171b19;
+  --color-ec-graphite-800: #222824;
+  --color-ec-graphite-700: #303833;
+  --color-ec-graphite-600: #48524b;
+  --color-ec-graphite-500: #68736b;
+
+  --color-ec-porcelain-50: #fbfcfa;
+  --color-ec-porcelain-100: #f5f6f2;
+  --color-ec-porcelain-200: #e9ece5;
+  --color-ec-porcelain-300: #d9ddd5;
+
+  --color-ec-teal-700: #0f6f68;
+  --color-ec-teal-600: #13877e;
+  --color-ec-teal-500: #18a096;
+  --color-ec-teal-400: #35b8ae;
+  --color-ec-teal-100: #dff4f1;
+
+  --color-ec-violet-600: #6556c7;
+  --color-ec-violet-100: #ece9fb;
+
+  --color-ec-danger-600: #b5413b;
+  --color-ec-warning-600: #9b6a19;
+  --color-ec-success-600: #397b4a;
+
+  /* Semantic color roles */
+  --color-ec-app: var(--color-ec-porcelain-100);
+  --color-ec-surface: #ffffff;
+  --color-ec-surface-subtle: var(--color-ec-porcelain-50);
+  --color-ec-surface-muted: var(--color-ec-porcelain-200);
+  --color-ec-border: var(--color-ec-porcelain-300);
+  --color-ec-text: var(--color-ec-graphite-950);
+  --color-ec-text-muted: var(--color-ec-graphite-500);
+  --color-ec-accent: var(--color-ec-teal-600);
+  --color-ec-accent-soft: var(--color-ec-teal-100);
+  --color-ec-chrome: var(--color-ec-graphite-950);
+  --color-ec-chrome-raised: var(--color-ec-graphite-900);
+}
+
+:root {
+  --ec-space-1: 4px;
+  --ec-space-2: 8px;
+  --ec-space-3: 12px;
+  --ec-space-4: 16px;
+  --ec-space-5: 20px;
+  --ec-space-6: 24px;
+
+  --ec-radius-xs: 4px;
+  --ec-radius-sm: 6px;
+  --ec-radius-md: 9px;
+  --ec-radius-lg: 12px;
+  --ec-radius-xl: 16px;
+
+  --ec-control-compact: 28px;
+  --ec-control-default: 32px;
+  --ec-control-touch: 44px;
+
+  --ec-shadow-panel: 0 1px 2px rgb(16 19 18 / 0.06), 0 8px 24px rgb(16 19 18 / 0.04);
+  --ec-shadow-float: 0 12px 36px rgb(16 19 18 / 0.16);
+
+  --ec-focus-ring: 0 0 0 3px rgb(24 160 150 / 0.18);
+  --ec-motion-fast: 120ms;
+  --ec-motion-normal: 180ms;
+  --ec-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  --ec-z-canvas-overlay: 20;
+  --ec-z-sticky: 30;
+  --ec-z-popover: 50;
+  --ec-z-dialog: 70;
+  --ec-z-toast: 90;
+}
+
+[data-theme="dark"] {
+  --color-ec-app: #111512;
+  --color-ec-surface: #171c19;
+  --color-ec-surface-subtle: #1d231f;
+  --color-ec-surface-muted: #252c27;
+  --color-ec-border: #333c36;
+  --color-ec-text: #f4f7f2;
+  --color-ec-text-muted: #a4aea6;
+  --color-ec-accent: #35b8ae;
+  --color-ec-accent-soft: #173a36;
+  --color-ec-chrome: #0b0e0c;
+  --color-ec-chrome-raised: #121713;
+}
+
+@layer base {
+  :focus-visible {
+    outline: none;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-ec-accent) 24%, transparent);
+  }
+}
+
+@layer components {
+  .ec-focus-ring:focus-visible {
+    box-shadow: var(--ec-focus-ring);
+  }
+
+  .ec-panel {
+    border: 1px solid var(--color-ec-border);
+    border-radius: var(--ec-radius-lg);
+    background: var(--color-ec-surface);
+    box-shadow: var(--ec-shadow-panel);
+  }
+
+  .ec-control {
+    min-height: var(--ec-control-default);
+    border: 1px solid var(--color-ec-border);
+    border-radius: var(--ec-radius-md);
+    background: var(--color-ec-surface);
+    color: var(--color-ec-text);
+    transition:
+      background-color var(--ec-motion-fast) var(--ec-ease-standard),
+      border-color var(--ec-motion-fast) var(--ec-ease-standard),
+      box-shadow var(--ec-motion-fast) var(--ec-ease-standard);
+  }
+
+  .ec-control:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-ec-text-muted) 45%, var(--color-ec-border));
+    background: var(--color-ec-surface-subtle);
+  }
+
+  .ec-control:focus-visible {
+    border-color: var(--color-ec-accent);
+    box-shadow: var(--ec-focus-ring);
+  }
+
+  .ec-control:disabled {
+    cursor: not-allowed;
+    opacity: 0.42;
+  }
+}
+
+@media (max-width: 720px) {
+  :root {
+    --ec-control-default: var(--ec-control-touch);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ec-motion-fast: 0.01ms;
+    --ec-motion-normal: 0.01ms;
+  }
+}
