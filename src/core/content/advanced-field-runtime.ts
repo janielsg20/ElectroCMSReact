@@ -300,7 +300,7 @@ export function normalizeGroupObject(
     values[field.name] = normalizeAdvancedFieldValue(field, candidate, {
       ...context,
       currentValues: values,
-      depth: depth + 1,
+      depth,
     });
   }
 
@@ -312,7 +312,7 @@ export function normalizeGroupObject(
     values[field.name] = normalizeAdvancedFieldValue(field, candidate, {
       ...context,
       currentValues: values,
-      depth: depth + 1,
+      depth,
     });
   }
 
@@ -324,7 +324,7 @@ export function normalizeGroupObject(
     values[field.name] = normalizeAdvancedFieldValue(field, candidate, {
       ...context,
       currentValues: values,
-      depth: depth + 1,
+      depth,
     });
   }
 
