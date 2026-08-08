@@ -1,10 +1,5 @@
 import { useEffect } from 'react';
 
-export interface DocumentHistoryShortcutActions {
-  undo(): boolean;
-  redo(): boolean;
-}
-
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   return (
@@ -15,22 +10,25 @@ function isEditableTarget(target: EventTarget | null): boolean {
   );
 }
 
-export function useDocumentHistoryShortcuts(actions: DocumentHistoryShortcutActions): void {
+export function useDocumentHistoryShortcuts(
+  undo: () => boolean,
+  redo: () => boolean,
+): void {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (isEditableTarget(event.target) || (!event.ctrlKey && !event.metaKey)) return;
       const key = event.key.toLowerCase();
-      const redoRequested = (key === 'z' && event.shiftKey) || (key === 'y' && event.ctrlKey);
+      const redoRequested = (key === 'z' && event.shiftKey) || (key === 'y' && !event.shiftKey);
       const undoRequested = key === 'z' && !event.shiftKey;
 
-      if (redoRequested && actions.redo()) {
+      if (redoRequested && redo()) {
         event.preventDefault();
-      } else if (undoRequested && actions.undo()) {
+      } else if (undoRequested && undo()) {
         event.preventDefault();
       }
     };
 
     globalThis.addEventListener('keydown', handleKeyDown);
     return () => globalThis.removeEventListener('keydown', handleKeyDown);
-  }, [actions]);
+  }, [redo, undo]);
 }
