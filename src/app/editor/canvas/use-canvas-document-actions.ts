@@ -1,16 +1,19 @@
 import { useCallback } from 'react';
-import { createEntityId, type JsonObject } from '../../../core/domain';
+import { createEntityId, type JsonObject, type JsonValue } from '../../../core/domain';
 import {
   copyDocumentSubtrees,
   cutDocumentSubtrees,
   groupDocumentNodes,
+  inheritNodeResponsiveStyle,
   insertDocumentNode,
   moveDocumentNode,
   pasteDocumentClipboard,
   setDocumentNodesHidden,
   setDocumentNodesLocked,
   setNodeGeometry,
+  setNodeResponsiveStyle,
   snapNodeGeometryPatch,
+  unsetNodeResponsiveStyle,
   ungroupDocumentNode,
   updateDocumentNode,
   type CanonicalDocument,
@@ -33,6 +36,11 @@ export interface CanvasPropEditResult {
   issues: readonly WidgetPropValidationIssue[];
 }
 
+export interface CanvasStyleEditResult {
+  applied: boolean;
+  message?: string;
+}
+
 export interface CanvasDocumentActions {
   insertWidget(type: string, parentId?: string, index?: number): string | null;
   insertContainer(parentId?: string, index?: number): string | null;
@@ -49,6 +57,9 @@ export interface CanvasDocumentActions {
   setLocked(nodeIds: readonly string[], locked: boolean): boolean;
   setHidden(nodeIds: readonly string[], hidden: boolean): boolean;
   setProps(nodeId: string, patch: JsonObject): CanvasPropEditResult;
+  setStyle(nodeId: string, key: string, value: JsonValue): CanvasStyleEditResult;
+  unsetStyle(nodeId: string, key: string): CanvasStyleEditResult;
+  inheritStyle(nodeId: string, key: string, fromBreakpointId: string): CanvasStyleEditResult;
   setGeometry(nodeId: string, patch: NodeGeometryPatch, viewportWidth: number): CanvasGeometryEditResult;
 }
 
@@ -265,6 +276,48 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
     [execute, getActiveDocument, widgetRegistry],
   );
 
+  const setStyle = useCallback(
+    (nodeId: string, key: string, value: JsonValue): CanvasStyleEditResult => {
+      const document = getActiveDocument();
+      if (!document?.nodes[nodeId]) return { applied: false, message: 'Node not found.' };
+      try {
+        const nextDocument = setNodeResponsiveStyle(document, nodeId, key, activeBreakpointId, value);
+        return { applied: execute(`Set ${key} style`, document, nextDocument) };
+      } catch (error) {
+        return { applied: false, message: error instanceof Error ? error.message : 'Style update failed.' };
+      }
+    },
+    [activeBreakpointId, execute, getActiveDocument],
+  );
+
+  const unsetStyle = useCallback(
+    (nodeId: string, key: string): CanvasStyleEditResult => {
+      const document = getActiveDocument();
+      if (!document?.nodes[nodeId]) return { applied: false, message: 'Node not found.' };
+      try {
+        const nextDocument = unsetNodeResponsiveStyle(document, nodeId, key, activeBreakpointId);
+        return { applied: execute(`Unset ${key} style`, document, nextDocument) };
+      } catch (error) {
+        return { applied: false, message: error instanceof Error ? error.message : 'Style reset failed.' };
+      }
+    },
+    [activeBreakpointId, execute, getActiveDocument],
+  );
+
+  const inheritStyle = useCallback(
+    (nodeId: string, key: string, fromBreakpointId: string): CanvasStyleEditResult => {
+      const document = getActiveDocument();
+      if (!document?.nodes[nodeId]) return { applied: false, message: 'Node not found.' };
+      try {
+        const nextDocument = inheritNodeResponsiveStyle(document, nodeId, key, activeBreakpointId, fromBreakpointId);
+        return { applied: execute(`Inherit ${key} style`, document, nextDocument) };
+      } catch (error) {
+        return { applied: false, message: error instanceof Error ? error.message : 'Style inheritance failed.' };
+      }
+    },
+    [activeBreakpointId, execute, getActiveDocument],
+  );
+
   const setGeometry = useCallback(
     (nodeId: string, patch: NodeGeometryPatch, viewportWidth: number): CanvasGeometryEditResult => {
       const document = getActiveDocument();
@@ -295,6 +348,9 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
     setLocked,
     setHidden,
     setProps,
+    setStyle,
+    unsetStyle,
+    inheritStyle,
     setGeometry,
   };
 }
