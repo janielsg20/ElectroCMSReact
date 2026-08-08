@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type MouseEvent } from 'react';
 import {
   readNodeGeometry,
+  type BreakpointDefinition,
   type CanonicalDocument,
   type DocumentClipboardPayload,
   type NodeGeometryPatch,
@@ -18,6 +19,7 @@ const INSERT_CATEGORY_ORDER = ['structural', 'basic', 'content', 'dynamic', 'com
 export interface EditorCanvasProps {
   document: CanonicalDocument;
   breakpointId: string;
+  breakpoints?: readonly BreakpointDefinition[];
   viewportWidth: number;
   zoom: number;
   actions?: CanvasDocumentActions;
@@ -26,6 +28,7 @@ export interface EditorCanvasProps {
 export function EditorCanvas({
   document,
   breakpointId,
+  breakpoints = [],
   viewportWidth,
   zoom,
   actions,
@@ -74,9 +77,7 @@ export function EditorCanvas({
     return () => globalThis.removeEventListener('keydown', handleKeyDown);
   }, [clearSelection]);
 
-  const stopToolbarPropagation = (event: MouseEvent<HTMLDivElement>) => {
-    event.stopPropagation();
-  };
+  const stopToolbarPropagation = (event: MouseEvent<HTMLDivElement>) => event.stopPropagation();
 
   const selectIds = (nodeIds: readonly string[]) => {
     clearSelection();
@@ -155,18 +156,10 @@ export function EditorCanvas({
       }}
     >
       {actions ? (
-        <div
-          className="canvas-command-bar"
-          aria-label="Canvas commands"
-          onClick={stopToolbarPropagation}
-        >
+        <div className="canvas-command-bar" aria-label="Canvas commands" onClick={stopToolbarPropagation}>
           <label className="canvas-insert-control">
             <span>Insert</span>
-            <select
-              aria-label="Widget to insert"
-              value={insertWidgetType}
-              onChange={(event) => setInsertWidgetType(event.target.value)}
-            >
+            <select aria-label="Widget to insert" value={insertWidgetType} onChange={(event) => setInsertWidgetType(event.target.value)}>
               {insertableWidgets.map((definition) => (
                 <option key={definition.type} value={definition.type}>
                   {definition.metadata.category} · {definition.metadata.name}
@@ -175,89 +168,25 @@ export function EditorCanvas({
               ))}
             </select>
           </label>
-          <button
-            type="button"
-            disabled={!canInsertSelectedWidget}
-            onClick={() => actions.insertWidget(insertWidgetType)}
-          >
-            Insert widget
-          </button>
-          <button type="button" onClick={() => actions.insertContainer()}>
-            Insert container
-          </button>
+          <button type="button" disabled={!canInsertSelectedWidget} onClick={() => actions.insertWidget(insertWidgetType)}>Insert widget</button>
+          <button type="button" onClick={() => actions.insertContainer()}>Insert container</button>
           <span className="canvas-command-divider" aria-hidden="true" />
-          <button type="button" disabled={selectedNodes.length === 0} onClick={copySelection}>
-            Copy
-          </button>
-          <button type="button" disabled={selectedNodes.length === 0} onClick={cutSelection}>
-            Cut
-          </button>
-          <button type="button" disabled={!clipboard} onClick={pasteSelection}>
-            Paste{clipboard ? ` (${clipboard.rootNodeIds.length})` : ''}
-          </button>
+          <button type="button" disabled={selectedNodes.length === 0} onClick={copySelection}>Copy</button>
+          <button type="button" disabled={selectedNodes.length === 0} onClick={cutSelection}>Cut</button>
+          <button type="button" disabled={!clipboard} onClick={pasteSelection}>Paste{clipboard ? ` (${clipboard.rootNodeIds.length})` : ''}</button>
           <span className="canvas-command-divider" aria-hidden="true" />
-          <button type="button" disabled={selectedNodes.length < 2} onClick={groupSelection}>
-            Group
-          </button>
-          <button type="button" disabled={!canUngroup} onClick={ungroupSelection}>
-            Ungroup
-          </button>
-          <button type="button" disabled={selectedNodes.length === 0} onClick={toggleLocked}>
-            {allLocked ? 'Unlock' : 'Lock'}
-          </button>
-          <button type="button" disabled={selectedNodes.length === 0} onClick={toggleHidden}>
-            {allHidden ? 'Show' : 'Hide'}
-          </button>
-          <output className="canvas-selection-summary" aria-live="polite">
-            {selectedNodes.length} selected
-          </output>
+          <button type="button" disabled={selectedNodes.length < 2} onClick={groupSelection}>Group</button>
+          <button type="button" disabled={!canUngroup} onClick={ungroupSelection}>Ungroup</button>
+          <button type="button" disabled={selectedNodes.length === 0} onClick={toggleLocked}>{allLocked ? 'Unlock' : 'Lock'}</button>
+          <button type="button" disabled={selectedNodes.length === 0} onClick={toggleHidden}>{allHidden ? 'Show' : 'Hide'}</button>
+          <output className="canvas-selection-summary" aria-live="polite">{selectedNodes.length} selected</output>
           {primaryGeometry && selectedNodes.length === 1 ? (
             <div className="canvas-geometry-controls" aria-label="Selected node geometry">
               <span className="canvas-command-divider" aria-hidden="true" />
-              <label>
-                <span>X</span>
-                <input
-                  aria-label="X position"
-                  type="number"
-                  value={primaryGeometry.x}
-                  disabled={!canEditGeometry}
-                  onChange={(event) => numericGeometryChange('x', event.target.value)}
-                />
-              </label>
-              <label>
-                <span>Y</span>
-                <input
-                  aria-label="Y position"
-                  type="number"
-                  value={primaryGeometry.y}
-                  disabled={!canEditGeometry}
-                  onChange={(event) => numericGeometryChange('y', event.target.value)}
-                />
-              </label>
-              <label>
-                <span>W</span>
-                <input
-                  aria-label="Node width"
-                  type="number"
-                  min="32"
-                  placeholder="auto"
-                  value={primaryGeometry.width ?? ''}
-                  disabled={!canEditGeometry}
-                  onChange={(event) => numericGeometryChange('width', event.target.value)}
-                />
-              </label>
-              <label>
-                <span>H</span>
-                <input
-                  aria-label="Node height"
-                  type="number"
-                  min="32"
-                  placeholder="auto"
-                  value={primaryGeometry.height ?? ''}
-                  disabled={!canEditGeometry}
-                  onChange={(event) => numericGeometryChange('height', event.target.value)}
-                />
-              </label>
+              <label><span>X</span><input aria-label="X position" type="number" value={primaryGeometry.x} disabled={!canEditGeometry} onChange={(event) => numericGeometryChange('x', event.target.value)} /></label>
+              <label><span>Y</span><input aria-label="Y position" type="number" value={primaryGeometry.y} disabled={!canEditGeometry} onChange={(event) => numericGeometryChange('y', event.target.value)} /></label>
+              <label><span>W</span><input aria-label="Node width" type="number" min="32" placeholder="auto" value={primaryGeometry.width ?? ''} disabled={!canEditGeometry} onChange={(event) => numericGeometryChange('width', event.target.value)} /></label>
+              <label><span>H</span><input aria-label="Node height" type="number" min="32" placeholder="auto" value={primaryGeometry.height ?? ''} disabled={!canEditGeometry} onChange={(event) => numericGeometryChange('height', event.target.value)} /></label>
               <button type="button" aria-label="Nudge left" disabled={!canEditGeometry} onClick={() => applyGeometry({ x: primaryGeometry.x - 8 })}>←</button>
               <button type="button" aria-label="Nudge right" disabled={!canEditGeometry} onClick={() => applyGeometry({ x: primaryGeometry.x + 8 })}>→</button>
               <button type="button" aria-label="Nudge up" disabled={!canEditGeometry} onClick={() => applyGeometry({ y: primaryGeometry.y - 8 })}>↑</button>
@@ -276,22 +205,19 @@ export function EditorCanvas({
           onSelectNode={selectNode}
           {...(actions ? { onMoveNode: actions.moveNode } : {})}
         />
-        <CanvasOverlayLayer
-          viewportWidth={viewportWidth}
-          zoom={zoom}
-          selectedNodeIds={selection.selectedNodeIds}
-          guides={guides}
-        />
+        <CanvasOverlayLayer viewportWidth={viewportWidth} zoom={zoom} selectedNodeIds={selection.selectedNodeIds} guides={guides} />
       </div>
       <div onClick={stopToolbarPropagation}>
         <WidgetInspector
           node={selectedNodes.length === 1 ? primaryNode : null}
           breakpointId={breakpointId}
+          breakpoints={breakpoints}
           {...(actions
             ? {
                 onSetProps: actions.setProps,
                 onSetStyle: actions.setStyle,
                 onUnsetStyle: actions.unsetStyle,
+                onInheritStyle: actions.inheritStyle,
               }
             : {})}
         />
