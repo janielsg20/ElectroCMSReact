@@ -3,6 +3,7 @@ import type { JsonObject, JsonValue } from '../../core/domain';
 import { Icon, type IconName } from '../components/Icon';
 import { useProjectSession } from '../project/project-session-context';
 import { CapabilityStatus } from './CapabilityStatus';
+import { ContentTypesCrudPanel } from './ContentTypesCrudPanel';
 
 type DynamicResourceKind =
   | 'content-types'
@@ -33,12 +34,7 @@ const resources: readonly ResourceDefinition[] = [
 ];
 
 function asDisplayName(id: string, value: JsonObject): string {
-  const candidates: JsonValue[] = [
-    value.name ?? null,
-    value.label ?? null,
-    value.title ?? null,
-    value.slug ?? null,
-  ];
+  const candidates: JsonValue[] = [value.name ?? null, value.label ?? null, value.title ?? null, value.slug ?? null];
   const found = candidates.find((candidate) => typeof candidate === 'string' && candidate.trim().length > 0);
   return typeof found === 'string' ? found : id;
 }
@@ -80,12 +76,13 @@ export function DynamicContentWorkspace({ initialResource = 'content-types' }: D
 
   const definition = resources.find((candidate) => candidate.id === resource) ?? resources[0]!;
   const entries = useMemo(() => {
+    if (resource === 'content-types') return [];
     const normalized = query.trim().toLowerCase();
     return Object.entries(source)
       .map(([id, value]) => ({ id, value, name: asDisplayName(id, value) }))
       .filter((entry) => !normalized || `${entry.name} ${entry.id} ${JSON.stringify(entry.value)}`.toLowerCase().includes(normalized))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [query, source]);
+  }, [query, resource, source]);
 
   const selectedValue = selectedId ? source[selectedId] : undefined;
   const selected = selectedId && selectedValue
@@ -99,9 +96,13 @@ export function DynamicContentWorkspace({ initialResource = 'content-types' }: D
           <div>
             <span className="text-[8px] font-bold uppercase tracking-[.16em] text-[var(--color-ec-accent)]">Data architecture</span>
             <h2 className="mt-1 text-[18px] font-semibold tracking-[-.03em] text-[var(--color-ec-text)]">Dynamic Content Studio</h2>
-            <p className="mt-1 text-[9px] text-[var(--color-ec-text-muted)]">Inspect the structured content already present in the canonical project without creating parallel F05 state.</p>
+            <p className="mt-1 text-[9px] text-[var(--color-ec-text-muted)]">Manage validated canonical data capabilities without creating parallel F05 state.</p>
           </div>
-          <CapabilityStatus label="Read-only data" detail="Mutable content, relation and query commands are not available in the validated project API yet; existing canonical resources remain inspectable." />
+          {resource === 'content-types' ? (
+            <span className="inline-flex min-h-8 items-center gap-1.5 rounded-[var(--ec-radius-md)] border border-[var(--color-ec-success-600)] bg-[var(--color-ec-surface-subtle)] px-2.5 text-[10px] font-semibold text-[var(--color-ec-success-600)]" aria-label="Content Types CRUD enabled"><Icon name="database" size={12} />CRUD enabled</span>
+          ) : (
+            <CapabilityStatus label="Read-only data" detail={`${definition.label} mutation commands are not available on main yet; existing canonical resources remain inspectable.`} />
+          )}
         </div>
       </header>
 
@@ -110,26 +111,32 @@ export function DynamicContentWorkspace({ initialResource = 'content-types' }: D
           <div className="flex max-w-full gap-1 overflow-x-auto [scrollbar-width:none]" role="tablist" aria-label="Dynamic content resources">
             {resources.map((item) => {
               const count = item.id === 'content-types' ? Object.keys(session.project.contentTypes).length : item.id === 'taxonomies' ? Object.keys(session.project.taxonomies).length : item.id === 'field-groups' ? Object.keys(session.project.fieldGroups).length : item.id === 'records' ? Object.keys(session.project.records).length : item.id === 'relations' ? Object.keys(session.project.relations).length : Object.keys(session.project.queries).length;
-              return <button key={item.id} type="button" role="tab" aria-selected={resource === item.id} className="ec-focus-ring flex h-8 shrink-0 items-center gap-1.5 rounded-[var(--ec-radius-md)] px-2.5 text-[9px] font-semibold text-[var(--color-ec-text-muted)] data-[active=true]:bg-[var(--color-ec-surface)] data-[active=true]:text-[var(--color-ec-text)] data-[active=true]:shadow-sm" data-active={resource === item.id ? 'true' : 'false'} onClick={() => { setResource(item.id); setSelectedId(null); }}><Icon name={item.icon} size={11} />{item.label}<span className="text-[8px] opacity-55">{count}</span></button>;
+              return <button key={item.id} type="button" role="tab" aria-selected={resource === item.id} className="ec-focus-ring flex h-8 shrink-0 items-center gap-1.5 rounded-[var(--ec-radius-md)] px-2.5 text-[9px] font-semibold text-[var(--color-ec-text-muted)] data-[active=true]:bg-[var(--color-ec-surface)] data-[active=true]:text-[var(--color-ec-text)] data-[active=true]:shadow-sm" data-active={resource === item.id ? 'true' : 'false'} onClick={() => { setResource(item.id); setSelectedId(null); setQuery(''); }}><Icon name={item.icon} size={11} />{item.label}<span className="text-[8px] opacity-55">{count}</span></button>;
             })}
           </div>
           <label className="ml-auto flex h-8 min-w-[220px] flex-1 items-center gap-2 rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] px-2.5 text-[var(--color-ec-text-muted)] sm:max-w-[320px]"><Icon name="search" size={12} /><input className="min-w-0 flex-1 bg-transparent text-[9px] text-[var(--color-ec-text)] outline-none placeholder:text-[var(--color-ec-text-muted)]" aria-label="Search dynamic content" placeholder={`Search ${definition.label.toLowerCase()}…`} value={query} onChange={(event) => setQuery(event.target.value)} /></label>
         </div>
 
-        <div className="grid min-h-0 flex-1 gap-3 pt-3 lg:grid-cols-[minmax(0,1fr)_340px]">
-          <div className="min-h-0 overflow-y-auto">
-            {entries.length === 0 ? <ResourceEmptyState definition={definition} /> : (
-              <div className="overflow-hidden rounded-[var(--ec-radius-lg)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] shadow-[var(--ec-shadow-panel)]">
-                <div className="grid h-8 grid-cols-[minmax(180px,1.3fr)_minmax(120px,.8fr)_100px] items-center gap-3 border-b border-[var(--color-ec-border)] bg-[var(--color-ec-surface-subtle)] px-3 text-[7px] font-bold uppercase tracking-[.12em] text-[var(--color-ec-text-muted)]"><span>Name</span><span>Canonical id</span><span>Structure</span></div>
-                {entries.map((entry) => <button key={entry.id} type="button" className="grid min-h-11 w-full grid-cols-[minmax(180px,1.3fr)_minmax(120px,.8fr)_100px] items-center gap-3 border-b border-[var(--color-ec-border)] px-3 text-left transition-colors last:border-0 hover:bg-[var(--color-ec-surface-subtle)] focus-visible:outline-none focus-visible:shadow-[var(--ec-focus-ring)] data-[active=true]:bg-[var(--color-ec-accent-soft)]" data-active={selected?.id === entry.id ? 'true' : 'false'} onClick={() => setSelectedId(entry.id)}><span className="flex min-w-0 items-center gap-2"><span className="grid size-7 shrink-0 place-items-center rounded-[var(--ec-radius-sm)] bg-[var(--color-ec-surface-muted)] text-[var(--color-ec-text-muted)]"><Icon name={definition.icon} size={12} /></span><strong className="truncate text-[9px] font-semibold text-[var(--color-ec-text)]">{entry.name}</strong></span><span className="truncate font-mono text-[8px] text-[var(--color-ec-text-muted)]">{entry.id}</span><span className="text-[8px] text-[var(--color-ec-text-muted)]">{Object.keys(entry.value).length} fields</span></button>)}
+        <div className="min-h-0 flex-1 pt-3">
+          {resource === 'content-types' ? (
+            <ContentTypesCrudPanel query={query} />
+          ) : (
+            <div className="grid min-h-0 h-full gap-3 lg:grid-cols-[minmax(0,1fr)_340px]">
+              <div className="min-h-0 overflow-y-auto">
+                {entries.length === 0 ? <ResourceEmptyState definition={definition} /> : (
+                  <div className="overflow-hidden rounded-[var(--ec-radius-lg)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] shadow-[var(--ec-shadow-panel)]">
+                    <div className="grid h-8 grid-cols-[minmax(180px,1.3fr)_minmax(120px,.8fr)_100px] items-center gap-3 border-b border-[var(--color-ec-border)] bg-[var(--color-ec-surface-subtle)] px-3 text-[7px] font-bold uppercase tracking-[.12em] text-[var(--color-ec-text-muted)]"><span>Name</span><span>Canonical id</span><span>Structure</span></div>
+                    {entries.map((entry) => <button key={entry.id} type="button" className="grid min-h-11 w-full grid-cols-[minmax(180px,1.3fr)_minmax(120px,.8fr)_100px] items-center gap-3 border-b border-[var(--color-ec-border)] px-3 text-left transition-colors last:border-0 hover:bg-[var(--color-ec-surface-subtle)] focus-visible:outline-none focus-visible:shadow-[var(--ec-focus-ring)] data-[active=true]:bg-[var(--color-ec-accent-soft)]" data-active={selected?.id === entry.id ? 'true' : 'false'} onClick={() => setSelectedId(entry.id)}><span className="flex min-w-0 items-center gap-2"><span className="grid size-7 shrink-0 place-items-center rounded-[var(--ec-radius-sm)] bg-[var(--color-ec-surface-muted)] text-[var(--color-ec-text-muted)]"><Icon name={definition.icon} size={12} /></span><strong className="truncate text-[9px] font-semibold text-[var(--color-ec-text)]">{entry.name}</strong></span><span className="truncate font-mono text-[8px] text-[var(--color-ec-text-muted)]">{entry.id}</span><span className="text-[8px] text-[var(--color-ec-text-muted)]">{Object.keys(entry.value).length} fields</span></button>)}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          <aside className="min-h-0 overflow-y-auto rounded-[var(--ec-radius-lg)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] shadow-[var(--ec-shadow-panel)]" aria-label="Dynamic resource details">
-            <header className="border-b border-[var(--color-ec-border)] px-3 py-3"><span className="text-[7px] font-bold uppercase tracking-[.14em] text-[var(--color-ec-text-muted)]">Schema detail</span><strong className="mt-1 block truncate text-[11px] font-semibold text-[var(--color-ec-text)]">{selected?.name ?? definition.label}</strong><p className="mt-1 text-[8px] leading-4 text-[var(--color-ec-text-muted)]">{selected ? selected.id : definition.description}</p></header>
-            {selected ? <dl className="divide-y divide-[var(--color-ec-border)]">{Object.entries(selected.value).map(([key, value]) => <div key={key} className="grid grid-cols-[110px_minmax(0,1fr)] gap-3 px-3 py-2.5"><dt className="truncate font-mono text-[8px] font-semibold text-[var(--color-ec-text-muted)]">{key}</dt><dd className="min-w-0 break-words text-[8px] leading-4 text-[var(--color-ec-text)]">{valueSummary(value)}</dd></div>)}</dl> : <div className="p-4 text-[9px] leading-5 text-[var(--color-ec-text-muted)]">Select a canonical resource to inspect its stored fields.</div>}
-          </aside>
+              <aside className="min-h-0 overflow-y-auto rounded-[var(--ec-radius-lg)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] shadow-[var(--ec-shadow-panel)]" aria-label="Dynamic resource details">
+                <header className="border-b border-[var(--color-ec-border)] px-3 py-3"><span className="text-[7px] font-bold uppercase tracking-[.14em] text-[var(--color-ec-text-muted)]">Schema detail</span><strong className="mt-1 block truncate text-[11px] font-semibold text-[var(--color-ec-text)]">{selected?.name ?? definition.label}</strong><p className="mt-1 text-[8px] leading-4 text-[var(--color-ec-text-muted)]">{selected ? selected.id : definition.description}</p></header>
+                {selected ? <dl className="divide-y divide-[var(--color-ec-border)]">{Object.entries(selected.value).map(([key, value]) => <div key={key} className="grid grid-cols-[110px_minmax(0,1fr)] gap-3 px-3 py-2.5"><dt className="truncate font-mono text-[8px] font-semibold text-[var(--color-ec-text-muted)]">{key}</dt><dd className="min-w-0 break-words text-[8px] leading-4 text-[var(--color-ec-text)]">{valueSummary(value)}</dd></div>)}</dl> : <div className="p-4 text-[9px] leading-5 text-[var(--color-ec-text-muted)]">Select a canonical resource to inspect its stored fields.</div>}
+              </aside>
+            </div>
+          )}
         </div>
       </div>
     </section>
