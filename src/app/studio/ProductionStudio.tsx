@@ -7,6 +7,7 @@ import { useProjectSession } from '../project/project-session-context';
 import type { WorkspaceId } from '../routing/workspaces';
 import { ProjectThemeControls } from '../themes/ProjectThemeControls';
 import { useEditorWidgetRegistry } from '../widgets/editor-widget-registry-context';
+import { useWorkspacePreferences } from '../workspace/workspace-preferences-store';
 import './production-studio.css';
 
 type StudioModuleId =
@@ -26,6 +27,9 @@ type ImplementationState = 'ready' | 'partial' | 'planned';
 
 interface ProductionStudioProps {
   workspaceId: WorkspaceId;
+  compactLayout: boolean;
+  navigationOpen: boolean;
+  onCloseNavigation(): void;
   onNavigate(workspaceId: WorkspaceId): void;
 }
 
@@ -142,37 +146,83 @@ function PendingDot({ state, label }: { state: ImplementationState; label?: stri
 }
 
 function StudioRail({
+  compactLayout,
   workspaceId,
   activeModule,
   onNavigate,
   onSelectModule,
+  onClose,
 }: {
+  compactLayout: boolean;
   workspaceId: WorkspaceId;
   activeModule: StudioModuleId;
   onNavigate(workspaceId: WorkspaceId): void;
   onSelectModule(moduleId: StudioModuleId): void;
+  onClose(): void;
 }) {
+  const {
+    preferences,
+    setNavigationPosition,
+    setNavigationCollapsed,
+    setNavigationDisplayMode,
+    moveWorkspace,
+    setDensity,
+    reset,
+  } = useWorkspacePreferences();
+  const collapsed = !compactLayout && preferences.navigationCollapsed;
+  const displayMode = collapsed ? 'icons' : preferences.navigationDisplayMode;
+
   return (
-    <aside className="studio-rail" aria-label="ElectroCMS Studio navigation">
-      <div className="studio-rail-brand" aria-label="ElectroCMS"><Icon name="bolt" size={17} /></div>
-      <nav className="studio-primary-nav" aria-label="Primary workspaces">
-        {primaryWorkspaces.map((workspace) => (
+    <aside
+      className="studio-rail workspace-navigation"
+      aria-label="Workspace navigation"
+      data-position={preferences.navigationPosition}
+      data-collapsed={collapsed ? 'true' : 'false'}
+      data-display-mode={displayMode}
+    >
+      <div className="studio-rail-top">
+        <div className="studio-rail-brand" aria-label="ElectroCMS"><Icon name="bolt" size={17} /></div>
+        {compactLayout ? (
+          <button className="studio-rail-control" type="button" aria-label="Close navigation" onClick={onClose}><Icon name="close" size={15} /></button>
+        ) : (
           <button
-            key={workspace.id}
+            className="studio-rail-control"
             type="button"
-            className="studio-rail-button"
-            data-active={workspaceId === workspace.id ? 'true' : 'false'}
-            aria-label={workspace.label}
-            title={workspace.label}
-            onClick={() => onNavigate(workspace.id)}
+            aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}
+            onClick={() => setNavigationCollapsed(!collapsed)}
           >
-            <Icon name={workspace.icon} size={17} />
-            <span>{workspace.label}</span>
-            <PendingDot state={workspace.state} />
+            <Icon name={collapsed ? 'expand' : 'collapse'} size={15} />
           </button>
-        ))}
+        )}
+      </div>
+
+      <nav className="studio-primary-nav" aria-label="Primary workspaces">
+        {preferences.workspaceOrder.map((workspaceIdFromOrder) => {
+          const workspace = primaryWorkspaces.find((item) => item.id === workspaceIdFromOrder);
+          if (!workspace) return null;
+          return (
+            <button
+              key={workspace.id}
+              type="button"
+              className="studio-rail-button"
+              data-active={workspaceId === workspace.id ? 'true' : 'false'}
+              aria-label={workspace.label}
+              title={workspace.label}
+              onClick={() => {
+                onNavigate(workspace.id);
+                if (compactLayout) onClose();
+              }}
+            >
+              {displayMode !== 'labels' ? <Icon name={workspace.icon} size={17} /> : null}
+              {displayMode !== 'icons' ? <span>{workspace.label}</span> : null}
+              <PendingDot state={workspace.state} />
+            </button>
+          );
+        })}
       </nav>
+
       <div className="studio-rail-separator" />
+
       <nav className="studio-module-nav" aria-label="Studio modules">
         {modules.map((module) => (
           <button
@@ -182,14 +232,62 @@ function StudioRail({
             data-active={workspaceId === 'editor' && activeModule === module.id ? 'true' : 'false'}
             aria-label={module.label}
             title={module.label}
-            onClick={() => onSelectModule(module.id)}
+            onClick={() => {
+              onSelectModule(module.id);
+              if (compactLayout) onClose();
+            }}
           >
-            <Icon name={module.icon} size={17} />
-            <span>{module.label}</span>
+            {displayMode !== 'labels' ? <Icon name={module.icon} size={17} /> : null}
+            {displayMode !== 'icons' ? <span>{module.label}</span> : null}
             <PendingDot state={module.state} />
           </button>
         ))}
       </nav>
+
+      <details className="studio-navigation-settings">
+        <summary><Icon name="settings" size={15} /><span>Workspace settings</span></summary>
+        <div className="studio-navigation-settings-panel">
+          <label>
+            <span>Position</span>
+            <select aria-label="Navigation position" value={preferences.navigationPosition} onChange={(event) => setNavigationPosition(event.target.value as 'left' | 'right')}>
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+            </select>
+          </label>
+          <label>
+            <span>Display</span>
+            <select aria-label="Navigation display mode" value={preferences.navigationDisplayMode} onChange={(event) => setNavigationDisplayMode(event.target.value as 'icons' | 'labels' | 'both')}>
+              <option value="both">Icons + labels</option>
+              <option value="icons">Icons</option>
+              <option value="labels">Labels</option>
+            </select>
+          </label>
+          <label>
+            <span>Density</span>
+            <select aria-label="Workspace density" value={preferences.density} onChange={(event) => setDensity(event.target.value as 'compact' | 'comfortable')}>
+              <option value="compact">Compact</option>
+              <option value="comfortable">Comfortable</option>
+            </select>
+          </label>
+          <fieldset className="studio-workspace-order">
+            <legend>Workspace order</legend>
+            {preferences.workspaceOrder.map((orderedWorkspace, index) => {
+              const workspace = primaryWorkspaces.find((item) => item.id === orderedWorkspace);
+              if (!workspace) return null;
+              return (
+                <div key={orderedWorkspace}>
+                  <span>{workspace.label}</span>
+                  <span>
+                    <button type="button" aria-label={`Move ${workspace.label} up`} disabled={index === 0} onClick={() => moveWorkspace(orderedWorkspace, -1)}><Icon name="arrow-up" size={12} /></button>
+                    <button type="button" aria-label={`Move ${workspace.label} down`} disabled={index === preferences.workspaceOrder.length - 1} onClick={() => moveWorkspace(orderedWorkspace, 1)}><Icon name="arrow-down" size={12} /></button>
+                  </span>
+                </div>
+              );
+            })}
+          </fieldset>
+          <button className="studio-settings-reset" type="button" onClick={reset}>Reset workspace layout</button>
+        </div>
+      </details>
     </aside>
   );
 }
@@ -236,6 +334,7 @@ function WidgetLibrary({ onInsert }: { onInsert(definition: WidgetDefinition): v
                       key={`${definition.type}@${definition.version}`}
                       type="button"
                       className="studio-widget-tile"
+                      aria-label={`Insert ${definition.metadata.name}`}
                       title={`${definition.metadata.name} — ${definition.metadata.description}`}
                       onClick={() => onInsert(definition)}
                     >
@@ -359,9 +458,17 @@ function EditorModuleWorkspace({ module }: { module: StudioModuleId }) {
   return <PlannedModuleWorkspace module={module} />;
 }
 
-export function ProductionStudio({ workspaceId, onNavigate }: ProductionStudioProps) {
+export function ProductionStudio({
+  workspaceId,
+  compactLayout,
+  navigationOpen,
+  onCloseNavigation,
+  onNavigate,
+}: ProductionStudioProps) {
+  const { preferences } = useWorkspacePreferences();
   const [activeModule, setActiveModule] = useState<StudioModuleId>('builder');
   const activeDefinition = modules.find((module) => module.id === activeModule) ?? modules[0];
+  const collapsed = !compactLayout && preferences.navigationCollapsed;
 
   const selectModule = (moduleId: StudioModuleId) => {
     setActiveModule(moduleId);
@@ -375,11 +482,29 @@ export function ProductionStudio({ workspaceId, onNavigate }: ProductionStudioPr
   else content = <EditorModuleWorkspace module={activeModule} />;
 
   const workspaceLabel = primaryWorkspaces.find((workspace) => workspace.id === workspaceId)?.label ?? 'Editor';
+  const rail = (
+    <StudioRail
+      compactLayout={compactLayout}
+      workspaceId={workspaceId}
+      activeModule={activeModule}
+      onNavigate={onNavigate}
+      onSelectModule={selectModule}
+      onClose={onCloseNavigation}
+    />
+  );
 
   return (
-    <main className="production-studio" id="workspace-main" tabIndex={-1} data-workspace={workspaceId}>
+    <main
+      className="production-studio"
+      id="workspace-main"
+      tabIndex={-1}
+      data-workspace={workspaceId}
+      data-compact={compactLayout ? 'true' : 'false'}
+      data-navigation-position={preferences.navigationPosition}
+      data-navigation-collapsed={collapsed ? 'true' : 'false'}
+    >
       <h1 className="sr-only">{workspaceLabel} workspace</h1>
-      <StudioRail workspaceId={workspaceId} activeModule={activeModule} onNavigate={onNavigate} onSelectModule={selectModule} />
+      {!compactLayout && preferences.navigationPosition === 'left' ? rail : null}
       <div className="studio-main-column">
         <div className="studio-module-bar">
           <div><span>{workspaceId === 'editor' ? 'Studio' : 'Workspace'}</span><strong>{workspaceId === 'editor' ? activeDefinition?.label ?? 'Builder' : workspaceLabel}</strong>{workspaceId === 'editor' ? <PendingDot state={activeDefinition?.state ?? 'ready'} /> : <PendingDot state={primaryWorkspaces.find((item) => item.id === workspaceId)?.state ?? 'ready'} />}</div>
@@ -387,6 +512,12 @@ export function ProductionStudio({ workspaceId, onNavigate }: ProductionStudioPr
         </div>
         <div className="studio-workspace-content">{content}</div>
       </div>
+      {!compactLayout && preferences.navigationPosition === 'right' ? rail : null}
+      {compactLayout && navigationOpen ? (
+        <div className="studio-navigation-backdrop" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) onCloseNavigation(); }}>
+          <div className="studio-navigation-drawer" role="dialog" aria-modal="true" aria-label="Workspace navigation">{rail}</div>
+        </div>
+      ) : null}
     </main>
   );
 }
