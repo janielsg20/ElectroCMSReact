@@ -37,7 +37,7 @@ export interface SnapGuide {
 
 export interface SnapNumberResult {
   value: number;
-  guide: SnapGuide;
+  guide: SnapGuide | null;
 }
 
 function slotNumber(
@@ -157,14 +157,10 @@ export function snapCanvasNumber(
 ): SnapNumberResult {
   const gridSize = options.gridSize ?? 8;
   const threshold = options.threshold ?? 4;
-  const gridValue = Math.round(value / gridSize) * gridSize;
-  const candidates: { value: number; guide: SnapGuide }[] = [
-    { value: gridValue, guide: { axis, value: gridValue, kind: 'grid' } },
-  ];
 
   if (options.viewportSize !== undefined) {
     const viewportSize = options.viewportSize;
-    candidates.push(
+    const semantic = nearestCandidate(value, [
       { value: 0, guide: { axis, value: 0, kind: 'viewport-edge' } },
       {
         value: viewportSize / 2,
@@ -174,14 +170,18 @@ export function snapCanvasNumber(
         value: viewportSize,
         guide: { axis, value: viewportSize, kind: 'viewport-edge' },
       },
-    );
+    ]);
+    if (semantic && semantic.distance <= threshold) {
+      return { value: semantic.value, guide: semantic.guide };
+    }
   }
 
-  const nearest = nearestCandidate(value, candidates);
-  if (!nearest || nearest.distance > threshold) {
-    return { value, guide: { axis, value, kind: 'grid' } };
+  const gridValue = Math.round(value / gridSize) * gridSize;
+  const gridDistance = Math.abs(gridValue - value);
+  if (gridDistance <= threshold) {
+    return { value: gridValue, guide: { axis, value: gridValue, kind: 'grid' } };
   }
-  return { value: nearest.value, guide: nearest.guide };
+  return { value, guide: null };
 }
 
 export function snapNodeGeometryPatch(
@@ -193,22 +193,22 @@ export function snapNodeGeometryPatch(
   if (patch.x !== undefined) {
     const snapped = snapCanvasNumber(patch.x, 'x', { viewportSize: viewportWidth });
     nextPatch.x = snapped.value;
-    guides.push(snapped.guide);
+    if (snapped.guide) guides.push(snapped.guide);
   }
   if (patch.y !== undefined) {
     const snapped = snapCanvasNumber(patch.y, 'y');
     nextPatch.y = snapped.value;
-    guides.push(snapped.guide);
+    if (snapped.guide) guides.push(snapped.guide);
   }
   if (patch.width !== undefined) {
     const snapped = snapCanvasNumber(patch.width, 'x', { viewportSize: viewportWidth });
     nextPatch.width = Math.max(32, snapped.value);
-    guides.push(snapped.guide);
+    if (snapped.guide) guides.push(snapped.guide);
   }
   if (patch.height !== undefined) {
     const snapped = snapCanvasNumber(patch.height, 'y');
     nextPatch.height = Math.max(32, snapped.value);
-    guides.push(snapped.guide);
+    if (snapped.guide) guides.push(snapped.guide);
   }
   return { patch: nextPatch, guides };
 }
