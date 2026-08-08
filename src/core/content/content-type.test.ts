@@ -127,4 +127,35 @@ describe('content type engine', () => {
     if (!removed.ok) return;
     expect(removed.project.contentTypes.article).toBeUndefined();
   });
+
+  it('refuses destructive delete while a taxonomy targets the CPT', () => {
+    const project = createCanonicalProject({ id: 'project_cpt_taxonomy', name: 'CPT Taxonomy' });
+    const created = createContentType(project, {
+      ...createDefaultContentTypeDefinition('product', 'Products'),
+      singularLabel: 'Product',
+      slug: 'products',
+    });
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    created.project.taxonomies.categories = {
+      version: 1,
+      id: 'categories',
+      label: 'Categories',
+      singularLabel: 'Category',
+      slug: 'categories',
+      description: '',
+      hierarchical: true,
+      contentTypeIds: ['product'],
+      fieldGroupIds: [],
+      archiveTemplateId: null,
+    };
+
+    const blocked = removeContentType(created.project, 'product');
+    expect(blocked.ok).toBe(false);
+    if (!blocked.ok) {
+      expect(blocked.error.code).toBe('CONTENT_TYPE_IN_USE');
+      expect(blocked.error.message).toContain('taxonomy');
+    }
+  });
 });
