@@ -180,4 +180,32 @@ test('authors and persists Group Repeater Calculated and Conditional fields', as
     } | null;
     return record?.fieldValues?.['order-data']?.extra_address ?? 'missing';
   }).toBeNull();
+
+  // A child Field Group update that would invalidate the existing nested Record must be rejected.
+  await page.getByRole('tab', { name: 'Field Groups' }).click();
+  const groups = page.getByRole('tabpanel', { name: 'Field Groups' });
+  await groups.getByRole('button', { name: /Address Fields.*address-fields.*1 field/ }).click();
+  await groups.getByRole('button', { name: 'Add Email field' }).click();
+  await configureSelectedField(groups, {
+    label: 'Contact email',
+    id: 'contact-email',
+    name: 'contact_email',
+    required: true,
+  });
+  await expect(groups.getByRole('button', { name: 'Save changes' })).toBeEnabled();
+  await groups.getByRole('button', { name: 'Save changes' }).click();
+  await expect(groups.getByText(/address-fields cannot be updated because record products-record would become invalid/i)).toBeVisible();
+
+  // Reload proves the rejected schema was never persisted and the original Record remains accessible.
+  await page.reload();
+  await page.getByRole('tab', { name: 'Field Groups' }).click();
+  const groupsReloaded = page.getByRole('tabpanel', { name: 'Field Groups' });
+  await expect(groupsReloaded.getByRole('button', { name: /Address Fields.*address-fields.*1 field/ })).toBeVisible();
+
+  await page.getByRole('tab', { name: 'Records' }).click();
+  const retainedRecords = page.getByRole('tabpanel', { name: 'Records' });
+  await retainedRecords.getByRole('button', { name: /Advanced Product.*advanced-product.*Product.*draft/ }).click();
+  await expect(retainedRecords.locator('.advanced-record-calculated strong')).toHaveText('25');
+  await expect(retainedRecords.getByLabel('City')).toHaveCount(1);
+  await expect(retainedRecords.getByLabel('City')).toHaveValue('Houston');
 });
