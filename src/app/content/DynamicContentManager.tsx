@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { ContentTypeEditor } from './ContentTypeEditor';
 import { FieldGroupEditor } from './FieldGroupEditor';
 import { RecordsEditor } from './RecordsEditor';
+import { RelationEditor } from './RelationEditor';
 import { TaxonomyEditor } from './TaxonomyEditor';
 import './dynamic-content-manager.css';
 
-type DynamicContentPanel = 'content-types' | 'taxonomies' | 'field-groups' | 'records';
+type DynamicContentPanel = 'content-types' | 'taxonomies' | 'relations' | 'field-groups' | 'records';
 
 export function DynamicContentManager() {
   const [panel, setPanel] = useState<DynamicContentPanel>('content-types');
@@ -16,7 +17,7 @@ export function DynamicContentManager() {
         <div>
           <span className="dynamic-content-manager-eyebrow">Local-first data modeling</span>
           <h2>Dynamic Content</h2>
-          <p>Define content structure, classification, reusable custom fields and records from one authoring workspace.</p>
+          <p>Define content structure, classification, relations, reusable custom fields and records from one authoring workspace.</p>
         </div>
         <div className="dynamic-content-manager-tabs" role="tablist" aria-label="Dynamic content sections">
           <button
@@ -38,6 +39,16 @@ export function DynamicContentManager() {
             onClick={() => setPanel('taxonomies')}
           >
             Taxonomies
+          </button>
+          <button
+            id="dynamic-content-tab-relations"
+            type="button"
+            role="tab"
+            aria-selected={panel === 'relations'}
+            aria-controls="dynamic-content-panel-relations"
+            onClick={() => setPanel('relations')}
+          >
+            Relations
           </button>
           <button
             id="dynamic-content-tab-field-groups"
@@ -72,6 +83,8 @@ export function DynamicContentManager() {
           <ContentTypeEditor />
         ) : panel === 'taxonomies' ? (
           <TaxonomyEditor />
+        ) : panel === 'relations' ? (
+          <RelationEditor />
         ) : panel === 'field-groups' ? (
           <FieldGroupEditor />
         ) : (
