@@ -129,26 +129,26 @@ test('group ungroup lock and hide are canonical reversible editor commands', asy
   const containers = page.locator('[data-canvas-node-type="core/container"]');
   await containers.nth(0).locator('.canvas-node-label').click();
   await containers.nth(1).locator('.canvas-node-label').click({ modifiers: ['Control'] });
-  await page.getByRole('button', { name: 'Group' }).click();
+  await page.getByRole('button', { name: 'Group', exact: true }).click();
 
   const group = page.locator('[data-canvas-node-type="core/group"]');
   await expect(group).toHaveCount(1);
   await expect(group).toHaveAttribute('data-selected', 'true');
   await expect(group.locator('[data-canvas-node-type="core/container"]')).toHaveCount(2);
 
-  await page.getByRole('button', { name: 'Lock' }).click();
+  await page.getByRole('button', { name: 'Lock', exact: true }).click();
   await expect(group).toHaveAttribute('data-locked', 'true');
   await expect(group).toHaveAttribute('draggable', 'false');
-  await page.getByRole('button', { name: 'Hide' }).click();
+  await page.getByRole('button', { name: 'Hide', exact: true }).click();
   await expect(group).toHaveAttribute('data-hidden', 'true');
-  await expect(page.getByRole('button', { name: 'Show' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Show', exact: true })).toBeEnabled();
 
   await page.getByRole('button', { name: 'Undo' }).click();
   await expect(group).toHaveAttribute('data-hidden', 'false');
-  await page.getByRole('button', { name: 'Unlock' }).click();
+  await page.getByRole('button', { name: 'Unlock', exact: true }).click();
   await expect(group).toHaveAttribute('data-locked', 'false');
 
-  await page.getByRole('button', { name: 'Ungroup' }).click();
+  await page.getByRole('button', { name: 'Ungroup', exact: true }).click();
   await expect(group).toHaveCount(0);
   const rootChildren = page
     .locator('[data-canvas-node-type="core/root"]')
