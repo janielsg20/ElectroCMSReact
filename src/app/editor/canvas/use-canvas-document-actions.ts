@@ -69,15 +69,20 @@ function createGroupNode(id: string): DocumentNode {
 
 export function useCanvasDocumentActions(): CanvasDocumentActions {
   const session = useProjectSession();
+  const activeDocumentId = session.activeDocumentId;
+  const activeBreakpointId = session.activeBreakpointId;
+  const documents = session.project.documents;
+  const executeDocumentCommand = session.executeDocumentCommand;
+
   const getActiveDocument = useCallback(
-    () => session.project.documents[session.activeDocumentId],
-    [session.activeDocumentId, session.project.documents],
+    () => documents[activeDocumentId],
+    [activeDocumentId, documents],
   );
 
   const execute = useCallback(
     (label: string, before: CanonicalDocument, after: CanonicalDocument) =>
-      session.executeDocumentCommand(createDocumentCommand(label, before, after)),
-    [session.executeDocumentCommand],
+      executeDocumentCommand(createDocumentCommand(label, before, after)),
+    [executeDocumentCommand],
   );
 
   const insertContainer = useCallback(
@@ -231,12 +236,7 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
       if (!document) return { applied: false, guides: [] };
       try {
         const snapped = snapNodeGeometryPatch(patch, viewportWidth);
-        const nextDocument = setNodeGeometry(
-          document,
-          nodeId,
-          session.activeBreakpointId,
-          snapped.patch,
-        );
+        const nextDocument = setNodeGeometry(document, nodeId, activeBreakpointId, snapped.patch);
         return {
           applied: execute('Update node geometry', document, nextDocument),
           guides: snapped.guides,
@@ -245,7 +245,7 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
         return { applied: false, guides: [] };
       }
     },
-    [execute, getActiveDocument, session.activeBreakpointId],
+    [activeBreakpointId, execute, getActiveDocument],
   );
 
   return {
