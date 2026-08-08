@@ -92,13 +92,16 @@
 }
 
 @layer base {
-  :focus-visible {
-    outline: none;
-  }
-
   ::selection {
     background: color-mix(in srgb, var(--color-ec-accent) 24%, transparent);
   }
+}
+
+/* Always provide a visible keyboard focus indicator, even on controls that do
+ * not opt in to the richer ec-focus-ring component treatment. */
+.electrocms-app :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-ec-accent);
+  outline-offset: 2px;
 }
 
 @layer components {
@@ -162,6 +165,16 @@
 @media (max-width: 720px) {
   :root {
     --ec-control-default: var(--ec-control-touch);
+  }
+
+  /* WCAG-friendly touch floor for the responsive editor shell. */
+  .electrocms-app :where(button, summary, select) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .electrocms-app :where(input:not([type="hidden"]), textarea) {
+    min-height: 44px;
   }
 }
 
