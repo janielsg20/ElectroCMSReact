@@ -1,4 +1,4 @@
-@theme {
+:root {
   /* ElectroCMS V2 — primitive palette */
   --color-ec-graphite-950: #101312;
   --color-ec-graphite-900: #171b19;
@@ -37,9 +37,7 @@
   --color-ec-accent-soft: var(--color-ec-teal-100);
   --color-ec-chrome: var(--color-ec-graphite-950);
   --color-ec-chrome-raised: var(--color-ec-graphite-900);
-}
 
-:root {
   --ec-space-1: 4px;
   --ec-space-2: 8px;
   --ec-space-3: 12px;
