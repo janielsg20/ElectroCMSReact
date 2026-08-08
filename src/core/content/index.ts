@@ -4,4 +4,5 @@ export * from './field-type-definition';
 export * from './field-type-registry';
 export * from './builtin-field-types';
 export * from './field-group';
+export * from './field-group-record-integrity';
 export * from './content-record';
