@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { CanonicalProject } from '../../core/project';
+import type { ProjectThemeScope } from '../../core/themes';
 import type { DocumentCommand } from './document-command-history';
 
 export type ProjectSaveState = 'saved' | 'dirty' | 'saving' | 'error';
@@ -15,6 +16,7 @@ export interface ProjectSessionState {
   setActiveDocumentId(documentId: string): void;
   setActiveBreakpointId(breakpointId: string): void;
   setZoom(zoom: number): void;
+  setProjectTheme(scope: ProjectThemeScope, themeId: string): boolean;
   executeDocumentCommand(command: DocumentCommand): boolean;
   undo(): boolean;
   redo(): boolean;
