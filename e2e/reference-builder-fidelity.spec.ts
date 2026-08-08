@@ -6,7 +6,6 @@ test('desktop builder keeps professional reference proportions and aligned work 
 
   const rail = page.locator('.workspace-navigation[data-reference-rail="true"]');
   const navigator = page.getByRole('complementary', { name: 'Builder navigator' });
-  const navigatorTabs = page.getByRole('tablist', { name: 'Builder navigator views' });
   const canvasToolbar = page.getByRole('toolbar', { name: 'Canvas commands' });
   const canvasStage = page.locator('.canvas-stage-v2');
   const inspectorDock = page.locator('.canvas-inspector-dock');
