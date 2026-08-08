@@ -1,4 +1,4 @@
-import type { CSSProperties, DragEvent, KeyboardEvent, MouseEvent } from 'react';
+import { useState, type CSSProperties, type DragEvent, type KeyboardEvent, type MouseEvent } from 'react';
 import {
   inspectDocumentTree,
   readNodeGeometry,
@@ -12,6 +12,7 @@ import { resolveCanvasNodeStyle } from './canvas-node-style';
 const NODE_MIME = 'application/x-electrocms-node-id';
 type MoveNodeHandler = (nodeId: string, parentId: string, index: number) => boolean;
 type SelectNodeHandler = (nodeId: string, additive: boolean) => void;
+type DragStateHandler = (nodeId: string | null) => void;
 
 export interface CanvasRendererProps {
   document: CanonicalDocument;
@@ -30,6 +31,8 @@ interface CanvasNodeViewProps {
   depth: number;
   selectedNodeIds: ReadonlySet<string>;
   widgetRegistry: EditorWidgetRegistry;
+  draggingNodeId: string | null;
+  onDragStateChange: DragStateHandler;
   onMoveNode: MoveNodeHandler | undefined;
   onSelectNode: SelectNodeHandler | undefined;
 }
@@ -37,6 +40,8 @@ interface CanvasNodeViewProps {
 interface DropZoneProps {
   parentId: string;
   index: number;
+  dragActive: boolean;
+  onDropComplete(): void;
   onMoveNode: MoveNodeHandler | undefined;
 }
 
@@ -44,10 +49,16 @@ function nodeLabel(node: DocumentNode): string {
   return node.name?.trim() || node.type;
 }
 
-function DropZone({ parentId, index, onMoveNode }: DropZoneProps) {
+function DropZone({
+  parentId,
+  index,
+  dragActive,
+  onDropComplete,
+  onMoveNode,
+}: DropZoneProps) {
   if (!onMoveNode) return null;
 
-  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+  const allowDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   };
@@ -57,6 +68,7 @@ function DropZone({ parentId, index, onMoveNode }: DropZoneProps) {
     event.stopPropagation();
     const nodeId = event.dataTransfer.getData(NODE_MIME) || event.dataTransfer.getData('text/plain');
     if (nodeId) onMoveNode(nodeId, parentId, index);
+    onDropComplete();
   };
 
   return (
@@ -64,7 +76,9 @@ function DropZone({ parentId, index, onMoveNode }: DropZoneProps) {
       className="canvas-drop-zone"
       data-drop-parent-id={parentId}
       data-drop-index={index}
-      onDragOver={handleDragOver}
+      data-drag-active={dragActive ? 'true' : 'false'}
+      onDragEnter={allowDrop}
+      onDragOver={allowDrop}
       onDrop={handleDrop}
       aria-hidden="true"
     />
@@ -78,6 +92,8 @@ function CanvasNodeView({
   depth,
   selectedNodeIds,
   widgetRegistry,
+  draggingNodeId,
+  onDragStateChange,
   onMoveNode,
   onSelectNode,
 }: CanvasNodeViewProps) {
@@ -87,7 +103,13 @@ function CanvasNodeView({
 
   const renderChildren = () => (
     <>
-      <DropZone parentId={node.id} index={0} onMoveNode={onMoveNode} />
+      <DropZone
+        parentId={node.id}
+        index={0}
+        dragActive={draggingNodeId !== null}
+        onDropComplete={() => onDragStateChange(null)}
+        onMoveNode={onMoveNode}
+      />
       {children.map((child, index) => (
         <div className="canvas-child-entry" key={child.id}>
           <CanvasNodeView
@@ -97,10 +119,18 @@ function CanvasNodeView({
             depth={depth + 1}
             selectedNodeIds={selectedNodeIds}
             widgetRegistry={widgetRegistry}
+            draggingNodeId={draggingNodeId}
+            onDragStateChange={onDragStateChange}
             onMoveNode={onMoveNode}
             onSelectNode={onSelectNode}
           />
-          <DropZone parentId={node.id} index={index + 1} onMoveNode={onMoveNode} />
+          <DropZone
+            parentId={node.id}
+            index={index + 1}
+            dragActive={draggingNodeId !== null}
+            onDropComplete={() => onDragStateChange(null)}
+            onMoveNode={onMoveNode}
+          />
         </div>
       ))}
     </>
@@ -141,6 +171,10 @@ function CanvasNodeView({
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData(NODE_MIME, node.id);
     event.dataTransfer.setData('text/plain', node.id);
+    onDragStateChange(node.id);
+  };
+  const handleDragEnd = () => {
+    onDragStateChange(null);
   };
   const handleSelect = (event: MouseEvent<HTMLElement>) => {
     if (!onSelectNode) return;
@@ -178,8 +212,10 @@ function CanvasNodeView({
       data-geometry-width={geometry.width ?? ''}
       data-geometry-height={geometry.height ?? ''}
       data-widget-registered={previewRegistered ? 'true' : 'false'}
+      data-drag-source={draggingNodeId === node.id ? 'true' : 'false'}
       draggable={Boolean(onMoveNode) && !node.locked}
       onDragStart={onMoveNode ? handleDragStart : undefined}
+      onDragEnd={onMoveNode ? handleDragEnd : undefined}
       onKeyDown={onSelectNode ? handleKeyDown : undefined}
       tabIndex={onSelectNode ? 0 : undefined}
       aria-selected={onSelectNode ? selected : undefined}
@@ -204,6 +240,7 @@ export function CanvasRenderer({
   onSelectNode,
 }: CanvasRendererProps) {
   const widgetRegistry = useEditorWidgetRegistry();
+  const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
   const inspection = inspectDocumentTree(document);
   const rootNode = document.nodes[document.rootNodeId];
 
@@ -232,6 +269,8 @@ export function CanvasRenderer({
       data-breakpoint-id={breakpointId}
       data-viewport-width={viewportWidth}
       data-zoom={zoom}
+      data-drag-active={draggingNodeId === null ? 'false' : 'true'}
+      data-dragging-node-id={draggingNodeId ?? ''}
       role={onSelectNode ? 'listbox' : undefined}
       aria-label={onSelectNode ? 'Canvas nodes' : undefined}
       aria-multiselectable={onSelectNode ? true : undefined}
@@ -244,6 +283,8 @@ export function CanvasRenderer({
           depth={0}
           selectedNodeIds={selectedSet}
           widgetRegistry={widgetRegistry}
+          draggingNodeId={draggingNodeId}
+          onDragStateChange={setDraggingNodeId}
           onMoveNode={onMoveNode}
           onSelectNode={onSelectNode}
         />
