@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import type { WorkspaceId } from '../routing/workspaces';
+import type { EditorThemePresetId } from './editor-theme-presets';
 import {
   BrowserWorkspacePreferencesRepository,
   type WorkspacePreferencesRepository,
@@ -42,23 +43,19 @@ export function WorkspacePreferencesProvider({
   );
 
   const setNavigationPosition = useCallback(
-    (navigationPosition: NavigationPosition) =>
-      commit((current) => ({ ...current, navigationPosition })),
+    (navigationPosition: NavigationPosition) => commit((current) => ({ ...current, navigationPosition })),
     [commit],
   );
   const setNavigationWidth = useCallback(
-    (navigationWidth: number) =>
-      commit((current) => ({ ...current, navigationWidth: clampNavigationWidth(navigationWidth) })),
+    (navigationWidth: number) => commit((current) => ({ ...current, navigationWidth: clampNavigationWidth(navigationWidth) })),
     [commit],
   );
   const setNavigationCollapsed = useCallback(
-    (navigationCollapsed: boolean) =>
-      commit((current) => ({ ...current, navigationCollapsed })),
+    (navigationCollapsed: boolean) => commit((current) => ({ ...current, navigationCollapsed })),
     [commit],
   );
   const setNavigationDisplayMode = useCallback(
-    (navigationDisplayMode: NavigationDisplayMode) =>
-      commit((current) => ({ ...current, navigationDisplayMode })),
+    (navigationDisplayMode: NavigationDisplayMode) => commit((current) => ({ ...current, navigationDisplayMode })),
     [commit],
   );
   const moveWorkspace = useCallback(
@@ -76,18 +73,10 @@ export function WorkspacePreferencesProvider({
     },
     [commit],
   );
-  const setDensity = useCallback(
-    (density: WorkspaceDensity) => commit((current) => ({ ...current, density })),
-    [commit],
-  );
-  const setLastWorkspace = useCallback(
-    (lastWorkspace: WorkspaceId) => commit((current) => ({ ...current, lastWorkspace })),
-    [commit],
-  );
-  const setEditorThemeMode = useCallback(
-    (editorThemeMode: EditorThemeMode) => commit((current) => ({ ...current, editorThemeMode })),
-    [commit],
-  );
+  const setDensity = useCallback((density: WorkspaceDensity) => commit((current) => ({ ...current, density })), [commit]);
+  const setLastWorkspace = useCallback((lastWorkspace: WorkspaceId) => commit((current) => ({ ...current, lastWorkspace })), [commit]);
+  const setEditorThemeMode = useCallback((editorThemeMode: EditorThemeMode) => commit((current) => ({ ...current, editorThemeMode })), [commit]);
+  const setEditorThemePresetId = useCallback((editorThemePresetId: EditorThemePresetId) => commit((current) => ({ ...current, editorThemePresetId })), [commit]);
   const reset = useCallback(() => {
     const defaults = createDefaultWorkspacePreferences();
     repository.save(defaults);
@@ -105,6 +94,7 @@ export function WorkspacePreferencesProvider({
       setDensity,
       setLastWorkspace,
       setEditorThemeMode,
+      setEditorThemePresetId,
       reset,
     }),
     [
@@ -113,6 +103,7 @@ export function WorkspacePreferencesProvider({
       reset,
       setDensity,
       setEditorThemeMode,
+      setEditorThemePresetId,
       setLastWorkspace,
       setNavigationCollapsed,
       setNavigationDisplayMode,
@@ -121,9 +112,5 @@ export function WorkspacePreferencesProvider({
     ],
   );
 
-  return (
-    <WorkspacePreferencesContext.Provider value={value}>
-      {children}
-    </WorkspacePreferencesContext.Provider>
-  );
+  return <WorkspacePreferencesContext.Provider value={value}>{children}</WorkspacePreferencesContext.Provider>;
 }

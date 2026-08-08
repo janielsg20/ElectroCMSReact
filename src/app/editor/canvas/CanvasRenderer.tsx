@@ -5,6 +5,9 @@ import {
   type CanonicalDocument,
   type DocumentNode,
 } from '../../../core/project';
+import type { EditorWidgetRegistry } from '../../widgets/editor-widget-registry';
+import { useEditorWidgetRegistry } from '../../widgets/editor-widget-registry-context';
+import { resolveCanvasNodeStyle } from './canvas-node-style';
 
 const NODE_MIME = 'application/x-electrocms-node-id';
 type MoveNodeHandler = (nodeId: string, parentId: string, index: number) => boolean;
@@ -26,6 +29,7 @@ interface CanvasNodeViewProps {
   node: DocumentNode;
   depth: number;
   selectedNodeIds: ReadonlySet<string>;
+  widgetRegistry: EditorWidgetRegistry;
   onMoveNode: MoveNodeHandler | undefined;
   onSelectNode: SelectNodeHandler | undefined;
 }
@@ -40,17 +44,33 @@ function nodeLabel(node: DocumentNode): string {
   return node.name?.trim() || node.type;
 }
 
+function setRendererDragState(element: HTMLElement, active: boolean) {
+  const renderer = element.closest<HTMLElement>('.canvas-renderer');
+  if (renderer) renderer.dataset.dragActive = active ? 'true' : 'false';
+}
+
 function DropZone({ parentId, index, onMoveNode }: DropZoneProps) {
   if (!onMoveNode) return null;
 
-  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+  const allowDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDragEnter = (event: DragEvent<HTMLDivElement>) => {
+    allowDrop(event);
+    event.currentTarget.dataset.dropActive = 'true';
+  };
+
+  const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
+    event.currentTarget.dataset.dropActive = 'false';
   };
 
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
+    event.currentTarget.dataset.dropActive = 'false';
+    setRendererDragState(event.currentTarget, false);
     const nodeId = event.dataTransfer.getData(NODE_MIME) || event.dataTransfer.getData('text/plain');
     if (nodeId) onMoveNode(nodeId, parentId, index);
   };
@@ -60,7 +80,10 @@ function DropZone({ parentId, index, onMoveNode }: DropZoneProps) {
       className="canvas-drop-zone"
       data-drop-parent-id={parentId}
       data-drop-index={index}
-      onDragOver={handleDragOver}
+      data-drop-active="false"
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={allowDrop}
       onDrop={handleDrop}
       aria-hidden="true"
     />
@@ -73,6 +96,7 @@ function CanvasNodeView({
   node,
   depth,
   selectedNodeIds,
+  widgetRegistry,
   onMoveNode,
   onSelectNode,
 }: CanvasNodeViewProps) {
@@ -91,6 +115,7 @@ function CanvasNodeView({
             node={child}
             depth={depth + 1}
             selectedNodeIds={selectedNodeIds}
+            widgetRegistry={widgetRegistry}
             onMoveNode={onMoveNode}
             onSelectNode={onSelectNode}
           />
@@ -122,7 +147,9 @@ function CanvasNodeView({
 
   const selected = selectedNodeIds.has(node.id);
   const geometry = readNodeGeometry(node, breakpointId);
-  const geometryStyle: CSSProperties = {
+  const visualStyle = resolveCanvasNodeStyle(node, breakpointId);
+  const nodeStyle: CSSProperties = {
+    ...visualStyle,
     ...(geometry.x === 0 && geometry.y === 0
       ? {}
       : { transform: `translate(${geometry.x}px, ${geometry.y}px)` }),
@@ -133,6 +160,12 @@ function CanvasNodeView({
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData(NODE_MIME, node.id);
     event.dataTransfer.setData('text/plain', node.id);
+    event.currentTarget.dataset.dragSource = 'true';
+    setRendererDragState(event.currentTarget, true);
+  };
+  const handleDragEnd = (event: DragEvent<HTMLElement>) => {
+    event.currentTarget.dataset.dragSource = 'false';
+    setRendererDragState(event.currentTarget, false);
   };
   const handleSelect = (event: MouseEvent<HTMLElement>) => {
     if (!onSelectNode) return;
@@ -145,11 +178,20 @@ function CanvasNodeView({
     event.stopPropagation();
     onSelectNode(node.id, event.ctrlKey || event.metaKey);
   };
+  const childContent =
+    children.length > 0 || onMoveNode ? renderChildren() : <div className="canvas-node-leaf" aria-hidden="true" />;
+  const previewRegistered = widgetRegistry.hasPreview(node.type, node.version);
+  const previewContent = widgetRegistry.renderPreview(node.type, node.version, {
+    node,
+    breakpointId,
+    selected,
+    children: childContent,
+  });
 
   return (
     <article
       className="canvas-node"
-      style={geometryStyle}
+      style={nodeStyle}
       data-canvas-node-id={node.id}
       data-canvas-node-type={node.type}
       data-depth={depth}
@@ -160,8 +202,11 @@ function CanvasNodeView({
       data-geometry-y={geometry.y}
       data-geometry-width={geometry.width ?? ''}
       data-geometry-height={geometry.height ?? ''}
+      data-widget-registered={previewRegistered ? 'true' : 'false'}
+      data-drag-source="false"
       draggable={Boolean(onMoveNode) && !node.locked}
       onDragStart={onMoveNode ? handleDragStart : undefined}
+      onDragEnd={onMoveNode ? handleDragEnd : undefined}
       onKeyDown={onSelectNode ? handleKeyDown : undefined}
       tabIndex={onSelectNode ? 0 : undefined}
       aria-selected={onSelectNode ? selected : undefined}
@@ -171,9 +216,7 @@ function CanvasNodeView({
         <span>{nodeLabel(node)}</span>
         <code>{node.type}</code>
       </header>
-      <div className="canvas-node-content">
-        {children.length > 0 || onMoveNode ? renderChildren() : <div className="canvas-node-leaf" aria-hidden="true" />}
-      </div>
+      <div className="canvas-node-content">{previewContent ?? childContent}</div>
     </article>
   );
 }
@@ -187,6 +230,7 @@ export function CanvasRenderer({
   onMoveNode,
   onSelectNode,
 }: CanvasRendererProps) {
+  const widgetRegistry = useEditorWidgetRegistry();
   const inspection = inspectDocumentTree(document);
   const rootNode = document.nodes[document.rootNodeId];
 
@@ -215,6 +259,7 @@ export function CanvasRenderer({
       data-breakpoint-id={breakpointId}
       data-viewport-width={viewportWidth}
       data-zoom={zoom}
+      data-drag-active="false"
       role={onSelectNode ? 'listbox' : undefined}
       aria-label={onSelectNode ? 'Canvas nodes' : undefined}
       aria-multiselectable={onSelectNode ? true : undefined}
@@ -226,6 +271,7 @@ export function CanvasRenderer({
           node={rootNode}
           depth={0}
           selectedNodeIds={selectedSet}
+          widgetRegistry={widgetRegistry}
           onMoveNode={onMoveNode}
           onSelectNode={onSelectNode}
         />

@@ -1,19 +1,21 @@
 # KNOWN_ISSUES.md
 
 ## Blocking
-Ninguno conocido al cierre funcional de F03.
+Ninguno conocido al cierre funcional definitivo de F04. GitHub Actions run #688 es completamente verde.
 
 ## Environment
 - El sandbox actual no resuelve `registry.npmjs.org`; no es un defecto de ElectroCMS.
 - GitHub Actions continúa siendo el entorno oficial de `npm ci`, tests y build.
-- Vercel está conectado para previews automáticos y producción desde `main`.
+- Vercel auto-deploy está desactivado con `git.deploymentEnabled=false`; desplegar solo bajo petición explícita.
 
 ## Known scope boundaries
-- F03 implementa canvas/nodos/DnD/history, pero no debe presentarse todavía como biblioteca completa de widgets ni inspector profesional; eso pertenece a F04.
-- Los nodos actuales `core/container`/`core/group` son primitives estructurales; widget registry y renderers específicos se incorporan en F04.
-- Geometry F03 cubre X/Y/W/H responsive + snapping; inspector avanzado, tokens/theme controls y propiedades widget-specific pertenecen a F04.
-- Preview/Backend/Export siguen siendo shells dedicados hasta sus fases correspondientes; no deben confundirse con exporters terminados.
+- Widgets dynamic/commerce/form/filter de F04 son contratos `modeled`; su comportamiento real pertenece a fases posteriores.
+- Preview/Backend/Export siguen siendo shells dedicados. F04 añade controles y previews de theme tokens, no renderers/exporters finales.
+- La biblioteca local de themes resuelve definiciones instaladas; el bundling final dentro de exporters pertenece a fases de export/publish.
+- Los paquetes F04 transfieren solo los grupos modelados explícitamente soportados por `ProjectThemePackageResources`.
+- El clipboard de MF-024 sigue siendo transitorio a la sesión del editor; integración con System Clipboard no fue requisito de F03/F04.
 
 ## Non-blocking maintenance
-- GitHub hosted runners muestran una advertencia de transición del runtime interno Node usado por algunas versiones de `actions/*`; no afecta Node 22 configurado para el proyecto. Revisar versiones de acciones de forma separada al alcance funcional.
-- El clipboard de MF-024 es transitorio a la sesión del editor; integración con System Clipboard no fue requisito de F03.
+- `eslint` reporta warnings `react-refresh/only-export-components` en módulos registry-driven de widgets porque mezclan definiciones/factories exportadas con previews React internos. No son errores ni rompen el build; separar previews TSX de contratos/registries queda como refactor de higiene futura.
+- El warning React de `GridPreview` propagando props internas al DOM quedó corregido durante el cierre F04.
+- GitHub hosted runners muestran advertencias de transición del runtime interno Node usado por algunas versiones de `actions/*`; Node 22 configurado para ElectroCMS sigue funcionando correctamente.

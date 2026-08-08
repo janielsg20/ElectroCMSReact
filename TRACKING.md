@@ -1,15 +1,14 @@
 # TRACKING.md — Estado de ejecución
 
 ## Estado global
-- Estado: READY
+- Estado: CLOSING
 - Fase completada: F03 — Canvas, nodos, DnD e historial
-- Siguiente fase: F04 — Widgets, inspector, responsive y themes
-- Siguiente microfase: MF-027
-- Último quality gate funcional completo: GitHub Actions run #368 PASS
-- Último build válido: GitHub Actions run #368 PASS
+- Fase actual: F04 — Widgets, inspector, responsive y themes
+- Microfase actual: MF-036 — DONE; cierre documental/CI de fase en curso
+- Último quality gate funcional completo: GitHub Actions run #688 PASS
 - Repositorio oficial: `janielsg20/ElectroCMSReact`
-- PR de fase: #4 `agent/f03-canvas-history -> main`
-- Preview automático: Vercel sobre cada push/PR de la rama activa.
+- PR de fase: #5 `agent/f04-widgets-inspector-themes -> main`
+- Preview deployment: MANUAL ONLY. `vercel.json` usa `git.deploymentEnabled: false`; no desplegar por push/PR.
 
 ## F00
 | Microfase | Estado | Evidencia |
@@ -35,50 +34,79 @@
 ## F02
 | Microfase | Estado | Evidencia |
 |---|---|---|
-| MF-013 | DONE | History API router para Editor/Preview/Backend/Export y `ProjectSessionProvider` por encima de las rutas; E2E conserva zoom/estado |
+| MF-013 | DONE | History API router para Editor/Preview/Backend/Export y `ProjectSessionProvider`; E2E conserva zoom/estado |
 | MF-014 | DONE | Header conectado a project/save/document/breakpoint/zoom y routing Preview/Export |
-| MF-015 | DONE | Navegación izquierda/derecha, collapse, resize puntero/teclado, reorder, icon/text modes y density |
-| MF-016 | DONE | Estrategias desktop/tablet/mobile, drawer accesible y Playwright sin overflow raíz en 820px y 390px |
-| MF-017 | DONE | Workspace preferences schema v1 en storage separado de `CanonicalProject`; reload E2E |
-| MF-018 | DONE | Editor light/dark/auto persistente e independiente de frontend/backend theme IDs |
+| MF-015 | DONE | Navegación izquierda/derecha, collapse, resize, reorder, icon/text modes y density |
+| MF-016 | DONE | Estrategias desktop/tablet/mobile, drawer accesible y Playwright sin overflow raíz |
+| MF-017 | DONE | Workspace preferences schema v1 separado de `CanonicalProject`; reload E2E |
+| MF-018 | DONE | Editor light/dark/auto persistente e independiente de frontend/backend themes |
 
 ## F03
 | Microfase | Estado | Evidencia |
 |---|---|---|
-| MF-019 | DONE | Motor inmutable de árbol, parent/depth indexes, traversals, invariants y property-style test de 240 operaciones; run #195 PASS |
-| MF-020 | DONE | Renderer recursivo del modelo canónico, overlay separado, empty-root e invalid-tree fallback; run #211 PASS |
-| MF-021 | DONE | Inserción, reorder/nesting y DnD semántico `{nodeId,parentId,index}` con targets estables; run #256 PASS |
-| MF-022 | DONE | Selección simple/múltiple transitoria, teclado, Escape y convivencia con DnD; run #276 PASS |
-| MF-023 | DONE | `DocumentCommand` reversible por documento, Undo/Redo real y atajos; run #296 PASS |
-| MF-024 | DONE | Copy/Cut/Paste con fresh IDs, Group/Ungroup, Lock/Hide, todo reversible; run #320 PASS |
-| MF-025 | DONE | Geometría responsive X/Y/W/H, nudge, snapping semántico+grid, guías y Undo; run #348 PASS |
-| MF-026 | DONE | Autosave editor integrado con F01, dirty/saving/saved/error, hydration/recovery e IndexedDB reload E2E; run #368 PASS |
+| MF-019 | DONE | Motor inmutable de árbol, indexes/traversals/invariants; run #195 PASS |
+| MF-020 | DONE | Renderer recursivo del modelo canónico y overlay separado; run #211 PASS |
+| MF-021 | DONE | Inserción, reorder/nesting y DnD semántico; run #256 PASS |
+| MF-022 | DONE | Selección simple/múltiple transitoria y convivencia con DnD; run #276 PASS |
+| MF-023 | DONE | `DocumentCommand` reversible, Undo/Redo y atajos; run #296 PASS |
+| MF-024 | DONE | Copy/Cut/Paste, Group/Ungroup, Lock/Hide reversibles; run #320 PASS |
+| MF-025 | DONE | Geometría responsive, snapping, guías y Undo; run #348 PASS |
+| MF-026 | DONE | Autosave/hydration/recovery IndexedDB integrado; run #368 PASS y cierre final #396 PASS |
 
-## Quality gates F03
-- `npm run verify:repo` — PASS
-- `npm run lint` — PASS
-- `npm run typecheck` — PASS
-- `npm run test` — PASS
-- `npm run test:coverage` — PASS
-- `npm run test:e2e` — PASS
-- `npm run build` — PASS
+## F04
+| Microfase | Estado | Evidencia |
+|---|---|---|
+| MF-027 | DONE | Registry framework-neutral + binding React, factories, validation, child policies, capabilities, migrations y plugin preview sin branching del editor; run #424 PASS |
+| MF-028 | DONE | Container/Group/Section/Grid/Flex/Stack/Divider/Spacer/Tabs/Accordion registrados, inserción genérica y factories registry-driven; run #434 PASS |
+| MF-029 | DONE | 16 widgets básicos/contenido con defaults, validación, previews e inserción registry-driven; run #446 PASS |
+| MF-030 | DONE | 19 contratos dynamic/commerce/form/filter con capacidad `modeled`, previews honestos y validación; run #456 PASS |
+| MF-031 | DONE | Inspector schema engine, controles generados, validación, edición canónica y Undo/Redo; run #479 PASS |
+| MF-032 | DONE | Style engine responsive, resolución explicit/inherited/unset, renderer seguro, inspector y Undo; run #505 PASS |
+| MF-033 | DONE | Breakpoint engine, cadena wider/narrower, herencia desde breakpoint superior y E2E; run #529 PASS |
+| MF-034 | DONE | 10 presets de editor separados de proyecto + DnD con hit areas estables/no rerender durante gesto; run #568 PASS |
+| MF-035 | DONE | Themes frontend/backend separados, 15 built-ins, duplicación editable local, versionado automático y autosave/reload; run #662 PASS |
+| MF-036 | DONE | Paquetes versionados, export/import selectivo, demo data opt-in, merge no destructivo, biblioteca local y round-trip; run #688 PASS |
 
-## Invariantes consolidadas en F03
+## Design system del editor
+- Fuente de verdad: `design-system/electrocms-editor/MASTER.md`.
+- Override del workspace principal: `design-system/electrocms-editor/pages/editor.md`.
+- Referencias externas seleccionadas: `ui-ux-pro-max`, `design-system` y `ui-styling` de `nextlevelbuilder/ui-ux-pro-max-skill`.
+- Arquetipo: productivity tool + design-system tooling + data-dense SaaS.
+- Base visual: Minimal/Flat + Data-Dense + Accessible, con micro-interacciones funcionales.
+- El editor debe sentirse como un no-code builder profesional: header global, canvas dominante, navegación/paleta lateral y inspector contextual.
+- El DnD usa hit areas estables y cambios de pintura transitorios; no re-renderizar React en medio de un gesto nativo.
+- No forzar migración a Tailwind/shadcn; adaptar las reglas al React/CSS actual salvo que una fase futura justifique explícitamente esa migración.
+
+## Sistema de themes F04
+- Editor theme mode (`light`/`dark`/`auto`) y editor theme preset viven en workspace preferences, nunca en el proyecto exportado.
+- `frontendThemeId` y `backendThemeId` viven en `CanonicalProject` y se guardan por autosave.
+- `ProjectThemeRegistry` es framework-neutral y valida scope, id, versión y tokens JSON portables.
+- Built-ins actuales: 8 frontend + 7 backend; son inmutables.
+- `Duplicate to edit` crea copies locales collision-safe; cada edición incrementa la versión.
+- Los themes importados/duplicados viven en `electrocms:project-theme-packages:v1`, separados de `CanonicalProject`; el proyecto referencia solo su ID activo.
+- Formato exportable: `kind=electrocms-theme-package`, `schemaVersion=1`, máximo 256 KB.
+- Export/import puede incluir recursos seleccionados del proyecto.
+- Demo data está desactivada por defecto.
+- Importar es un proceso de validar → revisar → aplicar; elegir el archivo no muta el proyecto.
+- Merge de recursos es no destructivo: los IDs existentes se preservan y se reportan como conflictos saltados.
+- Usuarios, credenciales y binarios de media no forman parte del paquete F04.
+
+## Invariantes consolidadas
 - El DOM nunca es fuente de verdad; el canvas es una proyección de `CanonicalDocument`.
-- Parent/depth/traversals son derivados; `parentId` no se persiste.
-- DnD opera por IDs/targets semánticos y toda mutación estructural valida invariantes.
+- Los widgets se resuelven por `type@version` mediante registries explícitos.
+- El editor core no contiene branching por cada tipo de widget.
+- Factories producen `DocumentNode` canónicos y las props se validan antes de aceptar el nodo.
+- Inserción de widgets estructurales usa el registry; Container y Group ya no dependen de factories locales paralelas.
+- Widgets dinámicos/commerce/form/filter de F04 permanecen `modeled` hasta que F05/F06 implementen comportamiento real.
+- Inspector UI es transitorio; solo los patches de props validados entran al modelo mediante comandos reversibles.
 - Selección, clipboard UI, guides y estado de interacción son transitorios y no entran al proyecto.
-- Undo/Redo usa comandos canónicos reversibles por documento; nunca snapshots del DOM.
-- Paste remapea todos los IDs del subárbol copiado antes de insertarlo.
-- Lock/Hide/Group/Ungroup son cambios canónicos y reversibles.
-- Geometría usa `ResponsiveStyleSet` existente (`layout.x/y/width/height`) por breakpoint; no existe un segundo modelo geométrico.
-- Viewport center/edges tienen prioridad sobre grid snapping cuando ambos están dentro del threshold.
-- Autosave reutiliza repositorios F01; recovery snapshot se escribe antes del proyecto principal.
-- Revisiones de autosave son monotónicas incluso si llega un payload pendiente con metadata stale.
-- Un callback de guardado nunca reemplaza contenido editor más nuevo: solo fusiona metadata de persistencia.
-
-## Evidencia funcional de cierre
-GitHub Actions `ElectroCMS Quality Gates`, run #368, commit `21fa21d177f5481b50113fe75da9e1e9ec5dad91`: `success`.
+- Undo/Redo usa comandos canónicos reversibles por documento.
+- Geometría usa `ResponsiveStyleSet` por breakpoint.
+- Autosave reutiliza repositorios F01 y no reemplaza contenido nuevo con callbacks stale.
+- Editor theme/preset vive en workspace preferences; frontend/backend theme IDs viven en `CanonicalProject`.
+- Imported theme library es local al editor; solo IDs seleccionados entran al proyecto.
+- Theme resource merge nunca sobrescribe IDs existentes.
+- Los deployments de preview son manuales y solo se ejecutan bajo petición explícita del usuario.
 
 ## Regla de salida
-F03 queda completada funcionalmente. Los cambios documentales de cierre deben volver a pasar el gate completo antes de integrar PR #4. F04/MF-027 solo puede comenzar desde `main` después de ese merge.
+F04 solo puede marcarse como fase completada/mergeada cuando el cierre documental y cualquier higiene final vuelvan a pasar el gate completo. No avanzar a F05 con ningún gate rojo.

@@ -89,3 +89,53 @@
 **Decision:** a completed autosave updates persisted revision/timestamps in the live session but never replaces current project content.
 
 **Why:** an older in-flight save can complete after a newer editor command; replacing the full project would silently lose the newer edit.
+
+## ADR-019 — Widgets resolve through a framework-neutral registry
+**Decision:** widget definitions/factories/validation live in a framework-neutral `WidgetRegistry`, while React preview components live in `EditorWidgetRegistry` and resolve by `type@version`.
+
+**Why:** exporters, migrations and the canonical model must not depend on React, and adding a plugin widget must not require adding type branches to the canvas core.
+
+## ADR-020 — Inspector is generated from widget schema and writes commands
+**Decision:** routine widget property controls are generated from `inspectorSchema`; edits create a validated candidate node and execute a reversible canonical document command.
+
+**Why:** a schema-driven inspector scales to plugins while retaining one validation/history path and avoiding parallel component-local project state.
+
+## ADR-021 — Responsive visual styles remain in ResponsiveStyleSet
+**Decision:** the F04 style engine generalizes `DocumentNode.styles` with explicit/inherited/unset resolution rather than introducing a new style store.
+
+**Why:** geometry, visual styles, breakpoints, preview and future exporters need one canonical responsive source of truth.
+
+## ADR-022 — Native drag gestures must not trigger structural React rerenders
+**Decision:** insertion hit areas remain geometrically stable during a native drag. Ephemeral `data-*` attributes may change source/target paint state, but React state must not rerender the canvas during `dragstart`.
+
+**Why:** rerendering during the native browser gesture can cancel or destabilize DnD. Stable hit areas also provide more predictable no-code-builder interaction.
+
+## ADR-023 — Editor appearance and project themes are three separate planes
+**Decision:** editor light/dark mode, editor preset, and frontend/backend project themes are distinct systems. Editor mode/preset are workspace preferences; frontend/backend IDs are canonical project data.
+
+**Why:** changing how ElectroCMS looks must never alter the site/admin UI being authored, while project themes must autosave and export with the project.
+
+## ADR-024 — Project themes use an extensible framework-neutral registry
+**Decision:** `ProjectThemeRegistry` owns definitions/tokens and validates scope-specific IDs, versions and portable JSON tokens. `CanonicalProject` stores only selected frontend/backend theme IDs.
+
+**Why:** theme definitions are reusable packages and should evolve independently from individual project payloads and React UI.
+
+## ADR-025 — Imported theme library is local editor data
+**Decision:** imported theme definitions are persisted under `electrocms:project-theme-packages:v1`, outside `CanonicalProject`; projects reference installed themes by ID.
+
+**Why:** installing a reusable theme is an editor/library concern. Duplicating full theme definitions inside every project would bloat project data and create update/collision ambiguity.
+
+## ADR-026 — Theme packages are versioned, bounded and portable JSON
+**Decision:** export/import uses `kind=electrocms-theme-package`, schemaVersion 1, a 256 KB ceiling and deep plain-JSON validation. IDs cannot collide with installed definitions.
+
+**Why:** package boundaries are untrusted file boundaries and need deterministic validation before they enter the local registry.
+
+## ADR-027 — No-code editor design principles are adapted, not framework-copied
+**Decision:** ElectroCMS adopts relevant principles from `nextlevelbuilder/ui-ux-pro-max-skill` (`ui-ux-pro-max`, `design-system`, `ui-styling`) through its own design-system docs, without forcing a Tailwind/shadcn migration.
+
+**Why:** the external material provides useful accessibility, token, density and interaction guidance, but ElectroCMS already has a working React/CSS architecture. Product principles should improve the system rather than trigger an unrelated rewrite.
+
+## ADR-028 — Preview deployments are manual-only
+**Decision:** `vercel.json` sets `git.deploymentEnabled=false`; Vercel deployments only occur after explicit user instruction.
+
+**Why:** automatic deployments consumed daily preview quota during phase development. GitHub Actions remains the continuous quality gate; deployment is a separate, deliberate action.
