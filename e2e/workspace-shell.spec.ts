@@ -18,7 +18,7 @@ test('workspace navigation preserves session state between routes', async ({ pag
   await expect(page.getByLabel('Zoom level')).toHaveText('110%');
 });
 
-test('workspace layout and editor theme preferences survive reload', async ({ page }) => {
+test('workspace layout and editor theme preferences survive reload with the fixed reference rail', async ({ page }) => {
   await page.goto('/editor');
 
   await page.getByLabel('Editor theme mode').selectOption('dark');
@@ -26,11 +26,12 @@ test('workspace layout and editor theme preferences survive reload', async ({ pa
   await page.getByLabel('Navigation position').selectOption('right');
   await page.getByLabel('Navigation display mode').selectOption('icons');
   await page.getByLabel('Workspace density').selectOption('comfortable');
-  await page.getByRole('button', { name: 'Collapse navigation' }).click();
 
   await expect(page.locator('.electrocms-app')).toHaveAttribute('data-theme', 'dark');
   await expect(page.locator('.electrocms-app')).toHaveAttribute('data-navigation-position', 'right');
+  await expect(page.locator('.workspace-navigation')).toHaveAttribute('data-reference-rail', 'true');
   await expect(page.locator('.workspace-navigation')).toHaveAttribute('data-collapsed', 'true');
+  await expect(page.getByRole('button', { name: 'Collapse navigation' })).toHaveCount(0);
   await expect(page.getByRole('navigation', { name: 'Primary workspaces' }).getByRole('button', { name: 'Preview' })).toBeVisible();
 
   await page.reload();
@@ -39,6 +40,7 @@ test('workspace layout and editor theme preferences survive reload', async ({ pa
   await expect(page.locator('.electrocms-app')).toHaveAttribute('data-navigation-position', 'right');
   await expect(page.locator('.electrocms-app')).toHaveAttribute('data-density', 'comfortable');
   await expect(page.locator('.workspace-navigation')).toHaveAttribute('data-display-mode', 'icons');
+  await expect(page.locator('.workspace-navigation')).toHaveAttribute('data-reference-rail', 'true');
   await expect(page.locator('.workspace-navigation')).toHaveAttribute('data-collapsed', 'true');
 });
 
