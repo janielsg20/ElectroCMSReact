@@ -6,9 +6,9 @@
 - This redesign is presentation-only. Functional phases/tracking remain independent.
 
 ## Current UI phase
-**UI-03 — Pages / Templates / Assets — DONE pending final documented-HEAD gate and merge**
+**UI-04 — Dynamic Content Studio — DONE pending final documented-HEAD gate and merge**
 
-Next after merge: **UI-04** as defined in `.ai/UI_UX_REDESIGN_PHASES.md`.
+Next after merge: **UI-05 — Forms / Filters / Workflow**.
 
 ## Durable decisions
 - Tailwind CSS v4 is the official visual styling foundation for the ElectroCMS application chrome.
@@ -20,6 +20,7 @@ Next after merge: **UI-04** as defined in `.ai/UI_UX_REDESIGN_PHASES.md`.
 - Migrated surfaces use semantic tokens instead of hard-coded product colors.
 - Canvas remains the dominant editor surface.
 - UI must not bypass canonical project/document APIs just to make a control appear functional.
+- UI redesign phases may expose read/navigation surfaces for canonical state already present in `main`, but must not invent functional CRUD/relations/query execution before those contracts exist.
 
 ## UI-01 completed
 - Added semantic V2 UI foundation and durable redesign documentation.
@@ -52,5 +53,15 @@ Next after merge: **UI-04** as defined in `.ai/UI_UX_REDESIGN_PHASES.md`.
 - Pages and Media module navigation now point to the canonical resource manager.
 - No parallel document/media catalog exists.
 - ProjectSession currently has no validated project-level command for adding/removing documents or media; therefore UI-03 intentionally keeps `New` disabled rather than mutating `project.documents`, `documentOrder` or `media` directly.
-- Initial implementation validation: Quality Gate #1150 PASS.
-- Final documented-HEAD gate is required before merge and UI-04.
+- Final validation: Quality Gate #1152 PASS; merged into `main` as `57a35bd1de0714a3e573a90b744ad19d48fe2603`.
+
+## UI-04 completed
+- Added `DynamicContentWorkspace` for Content Types, Taxonomies, Field Groups, Records, Relations and Queries already present in canonical project state.
+- Content and Queries module entries route directly into the same professional data-administration surface with contextual initial tabs.
+- Added resource counts, shared search, dense tables, canonical ids, structure summaries and a schema/detail pane.
+- Added canonical empty states and safe JSON value summaries without assuming unvalidated model shapes.
+- Added unit coverage with populated canonical F05 maps and empty Relations.
+- The surface remains read-only where `main` lacks validated mutable F05 contracts; no CRUD, relation mutation, bulk action or query execution behavior was invented.
+- Quality Gate #1154 exposed strict TypeScript issues before tests; those were corrected under `noUncheckedIndexedAccess` without changing behavior.
+- Corrected implementation validation: Quality Gate #1155 PASS.
+- Final documented-HEAD gate is required before merge and UI-05.

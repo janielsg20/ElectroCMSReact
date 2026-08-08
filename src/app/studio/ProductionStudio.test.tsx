@@ -17,6 +17,29 @@ function makeProject() {
   });
 }
 
+function makeDynamicProject() {
+  const project = makeProject();
+  return {
+    ...project,
+    contentTypes: {
+      product: { name: 'Products', slug: 'products', fields: ['title', 'price'] },
+    },
+    taxonomies: {
+      category: { name: 'Categories', slug: 'category' },
+    },
+    fieldGroups: {
+      commerce_fields: { name: 'Commerce fields', fields: ['price', 'sku'] },
+    },
+    records: {
+      product_1: { title: 'Desk Lamp', price: 120 },
+    },
+    relations: {},
+    queries: {
+      featured_products: { name: 'Featured products', limit: 6 },
+    },
+  };
+}
+
 describe('ProductionStudio', () => {
   it('uses the permanent Studio module rail and keeps the real builder available', async () => {
     window.history.replaceState({}, '', '/editor');
@@ -63,6 +86,29 @@ describe('ProductionStudio', () => {
     expect(screen.getByRole('tab', { name: /assets/i })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByText('No assets found')).toBeInTheDocument();
     expect(screen.getByLabelText('Search project resources')).toHaveAttribute('placeholder', 'Search assets…');
+  });
+
+  it('uses canonical F05 maps in Dynamic Content Studio and opens Queries in context', async () => {
+    window.history.replaceState({}, '', '/editor');
+    const user = userEvent.setup();
+    render(<App initialProject={makeDynamicProject()} preferencesRepository={new MemoryWorkspacePreferencesRepository()} />);
+
+    const modules = screen.getByRole('navigation', { name: 'Studio modules' });
+    await user.click(within(modules).getByRole('button', { name: 'Content' }));
+
+    const studio = screen.getByRole('region', { name: 'Dynamic Content Studio' });
+    expect(within(studio).getByRole('heading', { name: 'Dynamic Content Studio' })).toBeInTheDocument();
+    expect(within(studio).getByRole('tab', { name: /Content Types/i })).toHaveAttribute('aria-selected', 'true');
+    expect(within(studio).getByRole('button', { name: /Products/i })).toBeInTheDocument();
+    expect(within(studio).getByRole('complementary', { name: 'Dynamic resource details' })).toHaveTextContent('Products');
+
+    await user.click(within(studio).getByRole('tab', { name: /Relations/i }));
+    expect(within(studio).getByText('No relations')).toBeInTheDocument();
+
+    await user.click(within(modules).getByRole('button', { name: 'Queries' }));
+    const queryStudio = screen.getByRole('region', { name: 'Dynamic Content Studio' });
+    expect(within(queryStudio).getByRole('tab', { name: /Queries/i })).toHaveAttribute('aria-selected', 'true');
+    expect(within(queryStudio).getByRole('button', { name: /Featured products/i })).toBeInTheDocument();
   });
 
   it('keeps Preview, Backend and Export in the real workspace navigation', async () => {
