@@ -11,9 +11,9 @@ MF-038 — Taxonomy model + editor is DONE. Functional run #766 PASS; documentat
 
 MF-039 — Field type registry is DONE. Functional run #786 PASS; documentation closure run #800 PASS.
 
-MF-040 — Custom field groups is DONE. Functional run #834 PASS; documentation closure is pending on the current documentation commits.
+MF-040 — Custom field groups is DONE. Functional run #834 PASS; documentation closure run #850 PASS.
 
-Next microphase after a green documentation closure: MF-041 — Records CRUD.
+Next microphase: MF-041 — Records CRUD, after the current evidence-sync HEAD is fully green.
 
 ## Durable F05 facts through MF-040
 - Dynamic content uses existing `CanonicalProject` collections; do not create a second persistence model.
@@ -45,6 +45,7 @@ Next microphase after a green documentation closure: MF-041 — Records CRUD.
 - `FieldGroupEditor` follows a three-zone builder: searchable Field Library → ordered stored schema → contextual Field Inspector.
 - Persistence E2E polls the real `electrocms/projects` IndexedDB record before reload when durable write visibility matters.
 - MF-040 functional evidence: GitHub Actions #834 PASS with lint, TypeScript, unit, coverage, build and 24 Playwright E2E tests green.
+- MF-040 documentation closure evidence: GitHub Actions #850 PASS.
 
 ## Durable editor design direction
 - Editor design source of truth is `design-system/electrocms-editor/MASTER.md` + `pages/editor.md`.
@@ -64,8 +65,8 @@ Next microphase after a green documentation closure: MF-041 — Records CRUD.
 - Vercel auto-deploy is disabled. Never deploy unless the user explicitly asks.
 
 ## Resume protocol
-1. Read `AI_ENTRYPOINT.md`, `RULES.md`, `MEMORY.md`, `TRACKING.md`, then this handoff.
-2. Confirm MF-040 functional run #834 and its documentation closure are fully green before starting MF-041.
+1. Read `AI_ENTRYPOINT.md`, `RULES.md`, `MEMORY.md`, `TRACKING.md`, then this handoff; follow root `DECISIONS.md` and `.ai/memory/DECISIONS_LOG.md` for architectural decisions.
+2. Confirm MF-040 functional #834 and documentation closure #850 remain green, and confirm the current HEAD gate is green before starting MF-041.
 3. Recover the exact MF-041 Records CRUD contract from F05/master specification before editing code.
 4. Reuse `CanonicalProject.records`; do not introduce a second record store or UI-only copy.
 5. Records must resolve an existing CPT and validate their custom field payload against the groups/fields applicable to that record context.
@@ -73,15 +74,15 @@ Next microphase after a green documentation closure: MF-041 — Records CRUD.
 7. Keep advanced field behavior blocked until MF-042/MF-043 even if schemas contain modeled placeholders.
 8. Continue applying the builder design rule: left insertion/library surfaces for composable elements, central working context, right inspector. Backend list/edit tasks can use dense master-detail where spatial canvas is not the primary task.
 9. Add unit/E2E coverage for create/edit/persist/reload/delete, invalid field values, required behavior if owned by MF-041, CPT/group reference integrity and durable IndexedDB writes.
-10. Update TRACKING/MEMORY/IMPLEMENTATION_MEMORY/KNOWN_ISSUES/HANDOFF before marking MF-041 DONE.
+10. Update TRACKING/MEMORY/IMPLEMENTATION_MEMORY/KNOWN_ISSUES/HANDOFF/DECISIONS before marking MF-041 DONE.
 11. Do not begin MF-042 while any MF-041 gate is red.
 
 ## Phase sequence
 - MF-037 — CPT model + editor — DONE — run #730; docs #740
 - MF-038 — Taxonomy model + editor — DONE — run #766; docs #776
 - MF-039 — Field type registry — DONE — run #786; docs #800
-- MF-040 — Custom field groups — DONE — run #834; docs pending
-- MF-041 — Records CRUD — NEXT after docs gate
+- MF-040 — Custom field groups — DONE — run #834; docs #850
+- MF-041 — Records CRUD — NEXT after current HEAD gate
 - MF-042 — Advanced fields — BLOCKED
 - MF-043 — Relations — BLOCKED
 - MF-044 — Dynamic bindings — BLOCKED
