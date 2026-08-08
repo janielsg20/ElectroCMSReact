@@ -1,6 +1,22 @@
 export * from './content-type';
 export * from './taxonomy';
 export * from './relation';
+export {
+  removeContentTypeWithRelationIntegrity,
+  removeContentTypeWithRelationIntegrity as removeContentType,
+} from './relation-content-type-integrity';
+export {
+  removeTaxonomyWithReferenceIntegrity,
+  removeTaxonomyWithReferenceIntegrity as removeTaxonomy,
+} from './reference-taxonomy-integrity';
+export {
+  createRelationWithIntegrity,
+  createRelationWithIntegrity as createRelation,
+  updateRelationWithIntegrity,
+  updateRelationWithIntegrity as updateRelation,
+  removeRelationWithIntegrity,
+  removeRelationWithIntegrity as removeRelation,
+} from './relation-integrity';
 export * from './field-type-definition';
 export * from './field-type-registry';
 export * from './builtin-field-types';
