@@ -240,7 +240,7 @@ Nunca mezclar estos tres niveles.
 - Conditions/role visibility se muestran honestamente como portable/modelado, sin UI/runtime falso antes de su fase.
 - `ProjectSession` expone create/update/remove field group y reutiliza autosave/recovery.
 - E2E verifica create → add/config fields → reorder → durable IndexedDB → reload → edit → durable save → delete → durable removal.
-- Evidencia funcional MF-040: GitHub Actions run #834 PASS.
+- Evidencia funcional MF-040: GitHub Actions run #834 PASS; cierre documental #850 PASS.
 
 ## Evidencia F04
 - MF-034 definitiva: run #568 PASS.
@@ -254,5 +254,5 @@ Nunca mezclar estos tres niveles.
 - MF-037 CPT model + editor: DONE, run #730 PASS; docs #740 PASS.
 - MF-038 Taxonomy model + editor: DONE, run #766 PASS; docs #776 PASS.
 - MF-039 Field type registry: DONE, run #786 PASS; docs #800 PASS.
-- MF-040 Custom field groups: DONE, run #834 PASS; cierre documental pendiente.
-- Siguiente: MF-041 Records CRUD, solo después de un cierre documental completamente verde.
+- MF-040 Custom field groups: DONE, run #834 PASS; docs #850 PASS.
+- Siguiente: MF-041 Records CRUD, solo después de que el HEAD actual confirme todos los gates verdes.
