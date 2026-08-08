@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { EditorWidgetRegistryContext } from './editor-widget-registry-context';
-import { defaultEditorWidgetRegistry } from './core-structural-widgets';
+import { defaultEditorWidgetRegistry } from './default-editor-widget-registry';
 import type { EditorWidgetRegistry } from './editor-widget-registry';
 
 export interface EditorWidgetRegistryProviderProps {
