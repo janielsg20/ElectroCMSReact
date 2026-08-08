@@ -82,7 +82,6 @@ export class EditorProjectPersistence {
 
   dispose(): void {
     this.autosave.dispose();
-    this.listeners.clear();
   }
 
   private emit(event: EditorPersistenceEvent): void {
