@@ -1,7 +1,6 @@
 import { useProjectSession } from '../project/project-session-context';
 import { useDocumentHistoryShortcuts } from '../project/use-document-history-shortcuts';
 import type { WorkspaceId } from '../routing/workspaces';
-import { EDITOR_THEME_PRESETS, type EditorThemePresetId } from '../workspace/editor-theme-presets';
 import { useWorkspacePreferences } from '../workspace/workspace-preferences-store';
 import { Icon } from './Icon';
 
@@ -20,12 +19,12 @@ const saveLabels = {
 } as const;
 
 const selectClass = 'ec-control h-8 min-w-0 px-2.5 text-[11px] font-semibold';
-const iconButtonClass = 'ec-control ec-focus-ring inline-grid size-8 shrink-0 place-items-center text-[var(--color-ec-text-muted)] hover:text-[var(--color-ec-text)]';
-const segmentButtonClass = 'ec-focus-ring grid size-7 place-items-center rounded-[var(--ec-radius-sm)] text-[var(--color-ec-text-muted)] transition-colors hover:bg-[var(--color-ec-surface-muted)] hover:text-[var(--color-ec-text)] disabled:cursor-not-allowed disabled:opacity-30';
+const iconButtonClass = 'ec-control ec-focus-ring group inline-grid size-8 shrink-0 place-items-center text-[var(--color-ec-text-muted)] hover:text-[var(--color-ec-text)]';
+const segmentButtonClass = 'ec-focus-ring group grid size-7 place-items-center rounded-[var(--ec-radius-sm)] text-[var(--color-ec-text-muted)] transition-colors hover:bg-[var(--color-ec-surface-muted)] hover:text-[var(--color-ec-text)] disabled:cursor-not-allowed disabled:opacity-30';
 
 export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, onNavigate }: AppHeaderProps) {
   const session = useProjectSession();
-  const { preferences, setEditorThemeMode, setEditorThemePresetId } = useWorkspacePreferences();
+  const { preferences, setEditorThemeMode } = useWorkspacePreferences();
   const activeDocument = session.project.documents[session.activeDocumentId];
   useDocumentHistoryShortcuts(session.undo, session.redo);
 
@@ -133,38 +132,24 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
           </button>
         </div>
 
-        <div className="hidden h-8 shrink-0 items-center gap-1 rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] p-0.5 lg:flex">
-          <label className="compact-field theme-field hidden shrink-0 xl:block">
-            <span className="sr-only">Editor theme preset</span>
-            <select
-              className={`${selectClass} max-w-[150px] border-0 bg-transparent shadow-none`}
-              aria-label="Editor theme preset"
-              value={preferences.editorThemePresetId}
-              onChange={(event) => setEditorThemePresetId(event.target.value as EditorThemePresetId)}
-            >
-              {EDITOR_THEME_PRESETS.map((preset) => <option key={preset.id} value={preset.id}>{preset.label}</option>)}
-            </select>
-          </label>
-
-          <label className="compact-field theme-field shrink-0">
-            <span className="sr-only">Editor theme mode</span>
-            <select
-              className={`${selectClass} border-0 bg-transparent shadow-none`}
-              aria-label="Editor theme mode"
-              value={preferences.editorThemeMode}
-              onChange={(event) => setEditorThemeMode(event.target.value as 'light' | 'dark' | 'auto')}
-            >
-              <option value="auto">Auto</option>
-              <option value="dark">Dark</option>
-              <option value="light">Light</option>
-            </select>
-          </label>
-        </div>
+        <label className="compact-field theme-field hidden shrink-0 lg:block">
+          <span className="sr-only">Editor appearance</span>
+          <select
+            className={`${selectClass} border-0 bg-transparent shadow-none`}
+            aria-label="Editor theme mode"
+            value={preferences.editorThemeMode}
+            onChange={(event) => setEditorThemeMode(event.target.value as 'light' | 'dark' | 'auto')}
+          >
+            <option value="auto">Auto appearance</option>
+            <option value="dark">Dark appearance</option>
+            <option value="light">Light appearance</option>
+          </select>
+        </label>
       </div>
 
       <div className="header-actions ml-auto flex shrink-0 items-center gap-1">
         <button
-          className="ec-focus-ring inline-flex h-8 items-center gap-1.5 rounded-[var(--ec-radius-md)] px-2.5 text-[10px] font-semibold text-[var(--color-ec-text-muted)] transition-colors hover:bg-[var(--color-ec-surface-muted)] hover:text-[var(--color-ec-text)]"
+          className="ec-focus-ring group inline-flex h-8 items-center gap-1.5 rounded-[var(--ec-radius-md)] px-2.5 text-[10px] font-semibold text-[var(--color-ec-text-muted)] transition-colors hover:bg-[var(--color-ec-surface-muted)] hover:text-[var(--color-ec-text)]"
           type="button"
           aria-pressed={activeWorkspace === 'preview'}
           onClick={() => onNavigate('preview')}
@@ -173,7 +158,7 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
           <span className="hidden sm:inline">Preview</span>
         </button>
         <button
-          className="ec-focus-ring inline-flex h-8 items-center gap-1.5 rounded-[var(--ec-radius-md)] bg-[var(--color-ec-accent)] px-3 text-[10px] font-semibold text-white shadow-sm transition-[filter,transform] hover:brightness-95 active:translate-y-px"
+          className="ec-focus-ring group inline-flex h-8 items-center gap-1.5 rounded-[var(--ec-radius-md)] bg-[var(--color-ec-accent)] px-3 text-[10px] font-semibold text-white shadow-sm transition-[filter,transform] hover:brightness-95 active:translate-y-px"
           type="button"
           aria-label="Export"
           aria-pressed={activeWorkspace === 'export'}
