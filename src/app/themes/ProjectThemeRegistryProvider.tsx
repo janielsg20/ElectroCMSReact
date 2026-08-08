@@ -43,8 +43,8 @@ export function ProjectThemeRegistryProvider({
   registry: registryProp,
   packageRepository: packageRepositoryProp,
 }: ProjectThemeRegistryProviderProps) {
-  const [baseDefinitions] = useState<ProjectThemeDefinition[]>(() =>
-    registryProp ? registryProp.list() : structuredClone(BUILTIN_PROJECT_THEMES),
+  const [baseDefinitions] = useState<readonly ProjectThemeDefinition[]>(() =>
+    registryProp ? registryProp.list() : BUILTIN_PROJECT_THEMES,
   );
   const [packageRepository] = useState<ProjectThemePackageRepository>(
     () => packageRepositoryProp ?? new BrowserProjectThemePackageRepository(),
