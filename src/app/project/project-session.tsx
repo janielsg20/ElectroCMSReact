@@ -6,6 +6,14 @@ import {
   type CanonicalProject,
 } from '../../core/project';
 import {
+  EMPTY_DOCUMENT_HISTORY,
+  recordDocumentCommand,
+  redoDocumentCommand,
+  undoDocumentCommand,
+  type DocumentCommand,
+  type DocumentHistoryState,
+} from './document-command-history';
+import {
   ProjectSessionContext,
   type ProjectSaveState,
   type ProjectSessionState,
@@ -23,6 +31,26 @@ function clampZoom(value: number): number {
   return Math.min(200, Math.max(50, stepped));
 }
 
+function replaceProjectDocument(
+  project: CanonicalProject,
+  document: CanonicalDocument,
+): CanonicalProject | null {
+  if (!(document.id in project.documents)) return null;
+  const nextProject: CanonicalProject = {
+    ...project,
+    metadata: {
+      ...project.metadata,
+      updatedAt: new Date().toISOString(),
+    },
+    documents: {
+      ...project.documents,
+      [document.id]: structuredClone(document),
+    },
+  };
+  const validation = validateCanonicalProject(nextProject);
+  return validation.ok ? validation.value : null;
+}
+
 export interface ProjectSessionProviderProps {
   children: ReactNode;
   initialProject?: CanonicalProject;
@@ -38,6 +66,9 @@ export function ProjectSessionProvider({ children, initialProject }: ProjectSess
   );
   const [zoom, setZoomState] = useState(100);
   const [saveState, setSaveState] = useState<ProjectSaveState>('saved');
+  const [historyByDocument, setHistoryByDocument] = useState<Record<string, DocumentHistoryState>>(
+    {},
+  );
 
   const setActiveDocumentId = useCallback(
     (documentId: string) => {
@@ -59,29 +90,62 @@ export function ProjectSessionProvider({ children, initialProject }: ProjectSess
     setZoomState(clampZoom(nextZoom));
   }, []);
 
-  const replaceDocument = useCallback(
-    (document: CanonicalDocument): boolean => {
-      if (!(document.id in project.documents)) return false;
-      const now = new Date().toISOString();
-      const nextProject: CanonicalProject = {
-        ...project,
-        metadata: {
-          ...project.metadata,
-          updatedAt: now,
-        },
-        documents: {
-          ...project.documents,
-          [document.id]: structuredClone(document),
-        },
-      };
-      const validation = validateCanonicalProject(nextProject);
-      if (!validation.ok) return false;
-      setProject(validation.value);
+  const executeDocumentCommand = useCallback(
+    (command: DocumentCommand): boolean => {
+      const currentDocument = project.documents[command.documentId];
+      if (!currentDocument || currentDocument.id !== command.before.id) return false;
+      const nextProject = replaceProjectDocument(project, command.after);
+      if (!nextProject) return false;
+
+      setProject(nextProject);
+      setHistoryByDocument((current) => ({
+        ...current,
+        [command.documentId]: recordDocumentCommand(
+          current[command.documentId] ?? EMPTY_DOCUMENT_HISTORY,
+          command,
+        ),
+      }));
       setSaveState('dirty');
       return true;
     },
     [project],
   );
+
+  const undo = useCallback((): boolean => {
+    const history = historyByDocument[activeDocumentId] ?? EMPTY_DOCUMENT_HISTORY;
+    const transition = undoDocumentCommand(history);
+    if (!transition) return false;
+    const nextProject = replaceProjectDocument(project, transition.document);
+    if (!nextProject) return false;
+
+    setProject(nextProject);
+    setHistoryByDocument((current) => ({
+      ...current,
+      [activeDocumentId]: transition.history,
+    }));
+    setSaveState('dirty');
+    return true;
+  }, [activeDocumentId, historyByDocument, project]);
+
+  const redo = useCallback((): boolean => {
+    const history = historyByDocument[activeDocumentId] ?? EMPTY_DOCUMENT_HISTORY;
+    const transition = redoDocumentCommand(history);
+    if (!transition) return false;
+    const nextProject = replaceProjectDocument(project, transition.document);
+    if (!nextProject) return false;
+
+    setProject(nextProject);
+    setHistoryByDocument((current) => ({
+      ...current,
+      [activeDocumentId]: transition.history,
+    }));
+    setSaveState('dirty');
+    return true;
+  }, [activeDocumentId, historyByDocument, project]);
+
+  const activeHistory = historyByDocument[activeDocumentId] ?? EMPTY_DOCUMENT_HISTORY;
+  const canUndo = activeHistory.past.length > 0;
+  const canRedo = activeHistory.future.length > 0;
 
   const value = useMemo<ProjectSessionState>(
     () => ({
@@ -90,22 +154,28 @@ export function ProjectSessionProvider({ children, initialProject }: ProjectSess
       activeBreakpointId,
       zoom,
       saveState,
-      canUndo: false,
-      canRedo: false,
+      canUndo,
+      canRedo,
       setActiveDocumentId,
       setActiveBreakpointId,
       setZoom,
-      replaceDocument,
+      executeDocumentCommand,
+      undo,
+      redo,
     }),
     [
       activeBreakpointId,
       activeDocumentId,
+      canRedo,
+      canUndo,
+      executeDocumentCommand,
       project,
-      replaceDocument,
+      redo,
       saveState,
       setActiveBreakpointId,
       setActiveDocumentId,
       setZoom,
+      undo,
       zoom,
     ],
   );
