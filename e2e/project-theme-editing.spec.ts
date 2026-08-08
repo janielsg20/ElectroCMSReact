@@ -9,7 +9,10 @@ test('duplicates a built-in theme into an editable versioned local theme', async
   await expect(themeSelect).toHaveValue('frontend.minimal-clean');
 
   await page.getByRole('button', { name: 'Duplicate to edit' }).click();
-  await expect(themeSelect).toHaveValue('frontend.minimal-clean-copy');
+  await expect(page.getByText(/Created editable frontend\.minimal-clean-copy at version 1/)).toBeVisible();
+  await expect(themeSelect.locator('option[value="frontend.minimal-clean-copy"]')).toHaveCount(1);
+  await themeSelect.selectOption('frontend.minimal-clean-copy');
+
   await expect(page.getByText('Imported · frontend.minimal-clean-copy · v1')).toBeVisible();
   await expect(page.getByText('Version 1')).toBeVisible();
   await expect(app).toHaveAttribute('data-editor-preset', editorPreset!);
