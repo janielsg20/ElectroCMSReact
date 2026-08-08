@@ -22,14 +22,24 @@ interface CommandItem {
 
 export function StudioCommandPalette({ open, onOpenChange, onNavigate, onSelectModule }: StudioCommandPaletteProps) {
   const [query, setQuery] = useState('');
+  const closePalette = () => {
+    setQuery('');
+    onOpenChange(false);
+  };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
-        onOpenChange(!open);
+        if (open) {
+          setQuery('');
+          onOpenChange(false);
+        } else {
+          onOpenChange(true);
+        }
       } else if (open && event.key === 'Escape') {
         event.preventDefault();
+        setQuery('');
         onOpenChange(false);
       }
     };
@@ -37,12 +47,8 @@ export function StudioCommandPalette({ open, onOpenChange, onNavigate, onSelectM
     return () => globalThis.removeEventListener('keydown', handleKeyDown);
   }, [onOpenChange, open]);
 
-  useEffect(() => {
-    if (!open) setQuery('');
-  }, [open]);
-
   const commands = useMemo<CommandItem[]>(() => {
-    const close = (run: () => void) => () => { run(); onOpenChange(false); };
+    const close = (run: () => void) => () => { run(); setQuery(''); onOpenChange(false); };
     return [
       { id: 'workspace-editor', label: 'Open Editor', detail: 'Visual authoring workspace', icon: 'editor', shortcut: 'E', run: close(() => onNavigate('editor')) },
       { id: 'workspace-preview', label: 'Open Preview', detail: 'Canonical read-only live preview', icon: 'preview', shortcut: 'P', run: close(() => onNavigate('preview')) },
@@ -62,7 +68,7 @@ export function StudioCommandPalette({ open, onOpenChange, onNavigate, onSelectM
   const visible = commands.filter((command) => !normalized || `${command.label} ${command.detail}`.toLowerCase().includes(normalized));
 
   return (
-    <div className="fixed inset-0 z-[90] grid place-items-start bg-black/35 px-3 pt-[10vh] backdrop-blur-[2px]" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) onOpenChange(false); }}>
+    <div className="fixed inset-0 z-[90] grid place-items-start bg-black/35 px-3 pt-[10vh] backdrop-blur-[2px]" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) closePalette(); }}>
       <section className="mx-auto w-full max-w-[620px] overflow-hidden rounded-[var(--ec-radius-xl)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] shadow-[var(--ec-shadow-float)]" role="dialog" aria-modal="true" aria-label="Command palette">
         <label className="flex h-12 items-center gap-2 border-b border-[var(--color-ec-border)] px-3 text-[var(--color-ec-text-muted)]"><Icon name="search" size={15} /><span className="sr-only">Search commands</span><input autoFocus className="min-w-0 flex-1 bg-transparent text-[11px] text-[var(--color-ec-text)] outline-none placeholder:text-[var(--color-ec-text-muted)]" aria-label="Search commands" placeholder="Search workspaces and tools…" value={query} onChange={(event) => setQuery(event.target.value)} /><kbd className="rounded border border-[var(--color-ec-border)] bg-[var(--color-ec-surface-subtle)] px-1.5 py-0.5 text-[8px]">Esc</kbd></label>
         <div className="max-h-[min(62vh,520px)] overflow-y-auto p-2" role="listbox" aria-label="Available commands">
