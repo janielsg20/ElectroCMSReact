@@ -1,0 +1,25 @@
+/* UI-02 finishing overrides kept separate from canonical canvas styles. */
+
+/* The real Layers control now lives in EditorCanvas and is wired to canonical selection. */
+.studio-builder-workspace .studio-editor-region > div:first-child > div:last-child {
+  display: none !important;
+}
+
+.editor-canvas-v2 .widget-inspector-empty-v2 small {
+  max-width: 30ch;
+  color: var(--color-ec-text-muted);
+  font-size: 8px;
+  line-height: 1.5;
+}
+
+.editor-canvas-v2 .canvas-layer-row:focus-visible,
+.editor-canvas-v2 .canvas-layers-popover > header button:focus-visible {
+  outline: none;
+  box-shadow: var(--ec-focus-ring);
+}
+
+@media (max-width: 1024px) {
+  .studio-builder-workspace .studio-library {
+    height: 152px;
+  }
+}

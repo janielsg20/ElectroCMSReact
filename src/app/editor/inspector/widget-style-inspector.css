@@ -1,6 +1,11 @@
 .widget-style-row {
   display: grid;
-  gap: 4px;
+  gap: 5px;
+}
+
+.widget-style-field small {
+  color: var(--color-ec-text-muted, var(--text-faint));
+  font-size: 8px;
 }
 
 .widget-style-actions {
@@ -10,22 +15,33 @@
 }
 
 .widget-style-actions button {
-  min-height: 22px;
-  padding: 0 6px;
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  color: var(--text-muted);
-  background: var(--surface-subtle);
-  font-size: 8.5px;
+  min-height: 24px;
+  padding: 0 7px;
+  border: 1px solid var(--color-ec-border, var(--border));
+  border-radius: var(--ec-radius-sm, 5px);
+  color: var(--color-ec-text-muted, var(--text-muted));
+  background: var(--color-ec-surface-subtle, var(--surface-subtle));
+  font-size: 8px;
+  font-weight: 700;
   cursor: pointer;
+  transition:
+    border-color var(--ec-motion-fast, 120ms) var(--ec-ease-standard, ease),
+    background-color var(--ec-motion-fast, 120ms) var(--ec-ease-standard, ease),
+    color var(--ec-motion-fast, 120ms) var(--ec-ease-standard, ease);
 }
 
 .widget-style-actions button:hover:not(:disabled) {
-  border-color: var(--border-strong);
-  color: var(--text-strong);
+  border-color: var(--color-ec-accent, var(--border-strong));
+  color: var(--color-ec-accent, var(--text-strong));
+  background: var(--color-ec-accent-soft, var(--surface-subtle));
+}
+
+.widget-style-actions button:focus-visible {
+  outline: none;
+  box-shadow: var(--ec-focus-ring, 0 0 0 2px var(--border-strong));
 }
 
 .widget-style-actions button:disabled {
-  opacity: 0.45;
-  cursor: default;
+  opacity: 0.4;
+  cursor: not-allowed;
 }

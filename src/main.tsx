@@ -7,6 +7,8 @@ import './app/editor/canvas/canvas.css';
 import './app/editor/canvas/canvas-interactions.css';
 import './app/ui/ui-foundation.css';
 import './app/studio/studio.css';
+import './app/editor/builder-v2.css';
+import './app/editor/builder-v2-polish.css';
 
 const rootElement = document.getElementById('root');
 
