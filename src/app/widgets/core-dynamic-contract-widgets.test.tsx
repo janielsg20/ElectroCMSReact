@@ -77,10 +77,8 @@ describe('MF-030 dynamic/commerce/form/filter widget contracts', () => {
     );
 
     expect(screen.getByText('Modeled contract')).toBeInTheDocument();
-    expect(screen.getByText('Post title binding')).toBeInTheDocument();
-    expect(container.querySelector('[data-widget-preview-type="core/dynamic-field"]')).toHaveAttribute(
-      'data-capability',
-      'modeled',
-    );
+    const preview = container.querySelector('[data-widget-preview-type="core/dynamic-field"]');
+    expect(preview).toHaveTextContent('Post title binding');
+    expect(preview).toHaveAttribute('data-capability', 'modeled');
   });
 });
