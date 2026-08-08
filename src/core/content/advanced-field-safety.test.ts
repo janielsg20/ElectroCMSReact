@@ -154,6 +154,56 @@ describe('MF-042 advanced field safety', () => {
     }
   });
 
+  it('requires numeric conditional operators to use Number or Currency sibling sources', () => {
+    let project = baseProject();
+    const child = createFieldGroup(project, {
+      ...createDefaultFieldGroupDefinition('numeric-condition-child', 'Numeric Condition Child'),
+      fields: [field('core/text', 'note', { name: 'note' })],
+    });
+    expect(child.ok).toBe(true);
+    if (!child.ok) return;
+    project = child.project;
+
+    const invalid = createFieldGroup(project, {
+      ...createDefaultFieldGroupDefinition('invalid-numeric-condition', 'Invalid Numeric Condition'),
+      fields: [
+        field('core/text', 'status', { name: 'status', defaultValue: '10' }),
+        field('core/conditional', 'details', {
+          name: 'details',
+          config: {
+            fieldGroupId: 'numeric-condition-child',
+            sourceField: 'status',
+            operator: 'greaterThan',
+            compareValue: 2,
+          },
+          defaultValue: null,
+        }),
+      ],
+    });
+    expect(invalid.ok).toBe(false);
+    if (!invalid.ok) {
+      expect(invalid.error.message).toContain('Number or Currency');
+    }
+
+    const valid = createFieldGroup(project, {
+      ...createDefaultFieldGroupDefinition('valid-numeric-condition', 'Valid Numeric Condition'),
+      fields: [
+        field('core/currency', 'amount', { name: 'amount', defaultValue: 10 }),
+        field('core/conditional', 'details', {
+          name: 'details',
+          config: {
+            fieldGroupId: 'numeric-condition-child',
+            sourceField: 'amount',
+            operator: 'lessThan',
+            compareValue: 20,
+          },
+          defaultValue: null,
+        }),
+      ],
+    });
+    expect(valid.ok).toBe(true);
+  });
+
   it('canonically normalizes nested calculated and conditional values regardless of schema order', () => {
     let project = baseProject();
     const detail = createFieldGroup(project, {
