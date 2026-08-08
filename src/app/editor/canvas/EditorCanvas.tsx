@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type MouseEvent } from 'react';
+import { useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
 import {
   readNodeGeometry,
   type BreakpointDefinition,
@@ -38,6 +38,7 @@ export function EditorCanvas({
   const clearSelection = selection.clearSelection;
   const [clipboard, setClipboard] = useState<DocumentClipboardPayload | null>(null);
   const [guides, setGuides] = useState<readonly SnapGuide[]>([]);
+  const [layersOpen, setLayersOpen] = useState(false);
   const insertableWidgets = useMemo(
     () =>
       widgetRegistry.core.listLatest().sort((left, right) => {
@@ -71,6 +72,7 @@ export function EditorCanvas({
       if (event.key === 'Escape') {
         clearSelection();
         setGuides([]);
+        setLayersOpen(false);
       }
     };
     globalThis.addEventListener('keydown', handleKeyDown);
@@ -145,6 +147,33 @@ export function EditorCanvas({
     applyGeometry({ [key]: value });
   };
 
+  const renderLayer = (nodeId: string, depth = 0): ReactNode => {
+    const node = document.nodes[nodeId];
+    if (!node) return null;
+    const selected = selection.selectedNodeIds.includes(node.id);
+    const label = node.name ?? node.type.replace(/^core\//, '');
+    return (
+      <li key={node.id} className="canvas-layer-item">
+        <button
+          type="button"
+          className="canvas-layer-row"
+          data-selected={selected ? 'true' : 'false'}
+          style={{ '--layer-depth': depth } as React.CSSProperties}
+          aria-pressed={selected}
+          onClick={(event) => {
+            event.stopPropagation();
+            selectNode(node.id, event.metaKey || event.ctrlKey || event.shiftKey);
+          }}
+        >
+          <span className="canvas-layer-disclosure" aria-hidden="true">{node.children.length > 0 ? '⌄' : '·'}</span>
+          <span className="canvas-layer-name">{label}</span>
+          <span className="canvas-layer-flags" aria-hidden="true">{node.locked ? 'L' : ''}{node.hidden ? 'H' : ''}</span>
+        </button>
+        {node.children.length > 0 ? <ul>{node.children.map((childId) => renderLayer(childId, depth + 1))}</ul> : null}
+      </li>
+    );
+  };
+
   return (
     <section
       className="editor-canvas editor-canvas-v2"
@@ -172,6 +201,7 @@ export function EditorCanvas({
             </label>
             <button type="button" className="canvas-command-primary" disabled={!canInsertSelectedWidget} onClick={() => actions.insertWidget(insertWidgetType)}>Insert widget</button>
             <button type="button" onClick={() => actions.insertContainer()}>Insert container</button>
+            <button type="button" className="canvas-layers-trigger" aria-pressed={layersOpen} onClick={() => setLayersOpen((current) => !current)}>Layers</button>
           </div>
 
           <div className="canvas-command-cluster canvas-command-cluster--selection" aria-label="Selection commands">
@@ -205,6 +235,12 @@ export function EditorCanvas({
       ) : null}
 
       <div className="editor-canvas-layers canvas-stage-v2">
+        {layersOpen ? (
+          <aside className="canvas-layers-popover" aria-label="Layers navigator" onClick={stopToolbarPropagation}>
+            <header><div><span>Document</span><strong>Layers</strong></div><button type="button" aria-label="Close layers" onClick={() => setLayersOpen(false)}>×</button></header>
+            <div className="canvas-layers-tree" role="tree"><ul>{renderLayer(document.rootNodeId)}</ul></div>
+          </aside>
+        ) : null}
         <CanvasRenderer
           document={document}
           breakpointId={breakpointId}
