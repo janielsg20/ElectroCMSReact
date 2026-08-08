@@ -223,14 +223,15 @@ export function ProjectSessionProvider({
   const setProjectTheme = useCallback(
     (scope: ProjectThemeScope, themeId: string): boolean => {
       if (!themeRegistry.has(themeId, scope)) return false;
+      const currentProject = projectRef.current;
       const key = scope === 'frontend' ? 'frontendThemeId' : 'backendThemeId';
-      if (project[key] === themeId) return true;
+      if (currentProject[key] === themeId) return true;
 
       const nextProject: CanonicalProject = {
-        ...project,
+        ...currentProject,
         [key]: themeId,
         metadata: {
-          ...project.metadata,
+          ...currentProject.metadata,
           updatedAt: new Date().toISOString(),
         },
       };
@@ -241,7 +242,7 @@ export function ProjectSessionProvider({
       queueAutosave(validation.value);
       return true;
     },
-    [commitProject, project, queueAutosave, themeRegistry],
+    [commitProject, queueAutosave, themeRegistry],
   );
 
   const applyThemePackageResources = useCallback(
