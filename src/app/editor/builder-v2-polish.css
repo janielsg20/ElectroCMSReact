@@ -5,10 +5,39 @@
   display: none !important;
 }
 
+/* Readable high-density Builder typography. */
+.editor-canvas-v2 .canvas-command-label,
+.editor-canvas-v2 .canvas-insert-control,
+.editor-canvas-v2 .canvas-geometry-controls label,
+.editor-canvas-v2 .canvas-selection-summary,
+.editor-canvas-v2 .widget-inspector-eyebrow,
+.editor-canvas-v2 .canvas-layers-popover > header span,
+.editor-canvas-v2 .canvas-layer-flags,
+.editor-canvas-v2 .widget-inspector-empty-v2 small {
+  font-size: var(--ec-font-micro);
+}
+
+.editor-canvas-v2 .canvas-command-bar button,
+.editor-canvas-v2 .canvas-command-bar select,
+.editor-canvas-v2 .canvas-geometry-controls input,
+.editor-canvas-v2 .widget-inspector-tabs button,
+.editor-canvas-v2 .widget-inspector-section legend,
+.editor-canvas-v2 .widget-inspector-field,
+.editor-canvas-v2 .widget-inspector-header-v2 code,
+.editor-canvas-v2 .canvas-layers-popover > header strong,
+.editor-canvas-v2 .canvas-layer-row,
+.editor-canvas-v2 .widget-inspector-empty-v2 > span:last-child {
+  font-size: var(--ec-font-xs);
+}
+
+.editor-canvas-v2 .widget-inspector-header-v2 strong,
+.editor-canvas-v2 .widget-inspector-empty-v2 strong {
+  font-size: var(--ec-font-sm);
+}
+
 .editor-canvas-v2 .widget-inspector-empty-v2 small {
   max-width: 30ch;
   color: var(--color-ec-text-muted);
-  font-size: 8px;
   line-height: 1.5;
 }
 
