@@ -1,7 +1,7 @@
 # KNOWN_ISSUES.md
 
 ## Blocking
-Ninguno conocido al cierre funcional de MF-038. GitHub Actions run #766 es completamente verde.
+Ninguno conocido al cierre funcional de MF-039. GitHub Actions run #786 es completamente verde.
 
 ## Environment
 - El sandbox actual no resuelve `registry.npmjs.org`; no es un defecto de ElectroCMS.
@@ -12,7 +12,10 @@ Ninguno conocido al cierre funcional de MF-038. GitHub Actions run #766 es compl
 - Widgets dynamic/commerce/form/filter de F04 son contratos `modeled`; su comportamiento real se habilita únicamente en su microfase dedicada F05/F06.
 - MF-037 implementa CPT model + editor.
 - MF-038 implementa Taxonomy model + editor, incluyendo asociaciones a CPTs y referencias a field groups/archive templates existentes.
-- MF-038 NO crea Custom Field definitions/groups; `fieldGroupIds` solo puede apuntar a grupos ya presentes. El registry y editor de campos pertenecen a MF-039/MF-040.
+- MF-039 implementa el `FieldTypeRegistry` y los contratos de tipos de campo; NO crea todavía `fieldGroups` persistentes ni un editor de grupos. Eso pertenece a MF-040.
+- Los 27 tipos mínimos del prompt están registrados; 20 están disponibles para schema y 7 avanzados permanecen `modeled`.
+- `relation`, `user`, `taxonomy`, `repeater`, `group`, `calculated` y `conditional` no deben tratarse como runtime completo solo por estar registrados.
+- MF-042 implementará Advanced Fields; MF-043 implementará Relations.
 - MF-038 NO implementa CRUD de taxonomy terms/term records. El alcance actual modela la definición de la taxonomía, no sus entradas de contenido.
 - MF-038 NO crea archive templates; `archiveTemplateId` solo referencia un documento existente de `kind=archive`.
 - Records CRUD sigue reservado para MF-041.
@@ -20,6 +23,13 @@ Ninguno conocido al cierre funcional de MF-038. GitHub Actions run #766 es compl
 - Preview/Export siguen siendo shells dedicados hasta sus fases de renderer/export.
 - La biblioteca local de themes resuelve definiciones instaladas; el bundling final dentro de exporters pertenece a fases de export/publish.
 - El clipboard de MF-024 sigue siendo transitorio a la sesión del editor; integración con System Clipboard no fue requisito de F03/F04/F05 actual.
+
+## Field type registry boundaries
+- `FieldTypeDefinition` contiene callbacks runtime de validación/default/migración; esos callbacks nunca deben serializarse dentro de `CanonicalProject`.
+- `configSchema` y `defaultConfig` sí deben ser JSON-portable y se clonan defensivamente al resolver una definición.
+- `availability=available` significa que el tipo puede participar en schemas de MF-040; no significa que Records CRUD, render/export o advanced behavior ya estén terminados.
+- `availability=modeled` significa que el contrato existe para que los modelos futuros sean estables, pero su comportamiento se reserva para MF-042/MF-043.
+- Los validators básicos de MF-039 cubren forma/rango portable. Validaciones de negocio, required/conditions/role visibility y composición de grupos pertenecen a los modelos de campo/grupo posteriores.
 
 ## Referential integrity
 - Un CPT no puede eliminarse mientras existan records que lo referencien.
