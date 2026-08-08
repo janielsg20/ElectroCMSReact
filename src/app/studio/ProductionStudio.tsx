@@ -88,7 +88,7 @@ function StudioRail({ compactLayout, workspaceId, activeModule, settingsOpen, on
   onSelectModule(moduleId: EditorModuleId): void;
   onClose(): void;
 }) {
-  const { preferences, setNavigationPosition, setNavigationWidth, setNavigationCollapsed, setNavigationDisplayMode, moveWorkspace, setDensity, reset } = useWorkspacePreferences();
+  const { preferences, setNavigationPosition, setNavigationWidth, setNavigationDisplayMode, moveWorkspace, setDensity, reset } = useWorkspacePreferences();
   const forcedDesktopRail = !compactLayout;
   const collapsed = forcedDesktopRail || preferences.navigationCollapsed;
   const displayMode = collapsed ? 'icons' : preferences.navigationDisplayMode;
