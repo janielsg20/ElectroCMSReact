@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { DynamicContentManager } from '../content/DynamicContentManager';
+import { FinalProductDemo } from '../demo/FinalProductDemo';
+import '../demo/final-product-demo-entry.css';
 import { EditorCanvas } from '../editor/canvas/EditorCanvas';
 import { useCanvasDocumentActions } from '../editor/canvas/use-canvas-document-actions';
 import { useProjectSession } from '../project/project-session-context';
@@ -16,6 +19,11 @@ const workspaceNotes: Record<WorkspaceId, string> = {
   export: 'Publishing shell',
 };
 
+function initialDemoMode(): boolean {
+  if (typeof globalThis.location === 'undefined') return false;
+  return new URLSearchParams(globalThis.location.search).get('demo') === 'final';
+}
+
 export function WorkspaceSurface({ workspaceId }: WorkspaceSurfaceProps) {
   const session = useProjectSession();
   const canvasActions = useCanvasDocumentActions();
@@ -24,6 +32,33 @@ export function WorkspaceSurface({ workspaceId }: WorkspaceSurfaceProps) {
   const breakpoint = session.project.breakpoints.find(
     (candidate) => candidate.id === session.activeBreakpointId,
   );
+  const [demoMode, setDemoMode] = useState(initialDemoMode);
+
+  const openDemo = () => {
+    const url = new URL(globalThis.location.href);
+    url.searchParams.set('demo', 'final');
+    globalThis.history.replaceState(globalThis.history.state, '', url);
+    setDemoMode(true);
+  };
+
+  const closeDemo = () => {
+    const url = new URL(globalThis.location.href);
+    url.searchParams.delete('demo');
+    globalThis.history.replaceState(globalThis.history.state, '', url);
+    setDemoMode(false);
+  };
+
+  if (demoMode) {
+    return (
+      <main className="workspace-surface workspace-surface--final-demo" id="workspace-main" tabIndex={-1}>
+        <div className="final-demo-exit-bar">
+          <span>Final Product Demo · visual prototype</span>
+          <button type="button" onClick={closeDemo}>Return to functional workspace</button>
+        </div>
+        <FinalProductDemo workspaceId={workspaceId} />
+      </main>
+    );
+  }
 
   return (
     <main className="workspace-surface" id="workspace-main" tabIndex={-1}>
@@ -36,6 +71,7 @@ export function WorkspaceSurface({ workspaceId }: WorkspaceSurfaceProps) {
           <span>{document?.name ?? 'No document'}</span>
           <span>{breakpoint?.label ?? 'No breakpoint'}</span>
           <span>{session.zoom}%</span>
+          <button className="final-demo-launch" type="button" onClick={openDemo}>Final Product Demo</button>
         </div>
       </div>
 
