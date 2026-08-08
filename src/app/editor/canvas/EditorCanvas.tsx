@@ -12,6 +12,8 @@ import { CanvasRenderer } from './CanvasRenderer';
 import type { CanvasDocumentActions } from './use-canvas-document-actions';
 import { useCanvasSelection } from './use-canvas-selection';
 
+const INSERT_CATEGORY_ORDER = ['structural', 'basic', 'content', 'dynamic', 'commerce', 'form', 'filter'] as const;
+
 export interface EditorCanvasProps {
   document: CanonicalDocument;
   breakpointId: string;
@@ -34,14 +36,12 @@ export function EditorCanvas({
   const [guides, setGuides] = useState<readonly SnapGuide[]>([]);
   const insertableWidgets = useMemo(
     () =>
-      widgetRegistry.core
-        .listLatest()
-        .filter((definition) => ['structural', 'basic', 'content'].includes(definition.metadata.category))
-        .sort((left, right) => {
-          const categoryOrder = ['structural', 'basic', 'content'];
-          const categoryDelta = categoryOrder.indexOf(left.metadata.category) - categoryOrder.indexOf(right.metadata.category);
-          return categoryDelta || left.metadata.name.localeCompare(right.metadata.name);
-        }),
+      widgetRegistry.core.listLatest().sort((left, right) => {
+        const categoryDelta =
+          INSERT_CATEGORY_ORDER.indexOf(left.metadata.category) -
+          INSERT_CATEGORY_ORDER.indexOf(right.metadata.category);
+        return categoryDelta || left.metadata.name.localeCompare(right.metadata.name);
+      }),
     [widgetRegistry],
   );
   const [insertWidgetType, setInsertWidgetType] = useState('core/section');
@@ -169,6 +169,7 @@ export function EditorCanvas({
               {insertableWidgets.map((definition) => (
                 <option key={definition.type} value={definition.type}>
                   {definition.metadata.category} · {definition.metadata.name}
+                  {definition.capabilities.local === 'modeled' ? ' · modeled' : ''}
                 </option>
               ))}
             </select>
