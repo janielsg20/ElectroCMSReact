@@ -1,13 +1,19 @@
-import type { CSSProperties } from 'react';
+import { useState, type ChangeEvent, type CSSProperties } from 'react';
 import { isJsonObject } from '../../core/domain';
 import type { JsonObject } from '../../core/domain';
 import type { ProjectThemeScope } from '../../core/themes';
 import { useProjectSession } from '../project/project-session-context';
+import { useProjectThemePackageLibrary } from './project-theme-package-library-context';
 import { useProjectThemeRegistry } from './project-theme-registry-context';
 import './project-theme-controls.css';
 
 export interface ProjectThemeControlsProps {
   scope: ProjectThemeScope;
+}
+
+interface PackageStatus {
+  tone: 'success' | 'error';
+  message: string;
 }
 
 function tokenString(tokens: JsonObject, group: string, name: string, fallback: string): string {
@@ -27,10 +33,13 @@ function tokenNumber(tokens: JsonObject, group: string, name: string, fallback: 
 export function ProjectThemeControls({ scope }: ProjectThemeControlsProps) {
   const session = useProjectSession();
   const registry = useProjectThemeRegistry();
+  const packageLibrary = useProjectThemePackageLibrary();
+  const [packageStatus, setPackageStatus] = useState<PackageStatus | null>(null);
   const themeId = scope === 'frontend' ? session.project.frontendThemeId : session.project.backendThemeId;
   const themes = registry.list(scope);
   const theme = registry.get(themeId, scope) ?? themes[0] ?? null;
   const fieldLabel = scope === 'frontend' ? 'Frontend theme' : 'Backend theme';
+  const imported = theme ? packageLibrary.importedThemeIds.includes(theme.id) : false;
 
   const previewStyle = theme
     ? ({
@@ -44,28 +53,92 @@ export function ProjectThemeControls({ scope }: ProjectThemeControlsProps) {
       } as CSSProperties)
     : undefined;
 
+  const handleImport = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    try {
+      const result = packageLibrary.importPackageText(await file.text());
+      setPackageStatus(
+        result.ok
+          ? { tone: 'success', message: `Installed ${result.themeId}. Select it from the compatible theme list.` }
+          : { tone: 'error', message: result.message },
+      );
+    } catch {
+      setPackageStatus({ tone: 'error', message: 'Theme package could not be read.' });
+    }
+  };
+
+  const handleExport = () => {
+    if (!theme) return;
+    const result = packageLibrary.exportPackage(theme.id);
+    if (!result.ok) {
+      setPackageStatus({ tone: 'error', message: result.message });
+      return;
+    }
+
+    const blob = new Blob([result.text], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = result.fileName;
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+    setPackageStatus({ tone: 'success', message: `Exported ${theme.id}.` });
+  };
+
   return (
     <section className="project-theme-controls" data-theme-scope={scope} aria-label={`${fieldLabel} settings`}>
       <div className="project-theme-controls-copy">
         <span className="project-theme-controls-eyebrow">Project theme package</span>
         <h3>{fieldLabel}</h3>
         <p>{theme?.description ?? 'No compatible theme package is registered.'}</p>
+        {theme ? <span className="project-theme-origin">{imported ? 'Imported' : 'Built-in'} · {theme.id}</span> : null}
       </div>
 
-      <label className="project-theme-select">
-        <span>{fieldLabel}</span>
-        <select
-          aria-label={fieldLabel}
-          value={themeId}
-          onChange={(event) => session.setProjectTheme(scope, event.target.value)}
+      <div className="project-theme-management">
+        <label className="project-theme-select">
+          <span>{fieldLabel}</span>
+          <select
+            aria-label={fieldLabel}
+            value={themeId}
+            onChange={(event) => session.setProjectTheme(scope, event.target.value)}
+          >
+            {themes.map((candidate) => (
+              <option key={candidate.id} value={candidate.id}>
+                {candidate.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="project-theme-package-actions" aria-label={`${fieldLabel} package actions`}>
+          <label className="project-theme-package-button">
+            <span>Import package</span>
+            <input
+              className="sr-only"
+              type="file"
+              accept=".json,application/json"
+              aria-label="Import theme package"
+              onChange={handleImport}
+            />
+          </label>
+          <button type="button" onClick={handleExport} disabled={!theme}>
+            Export selected
+          </button>
+        </div>
+
+        <span
+          className="project-theme-package-status"
+          data-tone={packageStatus?.tone ?? 'idle'}
+          aria-live="polite"
         >
-          {themes.map((candidate) => (
-            <option key={candidate.id} value={candidate.id}>
-              {candidate.label}
-            </option>
-          ))}
-        </select>
-      </label>
+          {packageStatus?.message ?? 'Packages stay local to this browser until exported.'}
+        </span>
+      </div>
 
       {theme ? (
         <div className="project-theme-preview" style={previewStyle} data-project-theme-id={theme.id}>
