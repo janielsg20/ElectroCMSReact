@@ -1,19 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import type { CanonicalProject } from '../core/project';
 import type { ProjectThemeRegistry } from '../core/themes';
 import { AppHeader } from './components/AppHeader';
-import { WorkspaceNavigation } from './components/WorkspaceNavigation';
-import { WorkspaceSurface } from './components/WorkspaceSurface';
 import type { EditorProjectPersistence } from './project/editor-project-persistence';
 import { ProjectSessionProvider } from './project/project-session';
 import { useWorkspaceRoute } from './routing/use-workspace-route';
 import type { WorkspaceId } from './routing/workspaces';
+import { ProductionStudio } from './studio/ProductionStudio';
 import { ProjectThemeRegistryProvider } from './themes/ProjectThemeRegistryProvider';
 import { EditorWidgetRegistryProvider } from './widgets/EditorWidgetRegistryProvider';
 import type { EditorWidgetRegistry } from './widgets/editor-widget-registry';
 import { useResolvedEditorTheme } from './workspace/editor-theme';
 import './workspace/editor-theme-presets.css';
-import { useMediaQuery } from './workspace/use-media-query';
 import { WorkspacePreferencesProvider } from './workspace/workspace-preferences-context';
 import type { WorkspacePreferencesRepository } from './workspace/workspace-preferences-repository';
 import { useWorkspacePreferences } from './workspace/workspace-preferences-store';
@@ -29,15 +27,12 @@ export interface AppProps {
 function EditorApplicationShell() {
   const route = useWorkspaceRoute();
   const { preferences, setLastWorkspace } = useWorkspacePreferences();
-  const compactLayout = useMediaQuery('(max-width: 960px)');
   const resolvedTheme = useResolvedEditorTheme(preferences.editorThemeMode);
-  const [navigationOpen, setNavigationOpen] = useState(false);
   const activeWorkspace: WorkspaceId = route.workspaceId ?? preferences.lastWorkspace;
 
   const navigate = useCallback(
     (workspaceId: WorkspaceId) => {
       setLastWorkspace(workspaceId);
-      setNavigationOpen(false);
       route.navigate(workspaceId);
     },
     [route, setLastWorkspace],
@@ -60,31 +55,11 @@ function EditorApplicationShell() {
       data-theme-mode={preferences.editorThemeMode}
       data-editor-preset={preferences.editorThemePresetId}
       data-density={preferences.density}
-      data-navigation-position={preferences.navigationPosition}
+      data-navigation-position="left"
     >
       <a className="skip-link" href="#workspace-main">Skip to workspace</a>
-
-      <AppHeader
-        compactLayout={compactLayout}
-        activeWorkspace={activeWorkspace}
-        onOpenNavigation={() => setNavigationOpen(true)}
-        onNavigate={navigate}
-      />
-
-      <div
-        className="workspace-body"
-        data-navigation-position={preferences.navigationPosition}
-        data-navigation-collapsed={preferences.navigationCollapsed ? 'true' : 'false'}
-      >
-        <WorkspaceNavigation
-          compactLayout={compactLayout}
-          open={compactLayout && navigationOpen}
-          activeWorkspace={activeWorkspace}
-          onNavigate={navigate}
-          onClose={() => setNavigationOpen(false)}
-        />
-        <WorkspaceSurface workspaceId={activeWorkspace} />
-      </div>
+      <AppHeader activeWorkspace={activeWorkspace} onNavigate={navigate} />
+      <ProductionStudio workspaceId={activeWorkspace} onNavigate={navigate} />
     </div>
   );
 }
