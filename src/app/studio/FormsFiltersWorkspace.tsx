@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { JsonObject, JsonValue } from '../../core/domain';
 import { Icon, type IconName } from '../components/Icon';
 import { useProjectSession } from '../project/project-session-context';
+import { CapabilityStatus } from './CapabilityStatus';
 
 type WorkflowResource = 'forms' | 'filters';
 
@@ -12,7 +13,6 @@ interface FormsFiltersWorkspaceProps {
 interface ResourceDefinition {
   id: WorkflowResource;
   label: string;
-  singular: string;
   icon: IconName;
   description: string;
 }
@@ -21,14 +21,12 @@ const definitions: Record<WorkflowResource, ResourceDefinition> = {
   forms: {
     id: 'forms',
     label: 'Forms',
-    singular: 'Form',
     icon: 'form',
     description: 'Canonical form definitions already stored in the project.',
   },
   filters: {
     id: 'filters',
     label: 'Smart Filters',
-    singular: 'Filter',
     icon: 'filter',
     description: 'Canonical filter definitions already stored in the project.',
   },
@@ -102,7 +100,7 @@ export function FormsFiltersWorkspace({ initialResource = 'forms' }: FormsFilter
             <h2 className="mt-1 text-[18px] font-semibold tracking-[-.03em] text-[var(--color-ec-text)]">Forms, filters & workflow</h2>
             <p className="mt-1 text-[9px] text-[var(--color-ec-text-muted)]">Inspect existing canonical definitions and their stored workflow shape without inventing F06 mutations.</p>
           </div>
-          <button type="button" className="ec-control ec-focus-ring inline-flex h-8 items-center gap-1.5 px-2.5 text-[9px] font-semibold text-[var(--color-ec-text-muted)]" disabled><Icon name="plus" size={12} />New {definition.singular}</button>
+          <CapabilityStatus label="Read-only workflow" detail="Validated form/filter mutation and execution commands are not available yet; existing canonical definitions and query connections remain inspectable." />
         </div>
       </header>
 
