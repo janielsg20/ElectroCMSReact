@@ -126,8 +126,8 @@ function TypeConfigEditor({ definition, config, onChange }: TypeConfigEditorProp
                 step={descriptor.startsWith('integer') ? 1 : 'any'}
                 value={typeof currentValue === 'number' ? String(currentValue) : ''}
                 onChange={(event) => {
-                  const next = event.target.value === '' ? undefined : Number(event.target.value);
-                  onChange(configWithValue(config, key, next));
+                  const value = event.target.value === '' ? undefined : Number(event.target.value);
+                  onChange(configWithValue(config, key, value));
                 }}
               />
             </label>
@@ -142,13 +142,7 @@ function TypeConfigEditor({ definition, config, onChange }: TypeConfigEditorProp
                 aria-label={`Field config ${label}`}
                 value={typeof currentValue === 'string' ? currentValue : ''}
                 onChange={(event) =>
-                  onChange(
-                    configWithValue(
-                      config,
-                      key,
-                      event.target.value === '' ? undefined : event.target.value,
-                    ),
-                  )
+                  onChange(configWithValue(config, key, event.target.value || undefined))
                 }
               />
             </label>
@@ -235,7 +229,7 @@ function DefaultValueEditor({ shape, value, onChange }: DefaultValueEditorProps)
               onChange(parsed as JsonValue);
             }
           } catch {
-            // Keep the last valid portable value. Core validation remains authoritative.
+            // Core validation remains authoritative; keep the last valid value.
           }
         }}
       />
@@ -259,7 +253,6 @@ export function FieldGroupEditor() {
     () => registry.listLatest({ availability: 'modeled' }),
     [registry],
   );
-
   const [mode, setMode] = useState<EditorMode>('empty');
   const [draft, setDraft] = useState<FieldGroupDefinition | null>(null);
   const [selectedFieldIndex, setSelectedFieldIndex] = useState<number | null>(null);
@@ -272,8 +265,9 @@ export function FieldGroupEditor() {
     () => new Map(validation && !validation.ok ? validation.issues.map((issue) => [issue.path, issue.message]) : []),
     [validation],
   );
-  const selectedField =
-    draft && selectedFieldIndex !== null ? draft.fields[selectedFieldIndex] ?? null : null;
+  const selectedField = draft && selectedFieldIndex !== null
+    ? draft.fields[selectedFieldIndex] ?? null
+    : null;
   const selectedType = selectedField
     ? (() => {
         try {
@@ -283,21 +277,15 @@ export function FieldGroupEditor() {
         }
       })()
     : null;
-
   const filteredTypes = useMemo(() => {
     const query = typeSearch.trim().toLowerCase();
     if (!query) return availableTypes;
-    return availableTypes.filter((definition) => {
-      const haystack = [
-        definition.metadata.label,
-        definition.metadata.category,
-        definition.metadata.description,
-        ...(definition.metadata.keywords ?? []),
-      ]
-        .join(' ')
-        .toLowerCase();
-      return haystack.includes(query);
-    });
+    return availableTypes.filter((definition) => [
+      definition.metadata.label,
+      definition.metadata.category,
+      definition.metadata.description,
+      ...(definition.metadata.keywords ?? []),
+    ].join(' ').toLowerCase().includes(query));
   }, [availableTypes, typeSearch]);
 
   const beginCreate = () => {
@@ -318,66 +306,55 @@ export function FieldGroupEditor() {
     setStatus({ tone: 'idle', message: `Editing ${group.label}.` });
   };
 
-  const patchDraft = <K extends keyof FieldGroupDefinition>(
-    key: K,
-    value: FieldGroupDefinition[K],
-  ) => {
-    setDraft((current) => (current ? { ...current, [key]: value } : current));
+  const patchDraft = <K extends keyof FieldGroupDefinition>(key: K, value: FieldGroupDefinition[K]) => {
+    if (!draft) return;
+    setDraft({ ...draft, [key]: value });
     setDeleteArmed(false);
   };
 
   const patchField = (index: number, updater: (field: CustomFieldDefinition) => CustomFieldDefinition) => {
-    setDraft((current) => {
-      if (!current || !current.fields[index]) return current;
-      const fields = [...current.fields];
-      fields[index] = updater(fields[index]!);
-      return { ...current, fields };
-    });
+    if (!draft || !draft.fields[index]) return;
+    const fields = [...draft.fields];
+    fields[index] = updater(fields[index]!);
+    setDraft({ ...draft, fields });
     setDeleteArmed(false);
   };
 
   const addField = (definition: FieldTypeDefinition) => {
-    setDraft((current) => {
-      if (!current) return current;
-      const existingIds = new Set(current.fields.map((field) => field.id));
-      const id = nextIdentifier(fieldTypeBaseId(definition.type), existingIds);
-      const field = createDefaultCustomFieldDefinition(
-        registry,
-        definition.type,
-        id,
-        definition.metadata.label,
-      );
-      setSelectedFieldIndex(current.fields.length);
-      return { ...current, fields: [...current.fields, field] };
-    });
+    if (!draft) return;
+    const existingIds = new Set(draft.fields.map((field) => field.id));
+    const id = nextIdentifier(fieldTypeBaseId(definition.type), existingIds);
+    const field = createDefaultCustomFieldDefinition(
+      registry,
+      definition.type,
+      id,
+      definition.metadata.label,
+    );
+    const index = draft.fields.length;
+    setDraft({ ...draft, fields: [...draft.fields, field] });
+    setSelectedFieldIndex(index);
     setDeleteArmed(false);
     setStatus({ tone: 'idle', message: `${definition.metadata.label} field added to the draft group.` });
   };
 
   const moveField = (index: number, direction: -1 | 1) => {
-    setDraft((current) => {
-      if (!current) return current;
-      const target = index + direction;
-      if (target < 0 || target >= current.fields.length) return current;
-      const fields = [...current.fields];
-      const [field] = fields.splice(index, 1);
-      if (!field) return current;
-      fields.splice(target, 0, field);
-      setSelectedFieldIndex(target);
-      return { ...current, fields };
-    });
+    if (!draft) return;
+    const target = index + direction;
+    if (target < 0 || target >= draft.fields.length) return;
+    const fields = [...draft.fields];
+    const [field] = fields.splice(index, 1);
+    if (!field) return;
+    fields.splice(target, 0, field);
+    setDraft({ ...draft, fields });
+    setSelectedFieldIndex(target);
     setDeleteArmed(false);
   };
 
   const removeField = (index: number) => {
-    setDraft((current) => {
-      if (!current || !current.fields[index]) return current;
-      const fields = current.fields.filter((_, fieldIndex) => fieldIndex !== index);
-      setSelectedFieldIndex(
-        fields.length === 0 ? null : Math.min(index, fields.length - 1),
-      );
-      return { ...current, fields };
-    });
+    if (!draft || !draft.fields[index]) return;
+    const fields = draft.fields.filter((_, fieldIndex) => fieldIndex !== index);
+    setDraft({ ...draft, fields });
+    setSelectedFieldIndex(fields.length === 0 ? null : Math.min(index, fields.length - 1));
     setDeleteArmed(false);
   };
 
@@ -556,9 +533,7 @@ export function FieldGroupEditor() {
                     <select
                       aria-label="Field group presentation"
                       value={draft.presentation}
-                      onChange={(event) =>
-                        patchDraft('presentation', event.target.value === 'tabs' ? 'tabs' : 'group')
-                      }
+                      onChange={(event) => patchDraft('presentation', event.target.value === 'tabs' ? 'tabs' : 'group')}
                     >
                       <option value="group">Group panel</option>
                       <option value="tabs">Tab group</option>
@@ -573,9 +548,7 @@ export function FieldGroupEditor() {
                       onChange={handleGroupText('description')}
                       aria-invalid={issuesByPath.has('description')}
                     />
-                    {issuesByPath.get('description') ? (
-                      <small role="alert">{issuesByPath.get('description')}</small>
-                    ) : null}
+                    {issuesByPath.get('description') ? <small role="alert">{issuesByPath.get('description')}</small> : null}
                   </label>
                 </div>
               </section>
@@ -585,7 +558,6 @@ export function FieldGroupEditor() {
                   <strong>Field builder</strong>
                   <span>Registry library → ordered schema → contextual inspector.</span>
                 </div>
-
                 <div className="field-group-builder">
                   <aside className="field-type-library" aria-label="Field type library">
                     <div className="field-type-library-heading">
@@ -640,13 +612,12 @@ export function FieldGroupEditor() {
                     ) : (
                       <ol className="field-order-list">
                         {draft.fields.map((field, index) => {
-                          const typeDefinition = (() => {
-                            try {
-                              return registry.resolve(field.type, field.typeVersion);
-                            } catch {
-                              return null;
-                            }
-                          })();
+                          let typeDefinition: FieldTypeDefinition | null = null;
+                          try {
+                            typeDefinition = registry.resolve(field.type, field.typeVersion);
+                          } catch {
+                            typeDefinition = null;
+                          }
                           return (
                             <li key={`${field.id}-${index}`}>
                               <button
@@ -704,16 +675,13 @@ export function FieldGroupEditor() {
                           </div>
                           <code>{selectedField.type}@{selectedField.typeVersion}</code>
                         </div>
-
                         <div className="field-group-field-grid field-group-field-grid-single">
                           <label className="field-group-field">
                             <span>Label</span>
                             <input
                               aria-label="Field label"
                               value={selectedField.label}
-                              onChange={(event) =>
-                                patchField(selectedFieldIndex, (field) => ({ ...field, label: event.target.value }))
-                              }
+                              onChange={(event) => patchField(selectedFieldIndex, (field) => ({ ...field, label: event.target.value }))}
                               aria-invalid={issuesByPath.has(`fields.${selectedFieldIndex}.label`)}
                             />
                             {issuesByPath.get(`fields.${selectedFieldIndex}.label`) ? (
@@ -725,9 +693,7 @@ export function FieldGroupEditor() {
                             <input
                               aria-label="Field ID"
                               value={selectedField.id}
-                              onChange={(event) =>
-                                patchField(selectedFieldIndex, (field) => ({ ...field, id: event.target.value }))
-                              }
+                              onChange={(event) => patchField(selectedFieldIndex, (field) => ({ ...field, id: event.target.value }))}
                               aria-invalid={issuesByPath.has(`fields.${selectedFieldIndex}.id`)}
                             />
                             {issuesByPath.get(`fields.${selectedFieldIndex}.id`) ? (
@@ -739,9 +705,7 @@ export function FieldGroupEditor() {
                             <input
                               aria-label="Field name"
                               value={selectedField.name}
-                              onChange={(event) =>
-                                patchField(selectedFieldIndex, (field) => ({ ...field, name: event.target.value }))
-                              }
+                              onChange={(event) => patchField(selectedFieldIndex, (field) => ({ ...field, name: event.target.value }))}
                               aria-invalid={issuesByPath.has(`fields.${selectedFieldIndex}.name`)}
                             />
                             {issuesByPath.get(`fields.${selectedFieldIndex}.name`) ? (
@@ -754,12 +718,7 @@ export function FieldGroupEditor() {
                               aria-label="Field description"
                               rows={2}
                               value={selectedField.description}
-                              onChange={(event) =>
-                                patchField(selectedFieldIndex, (field) => ({
-                                  ...field,
-                                  description: event.target.value,
-                                }))
-                              }
+                              onChange={(event) => patchField(selectedFieldIndex, (field) => ({ ...field, description: event.target.value }))}
                             />
                           </label>
                           {selectedType.features.placeholder === 'supported' ? (
@@ -768,12 +727,7 @@ export function FieldGroupEditor() {
                               <input
                                 aria-label="Field placeholder"
                                 value={selectedField.placeholder ?? ''}
-                                onChange={(event) =>
-                                  patchField(selectedFieldIndex, (field) => ({
-                                    ...field,
-                                    placeholder: event.target.value || null,
-                                  }))
-                                }
+                                onChange={(event) => patchField(selectedFieldIndex, (field) => ({ ...field, placeholder: event.target.value || null }))}
                               />
                             </label>
                           ) : null}
@@ -782,12 +736,7 @@ export function FieldGroupEditor() {
                               aria-label="Required field"
                               type="checkbox"
                               checked={selectedField.required}
-                              onChange={(event) =>
-                                patchField(selectedFieldIndex, (field) => ({
-                                  ...field,
-                                  required: event.target.checked,
-                                }))
-                              }
+                              onChange={(event) => patchField(selectedFieldIndex, (field) => ({ ...field, required: event.target.checked }))}
                             />
                             <span>
                               <strong>Required</strong>
@@ -797,12 +746,9 @@ export function FieldGroupEditor() {
                           <DefaultValueEditor
                             shape={selectedType.valueShape}
                             value={selectedField.defaultValue}
-                            onChange={(value) =>
-                              patchField(selectedFieldIndex, (field) => ({ ...field, defaultValue: value }))
-                            }
+                            onChange={(value) => patchField(selectedFieldIndex, (field) => ({ ...field, defaultValue: value }))}
                           />
                         </div>
-
                         <div className="field-inspector-subsection">
                           <div className="field-inspector-subheading">
                             <strong>Type settings</strong>
@@ -811,9 +757,7 @@ export function FieldGroupEditor() {
                           <TypeConfigEditor
                             definition={selectedType}
                             config={selectedField.config}
-                            onChange={(config) =>
-                              patchField(selectedFieldIndex, (field) => ({ ...field, config }))
-                            }
+                            onChange={(config) => patchField(selectedFieldIndex, (field) => ({ ...field, config }))}
                           />
                           {[...issuesByPath.entries()]
                             .filter(([path]) => path.startsWith(`fields.${selectedFieldIndex}.config`))
@@ -821,7 +765,6 @@ export function FieldGroupEditor() {
                               <small className="field-group-inline-error" role="alert" key={path}>{message}</small>
                             ))}
                         </div>
-
                         <div className="field-modeled-capabilities" aria-label="Modeled field capabilities">
                           <strong>Portable, not active yet</strong>
                           <span>Conditions: {selectedField.conditions.length}</span>
@@ -833,12 +776,11 @@ export function FieldGroupEditor() {
                   </aside>
                 </div>
               </section>
-
-              <div className="field-group-status" data-tone={status.tone} role="status" aria-live="polite">
-                {status.message}
-              </div>
             </form>
           )}
+          <div className="field-group-status" data-tone={status.tone} role="status" aria-live="polite">
+            {status.message}
+          </div>
         </div>
       </div>
     </section>
