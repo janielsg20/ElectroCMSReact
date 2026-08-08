@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { WorkspaceId } from '../routing/workspaces';
+import type { EditorThemePresetId } from './editor-theme-presets';
 import type {
   EditorThemeMode,
   NavigationDisplayMode,
@@ -18,6 +19,7 @@ export interface WorkspacePreferencesState {
   setDensity(density: WorkspaceDensity): void;
   setLastWorkspace(workspaceId: WorkspaceId): void;
   setEditorThemeMode(mode: EditorThemeMode): void;
+  setEditorThemePresetId(presetId: EditorThemePresetId): void;
   reset(): void;
 }
 
