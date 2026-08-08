@@ -1,6 +1,6 @@
 .project-theme-controls {
   display: grid;
-  grid-template-columns: minmax(180px, 0.9fr) minmax(190px, 0.8fr) minmax(260px, 1.4fr);
+  grid-template-columns: minmax(180px, 0.9fr) minmax(210px, 0.9fr) minmax(260px, 1.4fr);
   gap: 12px;
   align-items: stretch;
   margin-top: 16px;
@@ -42,6 +42,21 @@
   line-height: 1.45;
 }
 
+.project-theme-origin {
+  overflow: hidden;
+  color: var(--text-faint);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-theme-management {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
 .project-theme-select {
   min-width: 0;
   display: grid;
@@ -63,6 +78,49 @@
   border-radius: 6px;
   color: var(--text-strong);
   background: var(--surface-raised);
+}
+
+.project-theme-package-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.project-theme-package-button,
+.project-theme-package-actions button {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  color: var(--text-strong);
+  background: var(--surface-raised);
+  font-size: 9px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.project-theme-package-button:hover,
+.project-theme-package-actions button:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+
+.project-theme-package-status {
+  min-height: 28px;
+  color: var(--text-faint);
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.project-theme-package-status[data-tone="success"] {
+  color: var(--success);
+}
+
+.project-theme-package-status[data-tone="error"] {
+  color: var(--danger);
 }
 
 .project-theme-preview {
@@ -147,7 +205,9 @@
     grid-column: auto;
   }
 
-  .project-theme-select select {
+  .project-theme-select select,
+  .project-theme-package-button,
+  .project-theme-package-actions button {
     min-height: 44px;
   }
 }
