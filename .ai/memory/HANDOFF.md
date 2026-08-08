@@ -1,7 +1,7 @@
 # HANDOFF.md
 
 ## Current state
-F04 implementation is functionally complete on `agent/f04-widgets-inspector-themes` / PR #5. GitHub Actions run #622 is fully green, including widget registry, inspector, style/breakpoint, theme selection and theme package import/export E2E. Closing documentation/hygiene must pass one final CI run before merge.
+F04 implementation is functionally complete on `agent/f04-widgets-inspector-themes` / PR #5. GitHub Actions run #688 is fully green for the definitive original contract, including widget registry, inspector, style/breakpoint, editable/versioned themes and selective non-destructive theme package transfer. Closing documentation/hygiene must pass one final CI run before merge.
 
 ## Durable F04 facts
 - Widget contracts are framework-neutral in `src/core/widgets`; React preview binding lives in `src/app/widgets`.
@@ -18,10 +18,15 @@ F04 implementation is functionally complete on `agent/f04-widgets-inspector-them
 - Editor mode/preset are workspace preferences and never alter generated project themes.
 - `frontendThemeId` and `backendThemeId` are canonical project data and autosave independently.
 - `ProjectThemeRegistry` validates scope, IDs, versions and portable JSON tokens.
-- Built-in project themes: 8 frontend + 7 backend.
+- Built-in project themes: 8 frontend + 7 backend; built-ins are immutable.
+- `Duplicate to edit` creates local collision-safe copies; each edit increments version.
 - Theme packages use `kind=electrocms-theme-package`, `schemaVersion=1`, max 256 KB.
-- Imported theme definitions live locally at `electrocms:project-theme-packages:v1`; canonical projects store only selected IDs.
-- Theme package IDs cannot collide with built-ins/installed packages.
+- Imported/duplicated theme definitions live locally at `electrocms:project-theme-packages:v1`; canonical projects store only selected IDs.
+- Theme package transfer supports selective Pages/Templates, Content Models, Queries/Forms/Filters, Roles/Backend and optional Demo Data.
+- Demo Data is off by default.
+- Choosing an import file only validates/reviews; no project change occurs until explicit apply.
+- Resource merge is non-destructive: existing IDs/keys are preserved and reported, never overwritten.
+- Users, credentials and media binaries are out of scope for F04 packages.
 - Vercel auto-deploy is disabled. Never deploy unless the user explicitly asks.
 
 ## Resume protocol
