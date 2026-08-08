@@ -256,7 +256,10 @@ function validateField(
       `Field description must be at most ${MAX_DESCRIPTION_LENGTH} characters.`,
     );
   }
-  if (input.placeholder !== null && (typeof input.placeholder !== 'string' || placeholder.length > MAX_PLACEHOLDER_LENGTH)) {
+  if (
+    input.placeholder !== null &&
+    (typeof input.placeholder !== 'string' || input.placeholder.trim().length > MAX_PLACEHOLDER_LENGTH)
+  ) {
     addIssue(
       issues,
       'INVALID_PLACEHOLDER',
