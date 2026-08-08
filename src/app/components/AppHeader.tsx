@@ -6,9 +6,7 @@ import { useWorkspacePreferences } from '../workspace/workspace-preferences-stor
 import { Icon } from './Icon';
 
 export interface AppHeaderProps {
-  compactLayout: boolean;
   activeWorkspace: WorkspaceId;
-  onOpenNavigation(): void;
   onNavigate(workspaceId: WorkspaceId): void;
 }
 
@@ -19,7 +17,7 @@ const saveLabels = {
   error: 'Save error',
 } as const;
 
-export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, onNavigate }: AppHeaderProps) {
+export function AppHeader({ activeWorkspace, onNavigate }: AppHeaderProps) {
   const session = useProjectSession();
   const { preferences, setEditorThemeMode, setEditorThemePresetId } = useWorkspacePreferences();
   const activeDocument = session.project.documents[session.activeDocumentId];
@@ -28,11 +26,6 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
   return (
     <header className="app-header" data-testid="app-header">
       <div className="header-project">
-        {compactLayout ? (
-          <button className="icon-button header-menu-button" type="button" aria-label="Open navigation" onClick={onOpenNavigation}>
-            <Icon name="menu" />
-          </button>
-        ) : null}
         <div className="brand-mark" aria-hidden="true"><Icon name="bolt" size={15} /></div>
         <div className="project-identity">
           <strong className="project-name" title={session.project.name}>{session.project.name}</strong>
@@ -92,8 +85,8 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
 
       <div className="header-actions">
         <span className="local-badge" title="Project data remains on this device"><Icon name="local" size={14} /><span>Local</span></span>
-        <button className="toolbar-button" type="button" aria-pressed={activeWorkspace === 'preview'} onClick={() => onNavigate('preview')}>Preview</button>
-        <button className="toolbar-button toolbar-button-primary" type="button" aria-pressed={activeWorkspace === 'export'} onClick={() => onNavigate('export')}>Export</button>
+        <button className="toolbar-button" type="button" aria-pressed={activeWorkspace === 'preview'} onClick={() => onNavigate('preview')}><Icon name="preview" size={13} /> Preview</button>
+        <button className="toolbar-button toolbar-button-primary" type="button" aria-pressed={activeWorkspace === 'export'} onClick={() => onNavigate('export')}><Icon name="export" size={13} /> Publish</button>
       </div>
 
       <span className="sr-only" aria-live="polite">Active document: {activeDocument?.name ?? 'None'}. Zoom {session.zoom} percent.</span>
