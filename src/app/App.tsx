@@ -7,6 +7,7 @@ import { ProjectSessionProvider } from './project/project-session';
 import { useWorkspaceRoute } from './routing/use-workspace-route';
 import type { WorkspaceId } from './routing/workspaces';
 import { ProductionStudio } from './studio/ProductionStudio';
+import './studio/production-studio-theme.css';
 import { ProjectThemeRegistryProvider } from './themes/ProjectThemeRegistryProvider';
 import { EditorWidgetRegistryProvider } from './widgets/EditorWidgetRegistryProvider';
 import type { EditorWidgetRegistry } from './widgets/editor-widget-registry';
