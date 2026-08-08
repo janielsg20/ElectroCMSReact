@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   createCanonicalProject,
   validateCanonicalProject,
@@ -13,6 +13,10 @@ import {
   type DocumentCommand,
   type DocumentHistoryState,
 } from './document-command-history';
+import {
+  createBrowserEditorProjectPersistence,
+  type EditorProjectPersistence,
+} from './editor-project-persistence';
 import {
   ProjectSessionContext,
   type ProjectSaveState,
@@ -51,16 +55,60 @@ function replaceProjectDocument(
   return validation.ok ? validation.value : null;
 }
 
+function projectContentFingerprint(project: CanonicalProject): string {
+  const clone = structuredClone(project);
+  clone.metadata.updatedAt = '';
+  clone.historyMetadata = {
+    ...clone.historyMetadata,
+    revision: 0,
+    lastSavedAt: null,
+  };
+  return JSON.stringify(clone);
+}
+
+function mergeSavedMetadata(
+  current: CanonicalProject,
+  saved: CanonicalProject,
+): CanonicalProject {
+  if (current.id !== saved.id) return current;
+  return {
+    ...current,
+    metadata: {
+      ...current.metadata,
+      updatedAt: saved.metadata.updatedAt,
+    },
+    historyMetadata: {
+      ...current.historyMetadata,
+      revision: Math.max(current.historyMetadata.revision, saved.historyMetadata.revision),
+      lastSavedAt: saved.historyMetadata.lastSavedAt,
+    },
+  };
+}
+
 export interface ProjectSessionProviderProps {
   children: ReactNode;
   initialProject?: CanonicalProject;
+  persistence?: EditorProjectPersistence | null;
 }
 
-export function ProjectSessionProvider({ children, initialProject }: ProjectSessionProviderProps) {
-  const [project, setProject] = useState<CanonicalProject>(() =>
+export function ProjectSessionProvider({
+  children,
+  initialProject,
+  persistence,
+}: ProjectSessionProviderProps) {
+  const [initialSessionProject] = useState<CanonicalProject>(() =>
     structuredClone(initialProject ?? createDefaultSessionProject()),
   );
-  const [activeDocumentId, setActiveDocumentIdState] = useState(() => project.documentOrder[0] ?? '');
+  const [resolvedPersistence] = useState<EditorProjectPersistence | null>(() => {
+    if (persistence !== undefined) return persistence;
+    if (initialProject) return null;
+    return createBrowserEditorProjectPersistence();
+  });
+  const [project, setProject] = useState<CanonicalProject>(() => structuredClone(initialSessionProject));
+  const projectRef = useRef(project);
+  const [activeDocumentId, setActiveDocumentIdState] = useState(
+    () => project.documentOrder[0] ?? '',
+  );
   const [activeBreakpointId, setActiveBreakpointIdState] = useState(
     () => project.breakpoints[0]?.id ?? 'desktop',
   );
@@ -69,6 +117,75 @@ export function ProjectSessionProvider({ children, initialProject }: ProjectSess
   const [historyByDocument, setHistoryByDocument] = useState<Record<string, DocumentHistoryState>>(
     {},
   );
+
+  const commitProject = useCallback((nextProject: CanonicalProject) => {
+    projectRef.current = nextProject;
+    setProject(nextProject);
+  }, []);
+
+  const queueAutosave = useCallback(
+    (nextProject: CanonicalProject) => {
+      setSaveState('dirty');
+      resolvedPersistence?.queue(nextProject);
+    },
+    [resolvedPersistence],
+  );
+
+  useEffect(() => {
+    if (!resolvedPersistence) return;
+    let cancelled = false;
+
+    const unsubscribe = resolvedPersistence.subscribe((event) => {
+      if (cancelled) return;
+      if (event.state === 'saving') {
+        setSaveState('saving');
+        return;
+      }
+      if (event.state === 'error') {
+        setSaveState('error');
+        return;
+      }
+      if (!event.project) return;
+
+      const current = projectRef.current;
+      const contentWasSaved =
+        projectContentFingerprint(current) === projectContentFingerprint(event.project);
+      const merged = mergeSavedMetadata(current, event.project);
+      commitProject(merged);
+      setSaveState(contentWasSaved ? 'saved' : 'dirty');
+    });
+
+    void resolvedPersistence
+      .hydrate(initialSessionProject)
+      .then((hydrated) => {
+        if (cancelled) return;
+        commitProject(hydrated);
+        setActiveDocumentIdState(hydrated.documentOrder[0] ?? '');
+        setActiveBreakpointIdState(hydrated.breakpoints[0]?.id ?? 'desktop');
+        setHistoryByDocument({});
+        setSaveState('saved');
+      })
+      .catch(() => {
+        if (!cancelled) setSaveState('error');
+      });
+
+    const flushIfHidden = () => {
+      if (document.visibilityState === 'hidden') void resolvedPersistence.flush();
+    };
+    const flushOnPageHide = () => {
+      void resolvedPersistence.flush();
+    };
+    document.addEventListener('visibilitychange', flushIfHidden);
+    globalThis.addEventListener('pagehide', flushOnPageHide);
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+      document.removeEventListener('visibilitychange', flushIfHidden);
+      globalThis.removeEventListener('pagehide', flushOnPageHide);
+      void resolvedPersistence.flush().finally(() => resolvedPersistence.dispose());
+    };
+  }, [commitProject, initialSessionProject, resolvedPersistence]);
 
   const setActiveDocumentId = useCallback(
     (documentId: string) => {
@@ -97,7 +214,7 @@ export function ProjectSessionProvider({ children, initialProject }: ProjectSess
       const nextProject = replaceProjectDocument(project, command.after);
       if (!nextProject) return false;
 
-      setProject(nextProject);
+      commitProject(nextProject);
       setHistoryByDocument((current) => ({
         ...current,
         [command.documentId]: recordDocumentCommand(
@@ -105,10 +222,10 @@ export function ProjectSessionProvider({ children, initialProject }: ProjectSess
           command,
         ),
       }));
-      setSaveState('dirty');
+      queueAutosave(nextProject);
       return true;
     },
-    [project],
+    [commitProject, project, queueAutosave],
   );
 
   const undo = useCallback((): boolean => {
@@ -118,14 +235,14 @@ export function ProjectSessionProvider({ children, initialProject }: ProjectSess
     const nextProject = replaceProjectDocument(project, transition.document);
     if (!nextProject) return false;
 
-    setProject(nextProject);
+    commitProject(nextProject);
     setHistoryByDocument((current) => ({
       ...current,
       [activeDocumentId]: transition.history,
     }));
-    setSaveState('dirty');
+    queueAutosave(nextProject);
     return true;
-  }, [activeDocumentId, historyByDocument, project]);
+  }, [activeDocumentId, commitProject, historyByDocument, project, queueAutosave]);
 
   const redo = useCallback((): boolean => {
     const history = historyByDocument[activeDocumentId] ?? EMPTY_DOCUMENT_HISTORY;
@@ -134,14 +251,14 @@ export function ProjectSessionProvider({ children, initialProject }: ProjectSess
     const nextProject = replaceProjectDocument(project, transition.document);
     if (!nextProject) return false;
 
-    setProject(nextProject);
+    commitProject(nextProject);
     setHistoryByDocument((current) => ({
       ...current,
       [activeDocumentId]: transition.history,
     }));
-    setSaveState('dirty');
+    queueAutosave(nextProject);
     return true;
-  }, [activeDocumentId, historyByDocument, project]);
+  }, [activeDocumentId, commitProject, historyByDocument, project, queueAutosave]);
 
   const activeHistory = historyByDocument[activeDocumentId] ?? EMPTY_DOCUMENT_HISTORY;
   const canUndo = activeHistory.past.length > 0;
