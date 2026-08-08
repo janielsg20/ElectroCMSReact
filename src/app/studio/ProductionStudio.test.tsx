@@ -61,7 +61,7 @@ describe('ProductionStudio', () => {
     await user.click(within(canvasToolbar).getByRole('button', { name: 'Layers' }));
 
     const layers = screen.getByRole('complementary', { name: 'Layers navigator' });
-    const containerLayer = within(layers).getByRole('button', { name: 'container' });
+    const containerLayer = within(layers).getByRole('button', { name: 'Container 1' });
     await user.click(containerLayer);
     expect(containerLayer).toHaveAttribute('aria-pressed', 'true');
 
