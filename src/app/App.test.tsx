@@ -54,7 +54,8 @@ describe('ElectroCMS editor shell', () => {
     expect(preferencesRepository.load().editorThemeMode).toBe('dark');
   });
 
-  it('keeps undo and redo honestly disabled until document history exists', () => {
+  it('activates undo and redo after a reversible document command', async () => {
+    const user = userEvent.setup();
     render(
       <App
         initialProject={makeProject()}
@@ -62,7 +63,24 @@ describe('ElectroCMS editor shell', () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: 'Undo' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Redo' })).toBeDisabled();
+    const undo = screen.getByRole('button', { name: 'Undo' });
+    const redo = screen.getByRole('button', { name: 'Redo' });
+    expect(undo).toBeDisabled();
+    expect(redo).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: 'Insert container' }));
+    expect(screen.getAllByText('core/container').length).toBeGreaterThan(0);
+    expect(undo).toBeEnabled();
+    expect(redo).toBeDisabled();
+
+    await user.click(undo);
+    expect(screen.queryByText('core/container')).not.toBeInTheDocument();
+    expect(undo).toBeDisabled();
+    expect(redo).toBeEnabled();
+
+    await user.click(redo);
+    expect(screen.getAllByText('core/container').length).toBeGreaterThan(0);
+    expect(undo).toBeEnabled();
+    expect(redo).toBeDisabled();
   });
 });
