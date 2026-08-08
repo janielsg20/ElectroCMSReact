@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { CanonicalDocument, DocumentKind, MediaAssetRef } from '../../core/project';
 import { Icon, type IconName } from '../components/Icon';
 import { useProjectSession } from '../project/project-session-context';
+import { CapabilityStatus } from './CapabilityStatus';
 
 type PagesView = 'pages' | 'templates' | 'assets';
 type Density = 'table' | 'grid';
@@ -100,7 +101,7 @@ export function PagesAssetsWorkspace({ initialView = 'pages', onOpenBuilder }: {
       <header className="shrink-0 border-b border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] px-4 py-3 md:px-5">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-end justify-between gap-3">
           <div><span className="text-[8px] font-bold uppercase tracking-[.16em] text-[var(--color-ec-accent)]">Project structure</span><h2 className="mt-1 text-[18px] font-semibold tracking-[-.03em] text-[var(--color-ec-text)]">Pages, templates & assets</h2><p className="mt-1 text-[9px] text-[var(--color-ec-text-muted)]">Manage the canonical documents and media already stored in this project.</p></div>
-          <div className="flex items-center gap-1"><button type="button" className="ec-control ec-focus-ring inline-flex h-8 items-center gap-1.5 px-2.5 text-[9px] font-semibold text-[var(--color-ec-text-muted)]" disabled><Icon name="plus" size={12} />New</button><button type="button" className="ec-control ec-focus-ring grid size-8 place-items-center text-[var(--color-ec-text-muted)]" aria-label="Table view" aria-pressed={density === 'table'} onClick={() => setDensity('table')}><Icon name="list" size={13} /></button><button type="button" className="ec-control ec-focus-ring grid size-8 place-items-center text-[var(--color-ec-text-muted)]" aria-label="Grid view" aria-pressed={density === 'grid'} onClick={() => setDensity('grid')}><Icon name="grid" size={13} /></button></div>
+          <div className="flex items-center gap-1"><CapabilityStatus label="Read-only manager" detail="Project-level create/delete commands are not implemented yet; existing canonical resources remain fully navigable." /><button type="button" className="ec-control ec-focus-ring grid size-8 place-items-center text-[var(--color-ec-text-muted)]" aria-label="Table view" aria-pressed={density === 'table'} onClick={() => setDensity('table')}><Icon name="list" size={13} /></button><button type="button" className="ec-control ec-focus-ring grid size-8 place-items-center text-[var(--color-ec-text-muted)]" aria-label="Grid view" aria-pressed={density === 'grid'} onClick={() => setDensity('grid')}><Icon name="grid" size={13} /></button></div>
         </div>
       </header>
 
