@@ -33,7 +33,7 @@ describe('GlobalSystemsWorkspace', () => {
     expect(within(studio).getByLabelText('Backend theme')).toBeInTheDocument();
   });
 
-  it('opens Blueprints without pretending an application runtime exists', async () => {
+  it('opens Blueprints as an explicit catalog without pretending an application runtime exists', async () => {
     window.history.replaceState({}, '', '/editor');
     const user = userEvent.setup();
     render(<App initialProject={makeProject()} preferencesRepository={new MemoryWorkspacePreferencesRepository()} />);
@@ -45,9 +45,9 @@ describe('GlobalSystemsWorkspace', () => {
     expect(within(studio).getByRole('tab', { name: 'Blueprints' })).toHaveAttribute('aria-selected', 'true');
     expect(within(studio).getByText('Online Store')).toBeInTheDocument();
     expect(within(studio).getByText('Tattoo Studio')).toBeInTheDocument();
-    for (const button of within(studio).getAllByRole('button', { name: 'Apply' })) {
-      expect(button).toBeDisabled();
-    }
+    expect(within(studio).getAllByText('Catalog only').length).toBeGreaterThan(1);
+    expect(within(studio).queryByRole('button', { name: 'Apply' })).not.toBeInTheDocument();
+    expect(within(studio).getByLabelText(/Catalog only\. Blueprint application is not available/i)).toBeInTheDocument();
   });
 
   it('uses real workspace preferences from Settings and keeps project data canonical', async () => {

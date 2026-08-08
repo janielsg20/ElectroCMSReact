@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { JsonObject, JsonValue } from '../../core/domain';
 import { Icon, type IconName } from '../components/Icon';
 import { useProjectSession } from '../project/project-session-context';
+import { CapabilityStatus } from './CapabilityStatus';
 
 type DynamicResourceKind =
   | 'content-types'
@@ -18,18 +19,17 @@ interface DynamicContentWorkspaceProps {
 interface ResourceDefinition {
   id: DynamicResourceKind;
   label: string;
-  singular: string;
   icon: IconName;
   description: string;
 }
 
 const resources: readonly ResourceDefinition[] = [
-  { id: 'content-types', label: 'Content Types', singular: 'Content type', icon: 'database', description: 'Canonical models that define structured content.' },
-  { id: 'taxonomies', label: 'Taxonomies', singular: 'Taxonomy', icon: 'filter', description: 'Canonical vocabularies used to classify records.' },
-  { id: 'field-groups', label: 'Field Groups', singular: 'Field group', icon: 'form', description: 'Reusable canonical field schemas attached to content.' },
-  { id: 'records', label: 'Records', singular: 'Record', icon: 'list', description: 'Canonical content entries stored in this project.' },
-  { id: 'relations', label: 'Relations', singular: 'Relation', icon: 'link', description: 'Canonical relationships between structured resources.' },
-  { id: 'queries', label: 'Queries', singular: 'Query', icon: 'query', description: 'Saved canonical query definitions already present in the project.' },
+  { id: 'content-types', label: 'Content Types', icon: 'database', description: 'Canonical models that define structured content.' },
+  { id: 'taxonomies', label: 'Taxonomies', icon: 'filter', description: 'Canonical vocabularies used to classify records.' },
+  { id: 'field-groups', label: 'Field Groups', icon: 'form', description: 'Reusable canonical field schemas attached to content.' },
+  { id: 'records', label: 'Records', icon: 'list', description: 'Canonical content entries stored in this project.' },
+  { id: 'relations', label: 'Relations', icon: 'link', description: 'Canonical relationships between structured resources.' },
+  { id: 'queries', label: 'Queries', icon: 'query', description: 'Saved canonical query definitions already present in the project.' },
 ];
 
 function asDisplayName(id: string, value: JsonObject): string {
@@ -101,7 +101,7 @@ export function DynamicContentWorkspace({ initialResource = 'content-types' }: D
             <h2 className="mt-1 text-[18px] font-semibold tracking-[-.03em] text-[var(--color-ec-text)]">Dynamic Content Studio</h2>
             <p className="mt-1 text-[9px] text-[var(--color-ec-text-muted)]">Inspect the structured content already present in the canonical project without creating parallel F05 state.</p>
           </div>
-          <button type="button" className="ec-control ec-focus-ring inline-flex h-8 items-center gap-1.5 px-2.5 text-[9px] font-semibold text-[var(--color-ec-text-muted)]" disabled><Icon name="plus" size={12} />New {definition.singular}</button>
+          <CapabilityStatus label="Read-only data" detail="Mutable content, relation and query commands are not available in the validated project API yet; existing canonical resources remain inspectable." />
         </div>
       </header>
 

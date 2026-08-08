@@ -42,7 +42,7 @@ describe('UI-08 preview and publishing', () => {
     expect(within(preview).getByText('Widget previews')).toBeInTheDocument();
   });
 
-  it('shows publishing destinations without simulating unavailable exporters', async () => {
+  it('shows publishing destinations as runtime requirements without simulating unavailable exporters', async () => {
     window.history.replaceState({}, '', '/editor');
     const user = userEvent.setup();
     render(<App initialProject={makeProject()} preferencesRepository={new MemoryWorkspacePreferencesRepository()} />);
@@ -55,7 +55,8 @@ describe('UI-08 preview and publishing', () => {
     expect(within(publishing).getByText('Exporter runtime')).toBeInTheDocument();
 
     for (const destination of ['Local', 'React', 'LAMP', 'WordPress']) {
-      expect(within(publishing).getByRole('button', { name: `Configure ${destination} export` })).toBeDisabled();
+      expect(within(publishing).getByLabelText(`${destination} exporter runtime required`)).toHaveTextContent('Runtime required');
+      expect(within(publishing).queryByRole('button', { name: `Configure ${destination} export` })).not.toBeInTheDocument();
     }
   });
 
