@@ -147,55 +147,64 @@ export function EditorCanvas({
 
   return (
     <section
-      className="editor-canvas"
+      className="editor-canvas editor-canvas-v2"
       aria-label="Visual document canvas"
       data-testid="editor-canvas"
+      data-selection-count={selectedNodes.length}
       onClick={() => {
         clearSelection();
         setGuides([]);
       }}
     >
       {actions ? (
-        <div className="canvas-command-bar" aria-label="Canvas commands" onClick={stopToolbarPropagation}>
-          <label className="canvas-insert-control">
-            <span>Insert</span>
-            <select aria-label="Widget to insert" value={insertWidgetType} onChange={(event) => setInsertWidgetType(event.target.value)}>
-              {insertableWidgets.map((definition) => (
-                <option key={definition.type} value={definition.type}>
-                  {definition.metadata.category} · {definition.metadata.name}
-                  {definition.capabilities.local === 'modeled' ? ' · modeled' : ''}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button type="button" disabled={!canInsertSelectedWidget} onClick={() => actions.insertWidget(insertWidgetType)}>Insert widget</button>
-          <button type="button" onClick={() => actions.insertContainer()}>Insert container</button>
-          <span className="canvas-command-divider" aria-hidden="true" />
-          <button type="button" disabled={selectedNodes.length === 0} onClick={copySelection}>Copy</button>
-          <button type="button" disabled={selectedNodes.length === 0} onClick={cutSelection}>Cut</button>
-          <button type="button" disabled={!clipboard} onClick={pasteSelection}>Paste{clipboard ? ` (${clipboard.rootNodeIds.length})` : ''}</button>
-          <span className="canvas-command-divider" aria-hidden="true" />
-          <button type="button" disabled={selectedNodes.length < 2} onClick={groupSelection}>Group</button>
-          <button type="button" disabled={!canUngroup} onClick={ungroupSelection}>Ungroup</button>
-          <button type="button" disabled={selectedNodes.length === 0} onClick={toggleLocked}>{allLocked ? 'Unlock' : 'Lock'}</button>
-          <button type="button" disabled={selectedNodes.length === 0} onClick={toggleHidden}>{allHidden ? 'Show' : 'Hide'}</button>
-          <output className="canvas-selection-summary" aria-live="polite">{selectedNodes.length} selected</output>
+        <div className="canvas-command-bar canvas-command-bar-v2" aria-label="Canvas commands" onClick={stopToolbarPropagation}>
+          <div className="canvas-command-cluster canvas-command-cluster--insert" aria-label="Insert commands">
+            <label className="canvas-insert-control">
+              <span className="canvas-command-label">Quick add</span>
+              <select aria-label="Widget to insert" value={insertWidgetType} onChange={(event) => setInsertWidgetType(event.target.value)}>
+                {insertableWidgets.map((definition) => (
+                  <option key={definition.type} value={definition.type}>
+                    {definition.metadata.category} · {definition.metadata.name}
+                    {definition.capabilities.local === 'modeled' ? ' · modeled' : ''}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button type="button" className="canvas-command-primary" disabled={!canInsertSelectedWidget} onClick={() => actions.insertWidget(insertWidgetType)}>Insert widget</button>
+            <button type="button" onClick={() => actions.insertContainer()}>Insert container</button>
+          </div>
+
+          <div className="canvas-command-cluster canvas-command-cluster--selection" aria-label="Selection commands">
+            <output className="canvas-selection-summary" aria-live="polite">{selectedNodes.length === 0 ? 'No selection' : `${selectedNodes.length} selected`}</output>
+            <button type="button" disabled={selectedNodes.length === 0} onClick={copySelection}>Copy</button>
+            <button type="button" disabled={selectedNodes.length === 0} onClick={cutSelection}>Cut</button>
+            <button type="button" disabled={!clipboard} onClick={pasteSelection}>Paste{clipboard ? ` (${clipboard.rootNodeIds.length})` : ''}</button>
+            <span className="canvas-command-divider" aria-hidden="true" />
+            <button type="button" disabled={selectedNodes.length < 2} onClick={groupSelection}>Group</button>
+            <button type="button" disabled={!canUngroup} onClick={ungroupSelection}>Ungroup</button>
+            <button type="button" disabled={selectedNodes.length === 0} onClick={toggleLocked}>{allLocked ? 'Unlock' : 'Lock'}</button>
+            <button type="button" disabled={selectedNodes.length === 0} onClick={toggleHidden}>{allHidden ? 'Show' : 'Hide'}</button>
+          </div>
+
           {primaryGeometry && selectedNodes.length === 1 ? (
-            <div className="canvas-geometry-controls" aria-label="Selected node geometry">
-              <span className="canvas-command-divider" aria-hidden="true" />
+            <div className="canvas-command-cluster canvas-command-cluster--geometry canvas-geometry-controls" aria-label="Selected node geometry">
+              <span className="canvas-command-label">Position</span>
               <label><span>X</span><input aria-label="X position" type="number" value={primaryGeometry.x} disabled={!canEditGeometry} onChange={(event) => numericGeometryChange('x', event.target.value)} /></label>
               <label><span>Y</span><input aria-label="Y position" type="number" value={primaryGeometry.y} disabled={!canEditGeometry} onChange={(event) => numericGeometryChange('y', event.target.value)} /></label>
               <label><span>W</span><input aria-label="Node width" type="number" min="32" placeholder="auto" value={primaryGeometry.width ?? ''} disabled={!canEditGeometry} onChange={(event) => numericGeometryChange('width', event.target.value)} /></label>
               <label><span>H</span><input aria-label="Node height" type="number" min="32" placeholder="auto" value={primaryGeometry.height ?? ''} disabled={!canEditGeometry} onChange={(event) => numericGeometryChange('height', event.target.value)} /></label>
-              <button type="button" aria-label="Nudge left" disabled={!canEditGeometry} onClick={() => applyGeometry({ x: primaryGeometry.x - 8 })}>←</button>
-              <button type="button" aria-label="Nudge right" disabled={!canEditGeometry} onClick={() => applyGeometry({ x: primaryGeometry.x + 8 })}>→</button>
-              <button type="button" aria-label="Nudge up" disabled={!canEditGeometry} onClick={() => applyGeometry({ y: primaryGeometry.y - 8 })}>↑</button>
-              <button type="button" aria-label="Nudge down" disabled={!canEditGeometry} onClick={() => applyGeometry({ y: primaryGeometry.y + 8 })}>↓</button>
+              <div className="canvas-nudge-group" aria-label="Nudge selected node">
+                <button type="button" aria-label="Nudge left" disabled={!canEditGeometry} onClick={() => applyGeometry({ x: primaryGeometry.x - 8 })}>←</button>
+                <button type="button" aria-label="Nudge right" disabled={!canEditGeometry} onClick={() => applyGeometry({ x: primaryGeometry.x + 8 })}>→</button>
+                <button type="button" aria-label="Nudge up" disabled={!canEditGeometry} onClick={() => applyGeometry({ y: primaryGeometry.y - 8 })}>↑</button>
+                <button type="button" aria-label="Nudge down" disabled={!canEditGeometry} onClick={() => applyGeometry({ y: primaryGeometry.y + 8 })}>↓</button>
+              </div>
             </div>
           ) : null}
         </div>
       ) : null}
-      <div className="editor-canvas-layers">
+
+      <div className="editor-canvas-layers canvas-stage-v2">
         <CanvasRenderer
           document={document}
           breakpointId={breakpointId}
@@ -207,7 +216,8 @@ export function EditorCanvas({
         />
         <CanvasOverlayLayer viewportWidth={viewportWidth} zoom={zoom} selectedNodeIds={selection.selectedNodeIds} guides={guides} />
       </div>
-      <div onClick={stopToolbarPropagation}>
+
+      <div className="canvas-inspector-dock" onClick={stopToolbarPropagation}>
         <WidgetInspector
           node={selectedNodes.length === 1 ? primaryNode : null}
           breakpointId={breakpointId}
