@@ -1,6 +1,5 @@
-/* UI-02 finishing overrides kept separate from canonical canvas styles. */
+/* Bento Density finishing overrides for canonical Builder interactions. */
 
-/* Readable high-density Builder typography. */
 .editor-canvas-v2 .canvas-command-label,
 .editor-canvas-v2 .canvas-insert-control,
 .editor-canvas-v2 .canvas-geometry-controls label,
@@ -32,11 +31,6 @@
   max-width: 30ch;
   color: var(--color-ec-text-muted);
   line-height: 1.5;
-}
-
-/* Professional Layers navigator. */
-.editor-canvas-v2 .canvas-layers-popover {
-  width: min(340px, calc(100% - 20px));
 }
 
 .editor-canvas-v2 .canvas-layers-search {
@@ -94,7 +88,7 @@
 }
 
 .editor-canvas-v2 .canvas-layer-disclosure:disabled {
-  opacity: .35;
+  opacity: .3;
 }
 
 .editor-canvas-v2 .canvas-layer-select {
@@ -128,7 +122,7 @@
 }
 
 .editor-canvas-v2 .canvas-layer-actions button[aria-pressed="true"] {
-  background: var(--color-ec-surface);
+  background: var(--color-ec-accent-soft);
   color: var(--color-ec-accent);
 }
 
@@ -162,7 +156,6 @@
   box-shadow: var(--ec-focus-ring);
 }
 
-/* Inspector disclosures keep long schemas scannable without changing data. */
 .editor-canvas-v2 .widget-inspector-disclosure {
   display: block;
   padding: 6px 0;
@@ -181,12 +174,13 @@
   padding: 0 4px;
   color: var(--color-ec-text);
   font-size: var(--ec-font-xs);
-  font-weight: 750;
+  font-weight: 760;
   text-align: left;
 }
 
 .editor-canvas-v2 .widget-inspector-disclosure-trigger:hover {
   background: var(--color-ec-surface-muted);
+  color: var(--color-ec-accent);
 }
 
 .editor-canvas-v2 .widget-inspector-section-fields {
@@ -197,24 +191,24 @@
 
 @media (max-width: 1024px) {
   .studio-builder-workspace .studio-library {
-    height: 152px;
+    height: 158px;
   }
 }
 
-@media (max-width: 620px) {
-  /* Keep selection commands reachable on touch devices; the command bar is
-   * horizontally scrollable, so hiding the whole cluster is unnecessary. */
+@media (max-width: 760px) {
   .editor-canvas-v2 .canvas-command-cluster--selection {
     display: flex;
   }
 
-  .editor-canvas-v2 .canvas-layers-popover {
-    width: calc(100% - 16px);
-    top: 8px;
-    left: 8px;
-  }
-
   .editor-canvas-v2 .canvas-layer-actions {
     opacity: 1;
+  }
+
+  .editor-canvas-v2 .canvas-layer-disclosure,
+  .editor-canvas-v2 .canvas-layer-actions button {
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
+    min-height: 32px;
   }
 }
