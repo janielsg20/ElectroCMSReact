@@ -25,6 +25,7 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - `ContentTypeDefinition.version = 1` desde MF-037.
 - `TaxonomyDefinition.version = 1` desde MF-038.
 - `FieldGroupDefinition.version = 1` y `CustomFieldDefinition.version = 1` desde MF-040.
+- `ContentRecordDefinition.version = 1` desde MF-041.
 - `FieldTypeDefinition` es runtime-registry data versionada por `type@version`; no se persiste una copia de callbacks en `CanonicalProject`.
 - Proyecto inicial crea una página Home con nodo `core/root`.
 - Breakpoints iniciales: desktop, laptop, tablet landscape, tablet portrait, mobile large y mobile small.
@@ -55,7 +56,7 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - Recovery snapshots son limitados por configuración.
 - F03 integra autosave al `ProjectSession`: commands/undo/redo encolan cambios y el header muestra `dirty/saving/saved/error` real.
 - F04 usa el mismo autosave para `frontendThemeId`, `backendThemeId` y merges selectivos de recursos.
-- F05 reutiliza el mismo flujo para content model CRUD.
+- F05 reutiliza el mismo flujo para content model CRUD y records.
 - `EditorProjectPersistence` elige al hidratar el candidato más fresco entre project store y recovery por revision + `updatedAt`.
 - Revisiones permanecen monotónicas incluso si un payload pendiente trae metadata stale.
 - Un callback de save fusiona metadata; nunca reemplaza contenido editor más nuevo.
@@ -140,8 +141,9 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - En desktop la library/inspector permanecen persistentes cuando el espacio lo permita; en tablet/móvil pueden convertirse en drawers/sheets sin perder acceso.
 - Ritmo: micro-grid 4px, base 8px; desktop denso, touch crítico >=44px.
 - Editores de modelos dinámicos usan master-detail cuando la tarea es list + inspect/edit; formularios rutinarios no deben forzar modales.
-- `DynamicContentManager` agrupa Content Types/Taxonomies/Field Groups mediante tabs para mantener densidad sin apilar herramientas extensas.
+- `DynamicContentManager` agrupa Content Types/Taxonomies/Field Groups/Records mediante tabs para mantener densidad sin apilar herramientas extensas.
 - `FieldGroupEditor` adopta el mismo mental model a escala de herramienta: Field Library → Stored Order → contextual Field Inspector.
+- `RecordsEditor` usa master-detail denso porque su objetivo es búsqueda/listado/edición de datos, no composición espacial.
 - Tokens siguen primitive → semantic → component.
 - No forzar Tailwind/shadcn; adaptar principios al stack React/CSS existente salvo decisión futura explícita.
 
@@ -208,7 +210,7 @@ Nunca mezclar estos tres niveles.
 - `archiveTemplateId` solo puede apuntar a un `CanonicalDocument.kind === 'archive'` existente.
 - `createTaxonomy`, `updateTaxonomy`, `removeTaxonomy` son operaciones core React-free que validan referencias y el proyecto resultante.
 - `TaxonomyEditor` ofrece identity, hierarchy/flat, multi-CPT associations, archive template y field-group associations en master-detail responsive.
-- `DynamicContentManager` usa tabs Content Types / Taxonomies / Field Groups y mantiene cada editor en el mismo Backend workspace.
+- `DynamicContentManager` usa tabs Content Types / Taxonomies / Field Groups / Records y mantiene cada editor en el mismo Backend workspace.
 - E2E prueba 2 CPTs → multi-CPT taxonomy → persistencia → slug inválido → flat + 1 target → persistencia → delete, verificando IndexedDB.
 - Evidencia funcional MF-038: run #766 PASS; cierre documental #776 PASS.
 
@@ -235,12 +237,28 @@ Nunca mezclar estos tres niveles.
 - Config y default value se validan mediante `FieldTypeRegistry`; el group model no duplica validadores por tipo.
 - `presentation` admite `group` o `tabs` como metadata portable.
 - El orden de `fields[]` es el orden canónico persistente; reorder modifica ese array directamente.
-- El delete de field group se bloquea cuando una taxonomy conserva su ID en `fieldGroupIds`.
 - `FieldGroupEditor` ofrece library buscable de field types disponibles, ordered list con reorder y contextual inspector para common settings + config schema.
 - Conditions/role visibility se muestran honestamente como portable/modelado, sin UI/runtime falso antes de su fase.
 - `ProjectSession` expone create/update/remove field group y reutiliza autosave/recovery.
 - E2E verifica create → add/config fields → reorder → durable IndexedDB → reload → edit → durable save → delete → durable removal.
 - Evidencia funcional MF-040: GitHub Actions run #834 PASS; cierre documental #850 PASS.
+
+## Contenido dinámico F05 — MF-041 Records CRUD
+- `CanonicalProject.records` es la única fuente persistente de records; no existe store paralelo ni cache editable independiente.
+- `ContentRecordDefinition.version = 1`.
+- Record data portable incluye `id`, `contentTypeId`, `status`, `title`, `slug`, `excerpt`, `content`, `fieldGroupIds`, `fieldValues`, `createdAt`, `updatedAt`.
+- Estados disponibles: `draft`, `published`, `archived`.
+- Record ID y `createdAt` son inmutables; slug debe ser único dentro de su Content Type.
+- Cada record debe resolver un CPT existente y solo puede seleccionar Field Groups existentes.
+- Custom values se almacenan por `fieldGroupId` + field storage `name`, reciben defaults del schema, aplican `required` y se validan mediante `FieldTypeRegistry`.
+- Unknown field/group references y values inválidos se rechazan en core antes de persistir.
+- `listContentRecords` admite filtros por `contentTypeId`, `status` y búsqueda title/slug.
+- `ProjectSession` expone create/update/remove record y reutiliza autosave/recovery con `projectRef.current`.
+- `RecordsEditor` ofrece filtros + master-detail responsive, core fields según CPT `supports`, selección de Field Groups y controles de valor para los tipos disponibles.
+- Featured image se reconoce como capability del CPT, pero Media Library/picker permanece fuera de MF-041; la UI no simula una función inexistente.
+- La API pública de removal de Field Groups pasa por `removeFieldGroupWithRecordIntegrity`: bloquea grupos usados por records antes de delegar al guard de taxonomías.
+- E2E Records verifica create → required validation → custom values → durable IndexedDB → search/status filters → reload → edit/archive → durable update → delete → durable removal.
+- Evidencia funcional MF-041: GitHub Actions run #901 PASS; cierre documental pendiente.
 
 ## Evidencia F04
 - MF-034 definitiva: run #568 PASS.
@@ -255,4 +273,5 @@ Nunca mezclar estos tres niveles.
 - MF-038 Taxonomy model + editor: DONE, run #766 PASS; docs #776 PASS.
 - MF-039 Field type registry: DONE, run #786 PASS; docs #800 PASS.
 - MF-040 Custom field groups: DONE, run #834 PASS; docs #850 PASS.
-- Siguiente: MF-041 Records CRUD, solo después de que el HEAD actual confirme todos los gates verdes.
+- MF-041 Records CRUD: DONE, run #901 PASS; cierre documental pendiente.
+- Siguiente: MF-042 Advanced fields, únicamente después de un cierre documental completamente verde.
