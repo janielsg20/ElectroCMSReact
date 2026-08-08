@@ -21,3 +21,10 @@ This compact log mirrors durable architectural decisions from `DECISIONS.md` for
 
 ## F05
 - ADR-029: field types use a framework-neutral versioned `FieldTypeRegistry`; config/value validation, capability states and migrations stay in core while advanced types remain `modeled` until their dedicated microphases.
+- ADR-030: custom field groups/fields persist only as versioned portable JSON inside `CanonicalProject.fieldGroups`.
+- ADR-031: custom field behavior/config/default validation resolves through `FieldTypeRegistry`; MF-040 does not instantiate `modeled` advanced types.
+- ADR-032: `FieldGroupDefinition.fields[]` order is the canonical persisted field order; no parallel ordering store.
+- ADR-033: field-group delete is blocked while taxonomies reference the group.
+
+## Editor UX
+- ADR-034: primary visual authoring uses top command bar + left Insert/Elements Library + dominant canvas + right inspector. Elementor is only a familiar interaction-model reference; ElectroCMS implementation/identity remains original. Backend list/edit workflows may use dense master-detail without changing the visual-editor anatomy.
