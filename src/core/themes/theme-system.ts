@@ -1,4 +1,4 @@
-import { isJsonObject, type JsonObject } from '../domain';
+import type { JsonObject, JsonValue } from '../domain';
 
 export type ProjectThemeScope = 'frontend' | 'backend';
 
@@ -32,6 +32,33 @@ function cloneTheme(theme: ProjectThemeDefinition): ProjectThemeDefinition {
   return structuredClone(theme);
 }
 
+function isPortableJsonValue(value: unknown): value is JsonValue {
+  if (
+    value === null ||
+    typeof value === 'string' ||
+    typeof value === 'boolean' ||
+    (typeof value === 'number' && Number.isFinite(value))
+  ) {
+    return true;
+  }
+
+  if (Array.isArray(value)) return value.every(isPortableJsonValue);
+  if (typeof value !== 'object') return false;
+
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) return false;
+  return Object.values(value as Record<string, unknown>).every(isPortableJsonValue);
+}
+
+function isPortableJsonObject(value: unknown): value is JsonObject {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  return (
+    (prototype === Object.prototype || prototype === null) &&
+    Object.values(value as Record<string, unknown>).every(isPortableJsonValue)
+  );
+}
+
 export function validateProjectThemeDefinition(input: unknown): ProjectThemeValidation {
   const issues: ProjectThemeValidationIssue[] = [];
   if (input === null || typeof input !== 'object' || Array.isArray(input)) {
@@ -46,6 +73,7 @@ export function validateProjectThemeDefinition(input: unknown): ProjectThemeVali
   const scope = value.scope;
   const label = typeof value.label === 'string' ? value.label.trim() : '';
   const description = typeof value.description === 'string' ? value.description.trim() : '';
+  const tokensArePortable = isPortableJsonObject(value.tokens);
 
   if (!THEME_ID_PATTERN.test(id)) {
     issues.push({
@@ -65,11 +93,14 @@ export function validateProjectThemeDefinition(input: unknown): ProjectThemeVali
   if (!description) {
     issues.push({ code: 'INVALID_DESCRIPTION', message: 'Theme description is required.' });
   }
-  if (!isJsonObject(value.tokens)) {
-    issues.push({ code: 'INVALID_TOKENS', message: 'Theme tokens must be a JSON object.' });
+  if (!tokensArePortable) {
+    issues.push({
+      code: 'INVALID_TOKENS',
+      message: 'Theme tokens must be a portable plain JSON object.',
+    });
   }
 
-  if (issues.length > 0 || (scope !== 'frontend' && scope !== 'backend') || !isJsonObject(value.tokens)) {
+  if (issues.length > 0 || (scope !== 'frontend' && scope !== 'backend') || !tokensArePortable) {
     return { valid: false, issues };
   }
 
