@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState, type MouseEvent } from 'react';
-import type { CanonicalDocument, DocumentClipboardPayload } from '../../../core/project';
+import {
+  readNodeGeometry,
+  type CanonicalDocument,
+  type DocumentClipboardPayload,
+  type NodeGeometryPatch,
+  type SnapGuide,
+} from '../../../core/project';
 import { CanvasOverlayLayer } from './CanvasOverlayLayer';
 import { CanvasRenderer } from './CanvasRenderer';
 import type { CanvasDocumentActions } from './use-canvas-document-actions';
@@ -7,14 +13,22 @@ import { useCanvasSelection } from './use-canvas-selection';
 
 export interface EditorCanvasProps {
   document: CanonicalDocument;
+  breakpointId: string;
   viewportWidth: number;
   zoom: number;
   actions?: CanvasDocumentActions;
 }
 
-export function EditorCanvas({ document, viewportWidth, zoom, actions }: EditorCanvasProps) {
+export function EditorCanvas({
+  document,
+  breakpointId,
+  viewportWidth,
+  zoom,
+  actions,
+}: EditorCanvasProps) {
   const selection = useCanvasSelection(Object.keys(document.nodes));
   const [clipboard, setClipboard] = useState<DocumentClipboardPayload | null>(null);
+  const [guides, setGuides] = useState<readonly SnapGuide[]>([]);
   const selectedNodes = useMemo(
     () => selection.selectedNodeIds.flatMap((nodeId) => {
       const node = document.nodes[nodeId];
@@ -25,13 +39,18 @@ export function EditorCanvas({ document, viewportWidth, zoom, actions }: EditorC
   const primaryNode = selection.primaryNodeId
     ? document.nodes[selection.primaryNodeId] ?? null
     : null;
+  const primaryGeometry = primaryNode ? readNodeGeometry(primaryNode, breakpointId) : null;
   const allLocked = selectedNodes.length > 0 && selectedNodes.every((node) => node.locked === true);
   const allHidden = selectedNodes.length > 0 && selectedNodes.every((node) => node.hidden === true);
   const canUngroup = selectedNodes.length === 1 && primaryNode?.type === 'core/group';
+  const canEditGeometry = selectedNodes.length === 1 && primaryNode?.locked !== true;
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') selection.clearSelection();
+      if (event.key === 'Escape') {
+        selection.clearSelection();
+        setGuides([]);
+      }
     };
     globalThis.addEventListener('keydown', handleKeyDown);
     return () => globalThis.removeEventListener('keydown', handleKeyDown);
@@ -43,7 +62,13 @@ export function EditorCanvas({ document, viewportWidth, zoom, actions }: EditorC
 
   const selectIds = (nodeIds: readonly string[]) => {
     selection.clearSelection();
+    setGuides([]);
     nodeIds.forEach((nodeId, index) => selection.selectNode(nodeId, index > 0));
+  };
+
+  const selectNode = (nodeId: string, additive: boolean) => {
+    setGuides([]);
+    selection.selectNode(nodeId, additive);
   };
 
   const copySelection = () => {
@@ -56,6 +81,7 @@ export function EditorCanvas({ document, viewportWidth, zoom, actions }: EditorC
     if (!nextClipboard) return;
     setClipboard(nextClipboard);
     selection.clearSelection();
+    setGuides([]);
   };
 
   const pasteSelection = () => {
@@ -71,7 +97,10 @@ export function EditorCanvas({ document, viewportWidth, zoom, actions }: EditorC
 
   const ungroupSelection = () => {
     if (!actions || !selection.primaryNodeId || !canUngroup) return;
-    if (actions.ungroupNode(selection.primaryNodeId)) selection.clearSelection();
+    if (actions.ungroupNode(selection.primaryNodeId)) {
+      selection.clearSelection();
+      setGuides([]);
+    }
   };
 
   const toggleLocked = () => {
@@ -84,12 +113,28 @@ export function EditorCanvas({ document, viewportWidth, zoom, actions }: EditorC
     actions.setHidden(selection.selectedNodeIds, !allHidden);
   };
 
+  const applyGeometry = (patch: NodeGeometryPatch) => {
+    if (!actions || !primaryNode || !canEditGeometry) return;
+    const result = actions.setGeometry(primaryNode.id, patch, viewportWidth);
+    setGuides(result.applied ? result.guides : []);
+  };
+
+  const numericGeometryChange = (key: keyof NodeGeometryPatch, rawValue: string) => {
+    if (rawValue.trim() === '') return;
+    const value = Number(rawValue);
+    if (!Number.isFinite(value)) return;
+    applyGeometry({ [key]: value });
+  };
+
   return (
     <section
       className="editor-canvas"
       aria-label="Visual document canvas"
       data-testid="editor-canvas"
-      onClick={selection.clearSelection}
+      onClick={() => {
+        selection.clearSelection();
+        setGuides([]);
+      }}
     >
       {actions ? (
         <div
@@ -126,21 +171,104 @@ export function EditorCanvas({ document, viewportWidth, zoom, actions }: EditorC
           <output className="canvas-selection-summary" aria-live="polite">
             {selectedNodes.length} selected
           </output>
+          {primaryGeometry && selectedNodes.length === 1 ? (
+            <div className="canvas-geometry-controls" aria-label="Selected node geometry">
+              <span className="canvas-command-divider" aria-hidden="true" />
+              <label>
+                <span>X</span>
+                <input
+                  aria-label="X position"
+                  type="number"
+                  value={primaryGeometry.x}
+                  disabled={!canEditGeometry}
+                  onChange={(event) => numericGeometryChange('x', event.target.value)}
+                />
+              </label>
+              <label>
+                <span>Y</span>
+                <input
+                  aria-label="Y position"
+                  type="number"
+                  value={primaryGeometry.y}
+                  disabled={!canEditGeometry}
+                  onChange={(event) => numericGeometryChange('y', event.target.value)}
+                />
+              </label>
+              <label>
+                <span>W</span>
+                <input
+                  aria-label="Node width"
+                  type="number"
+                  min="32"
+                  placeholder="auto"
+                  value={primaryGeometry.width ?? ''}
+                  disabled={!canEditGeometry}
+                  onChange={(event) => numericGeometryChange('width', event.target.value)}
+                />
+              </label>
+              <label>
+                <span>H</span>
+                <input
+                  aria-label="Node height"
+                  type="number"
+                  min="32"
+                  placeholder="auto"
+                  value={primaryGeometry.height ?? ''}
+                  disabled={!canEditGeometry}
+                  onChange={(event) => numericGeometryChange('height', event.target.value)}
+                />
+              </label>
+              <button
+                type="button"
+                aria-label="Nudge left"
+                disabled={!canEditGeometry}
+                onClick={() => applyGeometry({ x: primaryGeometry.x - 8 })}
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                aria-label="Nudge right"
+                disabled={!canEditGeometry}
+                onClick={() => applyGeometry({ x: primaryGeometry.x + 8 })}
+              >
+                →
+              </button>
+              <button
+                type="button"
+                aria-label="Nudge up"
+                disabled={!canEditGeometry}
+                onClick={() => applyGeometry({ y: primaryGeometry.y - 8 })}
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                aria-label="Nudge down"
+                disabled={!canEditGeometry}
+                onClick={() => applyGeometry({ y: primaryGeometry.y + 8 })}
+              >
+                ↓
+              </button>
+            </div>
+          ) : null}
         </div>
       ) : null}
       <div className="editor-canvas-layers">
         <CanvasRenderer
           document={document}
+          breakpointId={breakpointId}
           viewportWidth={viewportWidth}
           zoom={zoom}
           selectedNodeIds={selection.selectedNodeIds}
-          onSelectNode={selection.selectNode}
+          onSelectNode={selectNode}
           {...(actions ? { onMoveNode: actions.moveNode } : {})}
         />
         <CanvasOverlayLayer
           viewportWidth={viewportWidth}
           zoom={zoom}
           selectedNodeIds={selection.selectedNodeIds}
+          guides={guides}
         />
       </div>
     </section>
