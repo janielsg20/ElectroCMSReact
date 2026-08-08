@@ -9,6 +9,7 @@ import {
   setDocumentNodesHidden,
   setDocumentNodesLocked,
   ungroupDocumentNode,
+  type CanonicalDocument,
   type DocumentClipboardPayload,
   type DocumentNode,
 } from '../../../core/project';
@@ -56,17 +57,20 @@ function createGroupNode(id: string): DocumentNode {
 
 export function useCanvasDocumentActions(): CanvasDocumentActions {
   const session = useProjectSession();
-  const activeDocument = () => session.project.documents[session.activeDocumentId];
+  const getActiveDocument = useCallback(
+    () => session.project.documents[session.activeDocumentId],
+    [session.activeDocumentId, session.project.documents],
+  );
 
   const execute = useCallback(
-    (label: string, before: NonNullable<ReturnType<typeof activeDocument>>, after: NonNullable<ReturnType<typeof activeDocument>>) =>
+    (label: string, before: CanonicalDocument, after: CanonicalDocument) =>
       session.executeDocumentCommand(createDocumentCommand(label, before, after)),
-    [session],
+    [session.executeDocumentCommand],
   );
 
   const insertContainer = useCallback(
     (parentId?: string, index?: number): string | null => {
-      const document = activeDocument();
+      const document = getActiveDocument();
       if (!document) return null;
       const id = createEntityId('node');
       const ordinal = Object.keys(document.nodes).length;
@@ -76,12 +80,12 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
       });
       return execute('Insert container', document, nextDocument) ? id : null;
     },
-    [execute, session.activeDocumentId, session.project.documents],
+    [execute, getActiveDocument],
   );
 
   const moveNode = useCallback(
     (nodeId: string, parentId: string, index?: number): boolean => {
-      const document = activeDocument();
+      const document = getActiveDocument();
       if (!document) return false;
       try {
         const nextDocument = moveDocumentNode(document, nodeId, {
@@ -93,12 +97,12 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
         return false;
       }
     },
-    [execute, session.activeDocumentId, session.project.documents],
+    [execute, getActiveDocument],
   );
 
   const cutNodes = useCallback(
     (nodeIds: readonly string[]): DocumentClipboardPayload | null => {
-      const document = activeDocument();
+      const document = getActiveDocument();
       if (!document) return null;
       try {
         const cut = cutDocumentSubtrees(document, nodeIds);
@@ -107,7 +111,7 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
         return null;
       }
     },
-    [execute, session.activeDocumentId, session.project.documents],
+    [execute, getActiveDocument],
   );
 
   const pasteClipboard = useCallback(
@@ -116,7 +120,7 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
       parentId?: string,
       index?: number,
     ): readonly string[] => {
-      const document = activeDocument();
+      const document = getActiveDocument();
       if (!document) return [];
       try {
         const pasted = pasteDocumentClipboard(
@@ -131,12 +135,12 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
         return [];
       }
     },
-    [execute, session.activeDocumentId, session.project.documents],
+    [execute, getActiveDocument],
   );
 
   const groupNodes = useCallback(
     (nodeIds: readonly string[]): string | null => {
-      const document = activeDocument();
+      const document = getActiveDocument();
       if (!document) return null;
       try {
         const groupId = createEntityId('node');
@@ -146,12 +150,12 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
         return null;
       }
     },
-    [execute, session.activeDocumentId, session.project.documents],
+    [execute, getActiveDocument],
   );
 
   const ungroupNode = useCallback(
     (groupId: string): boolean => {
-      const document = activeDocument();
+      const document = getActiveDocument();
       if (!document) return false;
       try {
         return execute('Ungroup nodes', document, ungroupDocumentNode(document, groupId));
@@ -159,12 +163,12 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
         return false;
       }
     },
-    [execute, session.activeDocumentId, session.project.documents],
+    [execute, getActiveDocument],
   );
 
   const setLocked = useCallback(
     (nodeIds: readonly string[], locked: boolean): boolean => {
-      const document = activeDocument();
+      const document = getActiveDocument();
       if (!document || nodeIds.length === 0) return false;
       try {
         return execute(
@@ -176,12 +180,12 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
         return false;
       }
     },
-    [execute, session.activeDocumentId, session.project.documents],
+    [execute, getActiveDocument],
   );
 
   const setHidden = useCallback(
     (nodeIds: readonly string[], hidden: boolean): boolean => {
-      const document = activeDocument();
+      const document = getActiveDocument();
       if (!document || nodeIds.length === 0) return false;
       try {
         return execute(
@@ -193,7 +197,7 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
         return false;
       }
     },
-    [execute, session.activeDocumentId, session.project.documents],
+    [execute, getActiveDocument],
   );
 
   return {
