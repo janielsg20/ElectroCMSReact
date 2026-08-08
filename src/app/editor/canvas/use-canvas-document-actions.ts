@@ -45,6 +45,7 @@ export interface CanvasDocumentActions {
   insertWidget(type: string, parentId?: string, index?: number): string | null;
   insertContainer(parentId?: string, index?: number): string | null;
   moveNode(nodeId: string, parentId: string, index?: number): boolean;
+  renameNode(nodeId: string, name: string): boolean;
   copyNodes(nodeIds: readonly string[]): DocumentClipboardPayload | null;
   cutNodes(nodeIds: readonly string[]): DocumentClipboardPayload | null;
   pasteClipboard(
@@ -122,6 +123,22 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
           ...(index === undefined ? {} : { index }),
         });
         return execute('Move node', document, nextDocument);
+      } catch {
+        return false;
+      }
+    },
+    [execute, getActiveDocument],
+  );
+
+  const renameNode = useCallback(
+    (nodeId: string, name: string): boolean => {
+      const document = getActiveDocument();
+      const node = document?.nodes[nodeId];
+      const nextName = name.trim();
+      if (!document || !node || !nextName || node.name === nextName) return false;
+      try {
+        const nextDocument = updateDocumentNode(document, nodeId, (current) => ({ ...current, name: nextName }));
+        return execute('Rename node', document, nextDocument);
       } catch {
         return false;
       }
@@ -340,6 +357,7 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
     insertWidget,
     insertContainer,
     moveNode,
+    renameNode,
     copyNodes,
     cutNodes,
     pasteClipboard,
