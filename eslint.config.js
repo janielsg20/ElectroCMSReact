@@ -38,7 +38,20 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      'react-refresh/only-export-components': ['error', { allowConstantExport: true }],
+    },
+  },
+  {
+    // These are registry modules: they intentionally co-locate widget contracts,
+    // factories and internal React preview renderers. They are not component
+    // module boundaries and are rebuilt through the registry during development.
+    files: [
+      'src/app/widgets/core-basic-content-widgets.tsx',
+      'src/app/widgets/core-dynamic-contract-widgets.tsx',
+      'src/app/widgets/core-structural-widgets.tsx',
+    ],
+    rules: {
+      'react-refresh/only-export-components': 'off',
     },
   },
 );
