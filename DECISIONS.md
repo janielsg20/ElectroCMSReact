@@ -36,7 +36,7 @@
 **Why:** switching Editor → Preview → Backend → Export must never reset the active project context or create independent copies of project state.
 
 ## ADR-008 — Editor workspace preferences are not project data
-**Decision:** navigation layout, density, last workspace and editor theme mode are persisted through a dedicated workspace preferences repository.
+**Decision:** navigation layout, density, last workspace and editor appearance are persisted through a dedicated workspace preferences repository.
 
 **Why:** editor ergonomics belong to the ElectroCMS workspace and must not alter exported frontend/backend data or the canonical project model.
 
@@ -110,8 +110,8 @@
 
 **Why:** rerendering during the native browser gesture can cancel or destabilize DnD. Stable hit areas also provide more predictable no-code-builder interaction.
 
-## ADR-023 — Editor appearance and project themes are three separate planes
-**Decision:** editor light/dark mode, editor preset, and frontend/backend project themes are distinct systems. Editor mode/preset are workspace preferences; frontend/backend IDs are canonical project data.
+## ADR-023 — Editor appearance and project themes remain separate planes
+**Decision:** editor appearance (`light`/`dark`/`auto`), the ElectroCMS editor visual system, and frontend/backend project themes are distinct concerns. Editor appearance/system are workspace concerns; frontend/backend IDs are canonical project data.
 
 **Why:** changing how ElectroCMS looks must never alter the site/admin UI being authored, while project themes must autosave and export with the project.
 
@@ -131,11 +131,16 @@
 **Why:** package boundaries are untrusted file boundaries and need deterministic validation before they enter the local registry.
 
 ## ADR-027 — No-code editor design principles are adapted, not framework-copied
-**Decision:** ElectroCMS adopts relevant principles from `nextlevelbuilder/ui-ux-pro-max-skill` (`ui-ux-pro-max`, `design-system`, `ui-styling`) through its own design-system docs, without forcing a Tailwind/shadcn migration.
+**Decision:** ElectroCMS adopts relevant principles from UI/UX and React skills through its own design-system docs, without forcing an unrelated framework migration.
 
-**Why:** the external material provides useful accessibility, token, density and interaction guidance, but ElectroCMS already has a working React/CSS architecture. Product principles should improve the system rather than trigger an unrelated rewrite.
+**Why:** external guidance provides useful accessibility, token, density, interaction and React-performance practices, but ElectroCMS already has a working React/CSS architecture. Product principles should improve the system rather than trigger an unrelated rewrite.
 
 ## ADR-028 — Preview deployments are manual-only
 **Decision:** `vercel.json` sets `git.deploymentEnabled=false`; Vercel deployments only occur after explicit user instruction.
 
 **Why:** automatic deployments consumed daily preview quota during phase development. GitHub Actions remains the continuous quality gate; deployment is a separate, deliberate action.
+
+## ADR-029 — One Bento High Density visual language for the ElectroCMS editor
+**Decision:** retire selectable editor UI/UX presets and use a single editor visual system identified as `bento-high-density`. `light`, `dark` and `auto` remain appearance modes of that same visual system. Legacy schema-v1 workspace preferences that contain former preset IDs normalize to the unified ID. Frontend/backend project themes remain independent and unchanged.
+
+**Why:** one coherent high-density Bento authoring language reduces visual fragmentation, improves learnability, responsive consistency and accessibility, and prevents editor chrome choices from being confused with project design. Retaining the legacy preference field as a constrained compatibility value avoids an unnecessary persistence-schema break.
