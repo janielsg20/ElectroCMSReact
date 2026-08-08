@@ -36,4 +36,31 @@ export {
   removeFieldGroupWithRecordIntegrity,
   removeFieldGroupWithRecordIntegrity as removeFieldGroup,
 } from './field-group-record-integrity';
-export * from './content-record';
+export {
+  CONTENT_RECORD_STATUSES,
+  CONTENT_RECORD_VERSION,
+  normalizeContentRecordDefinition,
+  serializeContentRecordDefinition,
+  type ContentRecordDefinition,
+  type ContentRecordListOptions,
+  type ContentRecordMutationError,
+  type ContentRecordMutationErrorCode,
+  type ContentRecordMutationResult,
+  type ContentRecordStatus,
+  type ContentRecordValidationCode,
+  type ContentRecordValidationIssue,
+  type ContentRecordValidationResult,
+} from './content-record';
+export {
+  createAdvancedContentRecord,
+  createAdvancedContentRecord as createContentRecord,
+  createDefaultContentRecordDefinition,
+  listAdvancedContentRecords,
+  listAdvancedContentRecords as listContentRecords,
+  removeAdvancedContentRecord,
+  removeAdvancedContentRecord as removeContentRecord,
+  updateAdvancedContentRecord,
+  updateAdvancedContentRecord as updateContentRecord,
+  validateAdvancedContentRecordDefinition,
+  validateAdvancedContentRecordDefinition as validateContentRecordDefinition,
+} from './advanced-content-record';
