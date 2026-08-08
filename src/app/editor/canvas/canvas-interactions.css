@@ -1,0 +1,221 @@
+.canvas-command-bar {
+  position: sticky;
+  z-index: 8;
+  top: 8px;
+  justify-self: center;
+  align-self: start;
+  min-height: 32px;
+  max-width: min(100%, calc(100vw - 96px));
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: -28px 0 10px;
+  padding: 3px;
+  overflow-x: auto;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--surface-raised) 94%, transparent);
+  box-shadow: 0 8px 24px var(--shadow);
+}
+
+.canvas-command-bar button {
+  flex: 0 0 auto;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  border-radius: 5px;
+  color: var(--text-strong);
+  background: var(--accent-soft);
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.canvas-command-bar button:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface-hover));
+}
+
+.canvas-command-bar button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.canvas-command-divider {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 18px;
+  margin: 0 2px;
+  padding: 0 !important;
+  background: var(--border);
+}
+
+.canvas-selection-summary {
+  flex: 0 0 auto;
+  min-width: 60px;
+  padding: 0 6px;
+  color: var(--text-faint);
+  font-size: 9px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.canvas-geometry-controls {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.canvas-geometry-controls label {
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 4px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--surface-subtle);
+}
+
+.canvas-geometry-controls label > span {
+  padding: 0;
+  color: var(--text-faint);
+  font-size: 8px;
+  font-weight: 750;
+}
+
+.canvas-geometry-controls input {
+  width: 54px;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: var(--text-strong);
+  background: transparent;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.canvas-geometry-controls input:disabled {
+  color: var(--text-faint);
+}
+
+.canvas-geometry-controls button {
+  width: 26px;
+  padding: 0;
+}
+
+.canvas-child-entry {
+  min-width: 0;
+  display: contents;
+}
+
+.canvas-drop-zone {
+  position: relative;
+  z-index: 2;
+  min-height: 10px;
+  margin: 0;
+  border-radius: 4px;
+  transition: min-height 90ms ease, background 90ms ease;
+}
+
+.canvas-document-root > .canvas-drop-zone {
+  min-height: 18px;
+}
+
+.canvas-drop-zone::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: transparent;
+  transform: translateY(-50%);
+}
+
+.canvas-drop-zone:hover,
+.canvas-drop-zone[data-drag-active="true"] {
+  min-height: 18px;
+  background: var(--accent-soft);
+}
+
+.canvas-drop-zone:hover::after,
+.canvas-drop-zone[data-drag-active="true"]::after {
+  background: var(--accent);
+}
+
+.canvas-node[draggable="true"] > .canvas-node-label {
+  cursor: grab;
+}
+
+.canvas-node[draggable="true"]:active > .canvas-node-label {
+  cursor: grabbing;
+}
+
+.canvas-node[data-locked="true"] > .canvas-node-label::after {
+  content: "Locked";
+  margin-left: auto;
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-faint);
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.canvas-node[data-hidden="true"] {
+  opacity: 0.48;
+  border-style: dashed;
+}
+
+.canvas-node[data-hidden="true"] > .canvas-node-label::before {
+  content: "Hidden";
+  margin-right: 6px;
+  color: var(--text-faint);
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.canvas-node[data-selected="true"] {
+  opacity: 1;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.canvas-node[role="option"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.canvas-snap-guide {
+  position: absolute;
+  z-index: 7;
+  display: block;
+  pointer-events: none;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.canvas-snap-guide[data-axis="x"] {
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+
+.canvas-snap-guide[data-axis="y"] {
+  right: 0;
+  left: 0;
+  height: 1px;
+}
+
+@media (max-width: 640px) {
+  .canvas-command-bar {
+    max-width: calc(100vw - 36px);
+  }
+}

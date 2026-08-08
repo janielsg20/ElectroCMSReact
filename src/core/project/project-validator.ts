@@ -118,6 +118,38 @@ function validateDocument(
     pushIssue(issues, `${path}.rootNodeId`, 'MISSING_ROOT', 'Root node does not exist.');
   }
 
+  const parentByChildId = new Map<string, string>();
+  for (const [parentId, node] of Object.entries(nodes)) {
+    if (!isRecord(node) || !Array.isArray(node.children)) continue;
+
+    for (const childId of node.children) {
+      if (typeof childId !== 'string' || !(childId in nodes)) continue;
+      const existingParentId = parentByChildId.get(childId);
+      if (existingParentId && existingParentId !== parentId) {
+        pushIssue(
+          issues,
+          `${path}.nodes.${parentId}.children`,
+          'MULTIPLE_PARENTS',
+          `Child ${childId} is referenced by both ${existingParentId} and ${parentId}.`,
+        );
+        continue;
+      }
+      parentByChildId.set(childId, parentId);
+    }
+  }
+
+  if (isNonEmptyString(value.rootNodeId)) {
+    const rootParentId = parentByChildId.get(value.rootNodeId);
+    if (rootParentId) {
+      pushIssue(
+        issues,
+        `${path}.nodes.${rootParentId}.children`,
+        'ROOT_HAS_PARENT',
+        `Root node ${value.rootNodeId} cannot be referenced as a child.`,
+      );
+    }
+  }
+
   const visited = new Set<string>();
   const visiting = new Set<string>();
   const visit = (nodeId: string): void => {

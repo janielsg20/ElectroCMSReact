@@ -1,8 +1,11 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { MemoryProjectRepository } from '../core/persistence/memory-project-repository';
+import { MemoryRecoveryRepository } from '../core/persistence/recovery/memory-recovery-repository';
 import { createCanonicalProject } from '../core/project';
 import { App } from './App';
+import { EditorProjectPersistence } from './project/editor-project-persistence';
 import { MemoryWorkspacePreferencesRepository } from './workspace/workspace-preferences-repository';
 
 function makeProject() {
@@ -54,7 +57,8 @@ describe('ElectroCMS editor shell', () => {
     expect(preferencesRepository.load().editorThemeMode).toBe('dark');
   });
 
-  it('keeps undo and redo honestly disabled until document history exists', () => {
+  it('activates undo and redo after a reversible document command', async () => {
+    const user = userEvent.setup();
     render(
       <App
         initialProject={makeProject()}
@@ -62,7 +66,56 @@ describe('ElectroCMS editor shell', () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: 'Undo' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Redo' })).toBeDisabled();
+    const undo = screen.getByRole('button', { name: 'Undo' });
+    const redo = screen.getByRole('button', { name: 'Redo' });
+    expect(undo).toBeDisabled();
+    expect(redo).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: 'Insert container' }));
+    expect(screen.getAllByText('core/container').length).toBeGreaterThan(0);
+    expect(undo).toBeEnabled();
+    expect(redo).toBeDisabled();
+
+    await user.click(undo);
+    expect(screen.queryByText('core/container')).not.toBeInTheDocument();
+    expect(undo).toBeDisabled();
+    expect(redo).toBeEnabled();
+
+    await user.click(redo);
+    expect(screen.getAllByText('core/container').length).toBeGreaterThan(0);
+    expect(undo).toBeEnabled();
+    expect(redo).toBeDisabled();
+  });
+
+  it('moves from dirty to saved after the F01 autosave runtime flushes', async () => {
+    const user = userEvent.setup();
+    const project = makeProject();
+    const projects = new MemoryProjectRepository();
+    const recovery = new MemoryRecoveryRepository();
+    await projects.create(project);
+    const persistence = new EditorProjectPersistence(projects, recovery, {
+      debounceMs: 60_000,
+      now: () => '2026-08-07T20:05:00.000Z',
+    });
+
+    render(
+      <App
+        initialProject={project}
+        projectPersistence={persistence}
+        preferencesRepository={new MemoryWorkspacePreferencesRepository()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Insert container' }));
+    expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+
+    await persistence.flush();
+    await waitFor(() => expect(screen.getByText('Saved locally')).toBeInTheDocument());
+
+    const saved = await projects.load(project.id);
+    const document = saved?.documents[saved.documentOrder[0] ?? ''];
+    expect(Object.values(document?.nodes ?? {}).some((node) => node.type === 'core/container')).toBe(true);
+    expect(saved?.historyMetadata.revision).toBe(1);
+    expect((await recovery.list(project.id))).toHaveLength(1);
   });
 });

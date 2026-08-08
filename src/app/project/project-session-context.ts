@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { CanonicalProject } from '../../core/project';
+import type { DocumentCommand } from './document-command-history';
 
 export type ProjectSaveState = 'saved' | 'dirty' | 'saving' | 'error';
 
@@ -14,6 +15,9 @@ export interface ProjectSessionState {
   setActiveDocumentId(documentId: string): void;
   setActiveBreakpointId(breakpointId: string): void;
   setZoom(zoom: number): void;
+  executeDocumentCommand(command: DocumentCommand): boolean;
+  undo(): boolean;
+  redo(): boolean;
 }
 
 export const ProjectSessionContext = createContext<ProjectSessionState | null>(null);

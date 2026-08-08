@@ -2,13 +2,14 @@
 
 ## Estado global
 - Estado: READY
-- Fase completada: F02 — Editor shell y workspace responsive
-- Siguiente fase: F03 — Canvas, nodos, DnD e historial
-- Siguiente microfase: MF-019 — Document node tree engine
-- Último quality gate completo: GitHub Actions run #150 PASS
-- Último build válido: GitHub Actions run #150 PASS
+- Fase completada: F03 — Canvas, nodos, DnD e historial
+- Siguiente fase: F04 — Widgets, inspector, responsive y themes
+- Siguiente microfase: MF-027
+- Último quality gate funcional completo: GitHub Actions run #368 PASS
+- Último build válido: GitHub Actions run #368 PASS
 - Repositorio oficial: `janielsg20/ElectroCMSReact`
-- PR de fase: #3 `agent/f02-editor-shell -> main`
+- PR de fase: #4 `agent/f03-canvas-history -> main`
+- Preview automático: Vercel sobre cada push/PR de la rama activa.
 
 ## F00
 | Microfase | Estado | Evidencia |
@@ -35,31 +36,49 @@
 | Microfase | Estado | Evidencia |
 |---|---|---|
 | MF-013 | DONE | History API router para Editor/Preview/Backend/Export y `ProjectSessionProvider` por encima de las rutas; E2E conserva zoom/estado |
-| MF-014 | DONE | Header conectado a project/save/document/breakpoint/zoom; Preview/Export navegan; Undo/Redo permanecen honestamente deshabilitados hasta F03 |
+| MF-014 | DONE | Header conectado a project/save/document/breakpoint/zoom y routing Preview/Export |
 | MF-015 | DONE | Navegación izquierda/derecha, collapse, resize puntero/teclado, reorder, icon/text modes y density |
 | MF-016 | DONE | Estrategias desktop/tablet/mobile, drawer accesible y Playwright sin overflow raíz en 820px y 390px |
 | MF-017 | DONE | Workspace preferences schema v1 en storage separado de `CanonicalProject`; reload E2E |
 | MF-018 | DONE | Editor light/dark/auto persistente e independiente de frontend/backend theme IDs |
 
-## Quality gates F02
+## F03
+| Microfase | Estado | Evidencia |
+|---|---|---|
+| MF-019 | DONE | Motor inmutable de árbol, parent/depth indexes, traversals, invariants y property-style test de 240 operaciones; run #195 PASS |
+| MF-020 | DONE | Renderer recursivo del modelo canónico, overlay separado, empty-root e invalid-tree fallback; run #211 PASS |
+| MF-021 | DONE | Inserción, reorder/nesting y DnD semántico `{nodeId,parentId,index}` con targets estables; run #256 PASS |
+| MF-022 | DONE | Selección simple/múltiple transitoria, teclado, Escape y convivencia con DnD; run #276 PASS |
+| MF-023 | DONE | `DocumentCommand` reversible por documento, Undo/Redo real y atajos; run #296 PASS |
+| MF-024 | DONE | Copy/Cut/Paste con fresh IDs, Group/Ungroup, Lock/Hide, todo reversible; run #320 PASS |
+| MF-025 | DONE | Geometría responsive X/Y/W/H, nudge, snapping semántico+grid, guías y Undo; run #348 PASS |
+| MF-026 | DONE | Autosave editor integrado con F01, dirty/saving/saved/error, hydration/recovery e IndexedDB reload E2E; run #368 PASS |
+
+## Quality gates F03
 - `npm run verify:repo` — PASS
 - `npm run lint` — PASS
 - `npm run typecheck` — PASS
-- `npm run test` — PASS (22 unit/integration tests)
+- `npm run test` — PASS
 - `npm run test:coverage` — PASS
-- `npm run test:e2e` — PASS (6 Playwright tests)
+- `npm run test:e2e` — PASS
 - `npm run build` — PASS
 
-## Incidencias resueltas en F02
-- Separados providers de hooks/context para cumplir Fast Refresh sin desactivar lint.
-- `useMediaQuery` usa `useSyncExternalStore`, evitando sincronización manual de estado en effects.
-- `exactOptionalPropertyTypes` se conserva; providers omiten props opcionales cuando no existen.
-- El harness global hace `cleanup()` entre component tests para impedir contaminación de DOM.
-- El header compacto usa scroll horizontal local y `contain: inline-size paint`; el contenido interno ya no crea overflow del `documentElement` en 390px.
-- El layout tablet conserva documento, breakpoint, zoom, exportación y navegación mediante drawer.
+## Invariantes consolidadas en F03
+- El DOM nunca es fuente de verdad; el canvas es una proyección de `CanonicalDocument`.
+- Parent/depth/traversals son derivados; `parentId` no se persiste.
+- DnD opera por IDs/targets semánticos y toda mutación estructural valida invariantes.
+- Selección, clipboard UI, guides y estado de interacción son transitorios y no entran al proyecto.
+- Undo/Redo usa comandos canónicos reversibles por documento; nunca snapshots del DOM.
+- Paste remapea todos los IDs del subárbol copiado antes de insertarlo.
+- Lock/Hide/Group/Ungroup son cambios canónicos y reversibles.
+- Geometría usa `ResponsiveStyleSet` existente (`layout.x/y/width/height`) por breakpoint; no existe un segundo modelo geométrico.
+- Viewport center/edges tienen prioridad sobre grid snapping cuando ambos están dentro del threshold.
+- Autosave reutiliza repositorios F01; recovery snapshot se escribe antes del proyecto principal.
+- Revisiones de autosave son monotónicas incluso si llega un payload pendiente con metadata stale.
+- Un callback de guardado nunca reemplaza contenido editor más nuevo: solo fusiona metadata de persistencia.
 
 ## Evidencia funcional de cierre
-GitHub Actions `ElectroCMS Quality Gates`, run #150, commit `411cf937771171e3d1d0f8bed25fb90a0b23ef4c`: `success`.
+GitHub Actions `ElectroCMS Quality Gates`, run #368, commit `21fa21d177f5481b50113fe75da9e1e9ec5dad91`: `success`.
 
 ## Regla de salida
-F02 queda completada funcionalmente. Los cambios documentales de cierre deben volver a pasar el gate completo antes de integrar PR #3. Después puede comenzar F03/MF-019.
+F03 queda completada funcionalmente. Los cambios documentales de cierre deben volver a pasar el gate completo antes de integrar PR #4. F04/MF-027 solo puede comenzar desde `main` después de ese merge.
