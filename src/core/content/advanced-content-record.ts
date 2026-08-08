@@ -15,11 +15,10 @@ import {
 } from './content-record';
 import { createContentFieldTypeRegistry } from './advanced-field-types';
 import {
-  MF042_ADVANCED_FIELD_TYPES,
   createAdvancedFieldDefaultValue,
+  isMf042AdvancedField,
   normalizeAdvancedFieldValue,
   validateAdvancedFieldValue,
-  type Mf042AdvancedFieldType,
 } from './advanced-field-runtime';
 import { listAdvancedFieldGroupDefinitions } from './advanced-field-group';
 import type { FieldGroupDefinition } from './field-group';
@@ -50,7 +49,7 @@ function normalizeAdvancedRecordInput(
 
     for (const field of group.fields) {
       if (values[field.name] !== undefined) continue;
-      values[field.name] = MF042_ADVANCED_FIELD_TYPES.includes(field.type as Mf042AdvancedFieldType)
+      values[field.name] = isMf042AdvancedField(field)
         ? createAdvancedFieldDefaultValue(field, {
             registry,
             resolveGroup: (id) => groups.get(id) ?? null,
@@ -59,9 +58,9 @@ function normalizeAdvancedRecordInput(
         : structuredClone(field.defaultValue);
     }
 
-    // Normalize structural fields first so their nested payload is stable before derived fields run.
+    // Normalize v2 structural fields first so their nested payload is stable before derived fields run.
     for (const field of group.fields) {
-      if (field.type !== 'core/group' && field.type !== 'core/repeater') continue;
+      if (!isMf042AdvancedField(field) || (field.type !== 'core/group' && field.type !== 'core/repeater')) continue;
       const value = values[field.name];
       if (!isJsonValue(value)) continue;
       values[field.name] = normalizeAdvancedFieldValue(field, value, {
@@ -71,9 +70,9 @@ function normalizeAdvancedRecordInput(
       });
     }
 
-    // Calculated fields only depend on primitive Number/Currency siblings, so order cannot affect output.
+    // v2 Calculated fields only depend on primitive Number/Currency siblings, so order cannot affect output.
     for (const field of group.fields) {
-      if (field.type !== 'core/calculated') continue;
+      if (!isMf042AdvancedField(field) || field.type !== 'core/calculated') continue;
       const value = values[field.name];
       if (!isJsonValue(value)) continue;
       values[field.name] = normalizeAdvancedFieldValue(field, value, {
@@ -83,9 +82,9 @@ function normalizeAdvancedRecordInput(
       });
     }
 
-    // Conditions run last and can therefore observe normalized primitive/calculated sibling state.
+    // v2 Conditions run last and can therefore observe normalized primitive/calculated sibling state.
     for (const field of group.fields) {
-      if (field.type !== 'core/conditional') continue;
+      if (!isMf042AdvancedField(field) || field.type !== 'core/conditional') continue;
       const value = values[field.name];
       if (!isJsonValue(value)) continue;
       values[field.name] = normalizeAdvancedFieldValue(field, value, {
@@ -115,7 +114,7 @@ function advancedRecordIssues(
     if (!group) continue;
     const values = record.fieldValues[groupId] ?? {};
     for (const field of group.fields) {
-      if (!MF042_ADVANCED_FIELD_TYPES.includes(field.type as Mf042AdvancedFieldType)) continue;
+      if (!isMf042AdvancedField(field)) continue;
       const value = values[field.name];
       if (!isJsonValue(value)) continue;
       const validation = validateAdvancedFieldValue(field, value, {
