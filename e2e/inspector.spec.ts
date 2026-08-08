@@ -13,7 +13,7 @@ test('edits a widget through the generated inspector and undo restores the prior
   const inspector = page.getByRole('complementary', { name: 'Widget inspector' });
   await expect(inspector).toContainText('Heading');
 
-  const textField = inspector.getByLabel('Text');
+  const textField = inspector.getByLabel('Text', { exact: true });
   await textField.fill('Inspector edited heading');
   await textField.blur();
 
