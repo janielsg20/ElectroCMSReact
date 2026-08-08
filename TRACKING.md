@@ -4,9 +4,9 @@
 - Estado: IN_PROGRESS
 - Fase completada: F03 — Canvas, nodos, DnD e historial
 - Fase actual: F04 — Widgets, inspector, responsive y themes
-- Microfase actual: MF-029 — Basic/content widgets
-- Último quality gate completo: GitHub Actions run #434 PASS
-- Último build válido: GitHub Actions run #434 PASS
+- Microfase actual: MF-032 — Style engine
+- Último quality gate completo: GitHub Actions run #479 PASS
+- Último build válido: GitHub Actions run #479 PASS
 - Repositorio oficial: `janielsg20/ElectroCMSReact`
 - PR de fase: #5 `agent/f04-widgets-inspector-themes -> main`
 - Preview automático: Vercel sobre cada push/PR de la rama activa.
@@ -59,10 +59,10 @@
 |---|---|---|
 | MF-027 | DONE | Registry framework-neutral + binding React, factories, validation, child policies, capabilities, migrations y plugin preview sin branching del editor; run #424 PASS |
 | MF-028 | DONE | Container/Group/Section/Grid/Flex/Stack/Divider/Spacer/Tabs/Accordion registrados, inserción genérica y factories registry-driven; run #434 PASS |
-| MF-029 | IN_PROGRESS | Basic/content widgets |
-| MF-030 | TODO | Dynamic/commerce/form/filter widget contracts |
-| MF-031 | TODO | Inspector schema engine |
-| MF-032 | TODO | Style engine |
+| MF-029 | DONE | 16 widgets básicos/contenido con defaults, validación, previews e inserción registry-driven; run #446 PASS |
+| MF-030 | DONE | 19 contratos dynamic/commerce/form/filter con capacidad `modeled`, previews honestos y validación; run #456 PASS |
+| MF-031 | DONE | Inspector schema engine, controles generados, validación, edición canónica y Undo/Redo; run #479 PASS |
+| MF-032 | IN_PROGRESS | Style engine |
 | MF-033 | TODO | Breakpoint engine |
 | MF-034 | TODO | Editor theme presets |
 | MF-035 | TODO | Frontend/backend theme system |
@@ -74,6 +74,8 @@
 - El editor core no contiene branching por cada tipo de widget.
 - Factories producen `DocumentNode` canónicos y las props se validan antes de aceptar el nodo.
 - Inserción de widgets estructurales usa el registry; Container y Group ya no dependen de factories locales paralelas.
+- Widgets dinámicos/commerce/form/filter de F04 permanecen `modeled` hasta que F05/F06 implementen comportamiento real.
+- Inspector UI es transitorio; solo los patches de props validados entran al modelo mediante comandos reversibles.
 - Selección, clipboard UI, guides y estado de interacción son transitorios y no entran al proyecto.
 - Undo/Redo usa comandos canónicos reversibles por documento.
 - Geometría usa `ResponsiveStyleSet` por breakpoint.
