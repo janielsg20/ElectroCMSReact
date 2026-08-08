@@ -116,6 +116,7 @@ function contextualIssues(
 
     if (field.type === 'core/conditional') {
       const sourceField = typeof field.config.sourceField === 'string' ? field.config.sourceField : '';
+      const operator = typeof field.config.operator === 'string' ? field.config.operator : '';
       const source = candidate.fields.find((item) => item.name === sourceField);
       if (!source || source.id === field.id) {
         issues.push({
@@ -128,6 +129,15 @@ function contextualIssues(
           code: 'INVALID_CONFIG',
           path: `fields.${index}.config.sourceField`,
           message: 'Conditional sourceField must reference a non-advanced sibling so its result is independent of schema order.',
+        });
+      } else if (
+        (operator === 'greaterThan' || operator === 'lessThan') &&
+        !['core/number', 'core/currency'].includes(source.type)
+      ) {
+        issues.push({
+          code: 'INVALID_CONFIG',
+          path: `fields.${index}.config.sourceField`,
+          message: 'Numeric Conditional operators require a sibling Number or Currency source field.',
         });
       }
     }
