@@ -1,4 +1,4 @@
-import { ContentTypeEditor } from '../content/ContentTypeEditor';
+import { DynamicContentManager } from '../content/DynamicContentManager';
 import { EditorCanvas } from '../editor/canvas/EditorCanvas';
 import { useCanvasDocumentActions } from '../editor/canvas/use-canvas-document-actions';
 import { useProjectSession } from '../project/project-session-context';
@@ -72,13 +72,13 @@ export function WorkspaceSurface({ workspaceId }: WorkspaceSurfaceProps) {
               {workspaceId === 'preview' ? <ProjectThemeControls scope="frontend" /> : null}
               {workspaceId === 'backend' ? (
                 <>
-                  <ContentTypeEditor />
+                  <DynamicContentManager />
                   <ProjectThemeControls scope="backend" />
                 </>
               ) : null}
               <p className="stage-boundary-note">
                 {workspaceId === 'backend'
-                  ? 'Content model configuration is active; records, taxonomies and final backend rendering arrive in later F05/F06 microphases.'
+                  ? 'Content Types and Taxonomies are active; field definitions, records and final generated backend rendering remain in later F05/F06 microphases.'
                   : 'This workspace remains a shell until its dedicated renderer is implemented.'}
               </p>
             </div>
