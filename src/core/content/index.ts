@@ -32,10 +32,11 @@ export {
   validateAdvancedFieldGroupDefinition,
   validateAdvancedFieldGroupDefinition as validateFieldGroupDefinition,
 } from './advanced-field-group';
+export { removeFieldGroupWithRecordIntegrity } from './field-group-record-integrity';
 export {
-  removeFieldGroupWithRecordIntegrity,
-  removeFieldGroupWithRecordIntegrity as removeFieldGroup,
-} from './field-group-record-integrity';
+  removeFieldGroupWithAdvancedIntegrity,
+  removeFieldGroupWithAdvancedIntegrity as removeFieldGroup,
+} from './advanced-field-group-integrity';
 export {
   CONTENT_RECORD_STATUSES,
   CONTENT_RECORD_VERSION,
