@@ -5,7 +5,12 @@ import {
   type CanonicalDocument,
   type CanonicalProject,
 } from '../../core/project';
-import type { ProjectThemeScope } from '../../core/themes';
+import {
+  mergeThemePackageResources,
+  type ProjectThemePackageResources,
+  type ProjectThemeScope,
+  type ThemePackageResourceSelection,
+} from '../../core/themes';
 import { useProjectThemeRegistry } from '../themes/project-theme-registry-context';
 import {
   EMPTY_DOCUMENT_HISTORY,
@@ -23,6 +28,7 @@ import {
   ProjectSessionContext,
   type ProjectSaveState,
   type ProjectSessionState,
+  type ProjectThemeResourceApplyResult,
 } from './project-session-context';
 
 function createDefaultSessionProject(): CanonicalProject {
@@ -232,6 +238,22 @@ export function ProjectSessionProvider({
     [commitProject, project, queueAutosave, themeRegistry],
   );
 
+  const applyThemePackageResources = useCallback(
+    (
+      resources: ProjectThemePackageResources | undefined,
+      selection: ThemePackageResourceSelection,
+    ): ProjectThemeResourceApplyResult => {
+      const result = mergeThemePackageResources(project, resources, selection);
+      if (!result.ok) return { ok: false, message: result.message };
+      if (result.changed) {
+        commitProject(result.project);
+        queueAutosave(result.project);
+      }
+      return { ok: true, report: result.report, changed: result.changed };
+    },
+    [commitProject, project, queueAutosave],
+  );
+
   const executeDocumentCommand = useCallback(
     (command: DocumentCommand): boolean => {
       const currentDocument = project.documents[command.documentId];
@@ -302,6 +324,7 @@ export function ProjectSessionProvider({
       setActiveBreakpointId,
       setZoom,
       setProjectTheme,
+      applyThemePackageResources,
       executeDocumentCommand,
       undo,
       redo,
@@ -309,6 +332,7 @@ export function ProjectSessionProvider({
     [
       activeBreakpointId,
       activeDocumentId,
+      applyThemePackageResources,
       canRedo,
       canUndo,
       executeDocumentCommand,
