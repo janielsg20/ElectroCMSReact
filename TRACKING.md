@@ -4,12 +4,12 @@
 - Estado: IN_PROGRESS
 - Fase completada: F03 — Canvas, nodos, DnD e historial
 - Fase actual: F04 — Widgets, inspector, responsive y themes
-- Microfase actual: MF-032 — Style engine
-- Último quality gate completo: GitHub Actions run #479 PASS
-- Último build válido: GitHub Actions run #479 PASS
+- Microfase actual: MF-034 — Editor theme presets
+- Último quality gate completo: GitHub Actions run #529 PASS (MF-033)
+- Último build válido: GitHub Actions run #553 PASS en verify/lint/types/unit/coverage/build; E2E pendiente por regresión DnD de reorder
 - Repositorio oficial: `janielsg20/ElectroCMSReact`
 - PR de fase: #5 `agent/f04-widgets-inspector-themes -> main`
-- Preview automático: Vercel sobre cada push/PR de la rama activa.
+- Preview deployment: MANUAL ONLY. `vercel.json` usa `git.deploymentEnabled: false`; no desplegar por push/PR.
 
 ## F00
 | Microfase | Estado | Evidencia |
@@ -62,11 +62,20 @@
 | MF-029 | DONE | 16 widgets básicos/contenido con defaults, validación, previews e inserción registry-driven; run #446 PASS |
 | MF-030 | DONE | 19 contratos dynamic/commerce/form/filter con capacidad `modeled`, previews honestos y validación; run #456 PASS |
 | MF-031 | DONE | Inspector schema engine, controles generados, validación, edición canónica y Undo/Redo; run #479 PASS |
-| MF-032 | IN_PROGRESS | Style engine |
-| MF-033 | TODO | Breakpoint engine |
-| MF-034 | TODO | Editor theme presets |
+| MF-032 | DONE | Style engine responsive, resolución explicit/inherited/unset, renderer seguro, inspector y Undo; run #505 PASS |
+| MF-033 | DONE | Breakpoint engine, cadena wider/narrower, herencia desde breakpoint superior y E2E; run #529 PASS |
+| MF-034 | IN_PROGRESS | Editor theme presets implementados; preset E2E pasa. Cerrando regresión E2E de reorder DnD y alineando editor con design system no-code. |
 | MF-035 | TODO | Frontend/backend theme system |
 | MF-036 | TODO | Theme packages import/export |
+
+## Design system del editor
+- Fuente de verdad: `design-system/electrocms-editor/MASTER.md`.
+- Override del workspace principal: `design-system/electrocms-editor/pages/editor.md`.
+- Referencias externas seleccionadas: `ui-ux-pro-max`, `design-system` y `ui-styling` de `nextlevelbuilder/ui-ux-pro-max-skill`.
+- Arquetipo: productivity tool + design-system tooling + data-dense SaaS.
+- Base visual: Minimal/Flat + Data-Dense + Accessible, con micro-interacciones funcionales.
+- El editor debe sentirse como un no-code builder profesional: header global, canvas dominante, navegación/paleta lateral y inspector contextual.
+- No forzar migración a Tailwind/shadcn; adaptar las reglas al React/CSS actual salvo que una fase futura justifique explícitamente esa migración.
 
 ## Invariantes consolidadas
 - El DOM nunca es fuente de verdad; el canvas es una proyección de `CanonicalDocument`.
@@ -80,6 +89,8 @@
 - Undo/Redo usa comandos canónicos reversibles por documento.
 - Geometría usa `ResponsiveStyleSet` por breakpoint.
 - Autosave reutiliza repositorios F01 y no reemplaza contenido nuevo con callbacks stale.
+- Editor theme/preset vive en workspace preferences; frontend/backend theme IDs viven en `CanonicalProject`.
+- Los deployments de preview son manuales y solo se ejecutan bajo petición explícita del usuario.
 
 ## Regla de salida
 F04 solo puede marcarse DONE cuando MF-027…MF-036 estén implementadas y el gate completo final esté verde. No avanzar a F05 con ningún gate rojo.
