@@ -7,7 +7,7 @@
 - Última microfase completada: MF-040 — Custom field groups
 - Siguiente microfase: MF-041 — Records CRUD
 - Último quality gate funcional completo: GitHub Actions run #834 PASS
-- Cierre documental MF-040: PENDING
+- Cierre documental MF-040: GitHub Actions run #850 PASS
 - Repositorio oficial: `janielsg20/ElectroCMSReact`
 - PR de fase: #6 `agent/f05-dynamic-content -> main` (draft)
 - Preview deployment: MANUAL ONLY. `vercel.json` usa `git.deploymentEnabled: false`; no desplegar por push/PR.
@@ -75,7 +75,7 @@
 | MF-037 | DONE | `ContentTypeDefinition` v1, CRUD canónico, unique id/slug, delete guard por records, editor master-detail Backend, autosave/reload/delete E2E; run #730 PASS; cierre documental #740 PASS |
 | MF-038 | DONE | `TaxonomyDefinition` v1, hierarchy/flat, multi-CPT associations, field-group/archive refs, referential delete guard CPT, Dynamic Content tabs, autosave/reload/delete E2E; run #766 PASS; cierre documental #776 PASS |
 | MF-039 | DONE | `FieldTypeDefinition` + `FieldTypeRegistry` React-free, resolución `type@version`, config/value validation, defaults, feature matrix, migrations, 27 built-ins (20 available + 7 modeled) y plugin `plugin/rating`; run #786 PASS; cierre documental #800 PASS |
-| MF-040 | DONE | `FieldGroupDefinition`/`CustomFieldDefinition` v1, portable JSON en `CanonicalProject.fieldGroups`, library de 20 tipos disponibles, ordered schema, contextual inspector, config/default validation por registry, referential delete guard y persistencia E2E; run #834 PASS |
+| MF-040 | DONE | `FieldGroupDefinition`/`CustomFieldDefinition` v1, portable JSON en `CanonicalProject.fieldGroups`, library de 20 tipos disponibles, ordered schema, contextual inspector, config/default validation por registry, referential delete guard y persistencia E2E; run #834 PASS; cierre documental #850 PASS |
 | MF-041 | NEXT | Records CRUD |
 | MF-042 | BLOCKED | Advanced fields |
 | MF-043 | BLOCKED | Relations |
