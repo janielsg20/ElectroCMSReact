@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createDefaultProject } from './project-factory';
+import { createCanonicalProject } from './project-factory';
 import {
   inheritNodeResponsiveStyle,
   inheritResponsiveStyleValue,
@@ -35,7 +35,7 @@ describe('responsive style engine', () => {
   });
 
   it('updates canonical document nodes immutably and resolves a flat style map', () => {
-    const project = createDefaultProject({ id: 'project_style_test', name: 'Styles' });
+    const project = createCanonicalProject({ id: 'project_style_test', name: 'Styles' });
     const documentId = project.documentOrder[0]!;
     const document = project.documents[documentId]!;
     const rootId = document.rootNodeId;
