@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { isJsonObject, type JsonObject } from '../../core/domain';
 import type { ProjectThemeDefinition } from '../../core/themes';
 import type {
@@ -90,10 +90,6 @@ export function ProjectThemeTokenEditor({
   onMutation,
 }: ProjectThemeTokenEditorProps) {
   const [draft, setDraft] = useState<ThemeDraft>(() => draftFromTheme(theme));
-
-  useEffect(() => {
-    setDraft(draftFromTheme(theme));
-  }, [theme.id, theme.version, theme]);
 
   const update = <K extends keyof ThemeDraft>(key: K, value: ThemeDraft[K]) => {
     setDraft((current) => ({ ...current, [key]: value }));
