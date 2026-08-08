@@ -95,10 +95,10 @@ describe('ProductionStudio', () => {
     expect(screen.getByTestId('editor-canvas')).toBeInTheDocument();
 
     const navigationResizer = screen.getByRole('separator', { name: 'Resize navigation' });
-    expect(navigationResizer).toHaveAttribute('aria-valuenow', '232');
+    expect(navigationResizer).toHaveAttribute('aria-valuenow', '236');
     navigationResizer.focus();
     await user.keyboard('{ArrowRight}');
-    expect(navigationResizer).toHaveAttribute('aria-valuenow', '244');
+    expect(navigationResizer).toHaveAttribute('aria-valuenow', '248');
 
     await user.click(within(modules).getByRole('button', { name: 'Pages' }));
     expect(screen.getByRole('heading', { name: 'Pages, templates & assets' })).toBeInTheDocument();
