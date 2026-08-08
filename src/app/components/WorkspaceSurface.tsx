@@ -2,6 +2,7 @@ import { EditorCanvas } from '../editor/canvas/EditorCanvas';
 import { useCanvasDocumentActions } from '../editor/canvas/use-canvas-document-actions';
 import { useProjectSession } from '../project/project-session-context';
 import { getWorkspaceDefinition, type WorkspaceId } from '../routing/workspaces';
+import { ProjectThemeControls } from '../themes/ProjectThemeControls';
 
 export interface WorkspaceSurfaceProps {
   workspaceId: WorkspaceId;
@@ -67,6 +68,8 @@ export function WorkspaceSurface({ workspaceId }: WorkspaceSurfaceProps) {
                 <div><dt>Zoom</dt><dd>{session.zoom}%</dd></div>
                 <div><dt>Storage</dt><dd>Local-first</dd></div>
               </dl>
+              {workspaceId === 'preview' ? <ProjectThemeControls scope="frontend" /> : null}
+              {workspaceId === 'backend' ? <ProjectThemeControls scope="backend" /> : null}
               <p className="stage-boundary-note">This workspace remains a shell until its dedicated renderer is implemented.</p>
             </div>
           </article>
