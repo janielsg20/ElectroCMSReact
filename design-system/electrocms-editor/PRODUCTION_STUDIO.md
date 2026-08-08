@@ -22,6 +22,11 @@ The permanent shell contains:
 
 A small red dot means the underlying capability is not fully production-ready yet.
 
+Marker legend:
+- no red dot — the surface is connected to its current production implementation;
+- red dot — the surface, action or widget remains partial/modelled/planned and must not be presented as complete;
+- disabled + red dot — the control is reserved in the permanent UI but has no safe runtime action yet.
+
 Rules:
 - never hide a planned product module merely because implementation is pending;
 - never report a red-dot capability as complete;
