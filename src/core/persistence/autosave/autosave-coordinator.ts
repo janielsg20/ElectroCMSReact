@@ -18,6 +18,8 @@ export interface AutosaveCoordinatorOptions {
   maxRecoverySnapshots?: number;
   scheduler?: AutosaveScheduler;
   now?: () => string;
+  onSaving?: (project: CanonicalProject) => void;
+  onSaved?: (project: CanonicalProject) => void;
   onError?: (error: Error) => void;
 }
 
@@ -26,10 +28,13 @@ export class AutosaveCoordinator {
   private timer: unknown | null = null;
   private inFlight: Promise<void> | null = null;
   private lastError: Error | null = null;
+  private readonly lastPersistedRevision = new Map<string, number>();
   private readonly debounceMs: number;
   private readonly maxRecoverySnapshots: number;
   private readonly scheduler: AutosaveScheduler;
   private readonly now: () => string;
+  private readonly onSaving: (project: CanonicalProject) => void;
+  private readonly onSaved: (project: CanonicalProject) => void;
   private readonly onError: (error: Error) => void;
 
   constructor(
@@ -41,6 +46,8 @@ export class AutosaveCoordinator {
     this.maxRecoverySnapshots = options.maxRecoverySnapshots ?? 5;
     this.scheduler = options.scheduler ?? defaultScheduler;
     this.now = options.now ?? (() => new Date().toISOString());
+    this.onSaving = options.onSaving ?? (() => undefined);
+    this.onSaved = options.onSaved ?? (() => undefined);
     this.onError = options.onError ?? (() => undefined);
   }
 
@@ -50,7 +57,10 @@ export class AutosaveCoordinator {
     this.timer = this.scheduler.set(this.debounceMs, () => {
       this.timer = null;
       void this.flush().catch((error: unknown) => {
-        const normalized = error instanceof Error ? error : new PersistenceError('Autosave failed.', { cause: error });
+        const normalized =
+          error instanceof Error
+            ? error
+            : new PersistenceError('Autosave failed.', { cause: error });
         this.lastError = normalized;
         this.onError(normalized);
       });
@@ -102,10 +112,12 @@ export class AutosaveCoordinator {
   private async persist(project: CanonicalProject): Promise<void> {
     const timestamp = this.now();
     const nextProject = structuredClone(project);
+    const knownRevision = this.lastPersistedRevision.get(nextProject.id) ?? -1;
+    const baseRevision = Math.max(nextProject.historyMetadata.revision, knownRevision);
     nextProject.metadata.updatedAt = timestamp;
     nextProject.historyMetadata = {
       ...nextProject.historyMetadata,
-      revision: nextProject.historyMetadata.revision + 1,
+      revision: baseRevision + 1,
       lastSavedAt: timestamp,
     };
 
@@ -117,8 +129,20 @@ export class AutosaveCoordinator {
       project: structuredClone(nextProject),
     };
 
-    await this.recovery.save(snapshot);
-    await this.projects.save(nextProject);
-    await this.recovery.prune(nextProject.id, this.maxRecoverySnapshots);
+    this.onSaving(structuredClone(nextProject));
+    try {
+      await this.recovery.save(snapshot);
+      await this.projects.save(nextProject);
+      await this.recovery.prune(nextProject.id, this.maxRecoverySnapshots);
+      this.lastPersistedRevision.set(nextProject.id, nextProject.historyMetadata.revision);
+      this.onSaved(structuredClone(nextProject));
+    } catch (error) {
+      const normalized =
+        error instanceof Error
+          ? error
+          : new PersistenceError('Autosave failed.', { cause: error });
+      this.onError(normalized);
+      throw normalized;
+    }
   }
 }
