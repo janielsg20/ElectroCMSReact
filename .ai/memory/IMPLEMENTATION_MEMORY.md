@@ -72,7 +72,6 @@
 ### MF-037 CPT
 - `src/core/content/content-type.ts`: `ContentTypeDefinition` v1, validation, list/create/update/remove operations, slug uniqueness and referential delete guards.
 - `src/core/content/content-type.test.ts`: unit coverage for valid/invalid definitions, CRUD, duplicate id/slug, record-reference and taxonomy-reference delete protection.
-- `src/core/content/index.ts`: public core content exports.
 - `src/app/content/ContentTypeEditor.tsx`: Backend master-detail CPT authoring UI with inline validation, supports, public/hierarchical flags and two-step delete.
 - `src/app/content/content-type-editor.css`: dense responsive/touch-aware CPT editor styling using semantic editor tokens.
 - `src/app/project/project-session-context.ts`: typed CPT mutation surface.
@@ -92,6 +91,13 @@
 - `src/app/project/project-session-context.ts`: typed taxonomy mutation surface.
 - `src/app/project/project-session.tsx`: taxonomy create/update/remove over `projectRef.current` with autosave.
 - `e2e/taxonomies.spec.ts`: two CPTs → multi-CPT hierarchical taxonomy → durable reload → invalid slug → flat one-target update → durable reload → delete.
+
+### MF-039 Field type registry
+- `src/core/content/field-type-definition.ts`: framework-neutral `FieldTypeDefinition`, categories, feature capabilities, availability, value shapes, validators and config migration hooks.
+- `src/core/content/field-type-registry.ts`: namespaced `type@version` registration/resolution, defensive cloning, config/value validation, default-value creation and sequential config migration.
+- `src/core/content/builtin-field-types.ts`: 27 master-prompt field contracts; 20 `available`, 7 advanced `modeled`.
+- `src/core/content/field-type-registry.test.ts`: built-in completeness, config/value validation, malformed/duplicate registration, external `plugin/rating`, defensive clone and migration coverage.
+- `src/core/content/index.ts`: public exports for CPT, taxonomy and field type systems.
 
 ## Critical invariants
 - Never mutate payloads during validation/migration.
@@ -131,6 +137,9 @@
 - Every taxonomy must target at least one existing unique CPT.
 - Taxonomy field-group references must already exist; MF-038 does not create field groups early.
 - Taxonomy archive template references must resolve to an existing `CanonicalDocument` whose `kind` is `archive`.
+- Field types are runtime registry contracts, never persisted callbacks/component instances.
+- Field type IDs are namespaced (`namespace/name`) and definitions resolve by version.
+- Advanced field contracts stay `modeled` until MF-042/MF-043; do not infer runtime completeness from registration.
 - Vercel deployments are manual-only.
 - Do not use root overflow hiding as a substitute for responsive layout fixes.
 
@@ -173,6 +182,10 @@
 - MF-038 Taxonomy definition/reference integrity/CRUD unit tests.
 - MF-038 Backend multi-CPT taxonomy authoring, hierarchy/flat transition, durable IndexedDB persistence and delete E2E.
 - CPT regression verifies taxonomy association blocks destructive CPT delete.
+- MF-039 registry completeness for all 27 minimum field types.
+- MF-039 per-type config/value validation for text, number, select and map.
+- MF-039 external `plugin/rating` registration/default/validation plus versioned config migration.
+- MF-039 defensive clone and invalid-definition/duplicate regression coverage.
 
 ## Functional evidence
 ### F04
@@ -190,5 +203,6 @@
 
 ### F05
 - MF-037 CPT model + editor: run #730 PASS; documentation closure #740 PASS.
-- MF-038 Taxonomy model + editor: run #766 PASS; documentation closure pending final HEAD gate.
-- MF-039 Field type registry: NEXT, not started.
+- MF-038 Taxonomy model + editor: run #766 PASS; documentation closure #776 PASS.
+- MF-039 Field type registry: run #786 PASS; documentation closure pending final HEAD gate.
+- MF-040 Custom field groups: NEXT, not started.
