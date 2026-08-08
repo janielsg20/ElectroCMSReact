@@ -25,6 +25,8 @@ This compact log mirrors durable architectural decisions from `DECISIONS.md` for
 - ADR-031: custom field behavior/config/default validation resolves through `FieldTypeRegistry`; MF-040 does not instantiate `modeled` advanced types.
 - ADR-032: `FieldGroupDefinition.fields[]` order is the canonical persisted field order; no parallel ordering store.
 - ADR-033: field-group delete is blocked while taxonomies reference the group.
+- ADR-035: records persist only in `CanonicalProject.records`; record defaults/required/value validation reuse Content Type + Field Group + `FieldTypeRegistry` contracts rather than a parallel data engine.
+- ADR-036: public field-group deletion also guards content-record references before delegating to the existing taxonomy-aware removal.
 
 ## Editor UX
-- ADR-034: primary visual authoring uses top command bar + left Insert/Elements Library + dominant canvas + right inspector. Elementor is only a familiar interaction-model reference; ElectroCMS implementation/identity remains original. Backend list/edit workflows may use dense master-detail without changing the visual-editor anatomy.
+- ADR-034: primary visual authoring uses top command bar + left Insert/Elements Library + dominant canvas + right inspector. Elementor is only a familiar interaction-model reference; ElectroCMS implementation/identity remains original. Backend list/edit workflows such as Records may use dense master-detail without changing the visual-editor anatomy.
