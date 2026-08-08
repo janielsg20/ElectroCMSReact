@@ -17,7 +17,8 @@ export type DocumentEditingErrorCode =
   | 'GROUP_ID_CONFLICT'
   | 'INVALID_GROUP'
   | 'EMPTY_CLIPBOARD'
-  | 'PASTE_PARENT_NOT_FOUND';
+  | 'PASTE_PARENT_NOT_FOUND'
+  | 'INVALID_PASTE_INDEX';
 
 export class DocumentEditingError extends ValidationError {
   constructor(
@@ -122,15 +123,18 @@ export function pasteDocumentClipboard(
   for (const [sourceId, sourceNode] of Object.entries(clipboard.nodes)) {
     const nextId = idMap.get(sourceId);
     if (!nextId) continue;
+    const cloned = structuredClone(sourceNode);
     pastedNodes[nextId] = {
-      ...structuredClone(sourceNode),
+      ...cloned,
       id: nextId,
-      name: clipboard.rootNodeIds.includes(sourceId)
-        ? `${sourceNode.name?.trim() || sourceNode.type} Copy`
-        : sourceNode.name,
+      ...(clipboard.rootNodeIds.includes(sourceId)
+        ? { name: `${sourceNode.name?.trim() || sourceNode.type} Copy` }
+        : {}),
       children: sourceNode.children.map((childId) => {
         const mapped = idMap.get(childId);
-        if (!mapped) throw new DocumentEditingError('EMPTY_CLIPBOARD', `Clipboard child ${childId} is missing.`);
+        if (!mapped) {
+          throw new DocumentEditingError('EMPTY_CLIPBOARD', `Clipboard child ${childId} is missing.`);
+        }
         return mapped;
       }),
     };
@@ -138,12 +142,14 @@ export function pasteDocumentClipboard(
 
   const pastedRootNodeIds = clipboard.rootNodeIds.map((rootId) => {
     const mapped = idMap.get(rootId);
-    if (!mapped) throw new DocumentEditingError('EMPTY_CLIPBOARD', `Clipboard root ${rootId} is missing.`);
+    if (!mapped) {
+      throw new DocumentEditingError('EMPTY_CLIPBOARD', `Clipboard root ${rootId} is missing.`);
+    }
     return mapped;
   });
   const insertionIndex = index ?? parent.children.length;
   if (!Number.isInteger(insertionIndex) || insertionIndex < 0 || insertionIndex > parent.children.length) {
-    throw new DocumentEditingError('PASTE_PARENT_NOT_FOUND', 'Paste insertion index is invalid.');
+    throw new DocumentEditingError('INVALID_PASTE_INDEX', 'Paste insertion index is invalid.');
   }
   const nextChildren = [...parent.children];
   nextChildren.splice(insertionIndex, 0, ...pastedRootNodeIds);
@@ -166,7 +172,10 @@ export function groupDocumentNodes(
 ): CanonicalDocument {
   const roots = effectiveSelectionRoots(document, nodeIds);
   if (roots.length < 2) {
-    throw new DocumentEditingError('GROUP_REQUIRES_SIBLINGS', 'Grouping requires at least two selected sibling nodes.');
+    throw new DocumentEditingError(
+      'GROUP_REQUIRES_SIBLINGS',
+      'Grouping requires at least two selected sibling nodes.',
+    );
   }
   if (document.nodes[groupNode.id]) {
     throw new DocumentEditingError('GROUP_ID_CONFLICT', `Group id ${groupNode.id} already exists.`);
@@ -174,7 +183,10 @@ export function groupDocumentNodes(
   const parentIds = roots.map((nodeId) => getParentNodeId(document, nodeId));
   const parentId = parentIds[0];
   if (!parentId || parentIds.some((candidate) => candidate !== parentId)) {
-    throw new DocumentEditingError('GROUP_REQUIRES_SIBLINGS', 'Selected nodes must share the same parent.');
+    throw new DocumentEditingError(
+      'GROUP_REQUIRES_SIBLINGS',
+      'Selected nodes must share the same parent.',
+    );
   }
   const parent = getDocumentNode(document, parentId);
   const selected = new Set(roots);
