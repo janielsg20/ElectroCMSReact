@@ -65,7 +65,7 @@ function contextualIssues(
       const expression = typeof field.config.expression === 'string' ? field.config.expression : '';
       const allowedNumeric = new Set(
         candidate.fields
-          .filter((item) => item.id !== field.id && ['core/number', 'core/currency', 'core/calculated'].includes(item.type))
+          .filter((item) => item.id !== field.id && ['core/number', 'core/currency'].includes(item.type))
           .map((item) => item.name),
       );
       for (const identifier of calculationIdentifiers(expression)) {
@@ -73,7 +73,7 @@ function contextualIssues(
           issues.push({
             code: 'INVALID_CONFIG',
             path: `fields.${index}.config.expression`,
-            message: `Calculated field reference ${identifier} must resolve to a sibling Number, Currency or Calculated field.`,
+            message: `Calculated field reference ${identifier} must resolve to a sibling Number or Currency field.`,
           });
         }
       }
