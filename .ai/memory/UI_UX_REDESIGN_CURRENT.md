@@ -6,9 +6,11 @@
 - This redesign is presentation-only. Functional phases/tracking remain independent.
 
 ## Current UI phase
-**UI-08 — Preview / Publish / Final Polish — DONE pending final documented-HEAD gate and merge**
+**UI/UX REDESIGN — COMPLETE**
 
-After the final documented-HEAD gate and merge of PR #22, **UI/UX redesign phases UI-01 through UI-08 are complete. There is no UI-09.**
+UI-01 through UI-08 are finished and merged. **There is no UI-09.** Continue future development from the functional project roadmap unless a new redesign scope is explicitly created.
+
+Final UI-08 merge: PR #22 → `main` as `95d0dc79206af1aa623b2ac37e47599391b2d9d7` after Quality Gate #1183 PASS.
 
 ## Durable decisions
 - Tailwind CSS v4 is the official visual styling foundation for the ElectroCMS application chrome.
@@ -132,7 +134,8 @@ After the final documented-HEAD gate and merge of PR #22, **UI/UX redesign phase
 - Quality Gate #1178 passed lint/TypeScript and stopped at Unit because the test queried two legitimate Export controls ambiguously; the test was scoped to the header CTA without changing product behavior.
 - Corrected implementation validation: Quality Gate #1179 PASS.
 - Final accessibility/E2E audit validation: Quality Gate #1181 PASS.
-- One final full gate on this exact documented HEAD is required before PR #22 can merge.
+- Final documented-HEAD validation: Quality Gate #1183 PASS.
+- Merged PR #22 into `main` as `95d0dc79206af1aa623b2ac37e47599391b2d9d7`.
 
-## Completion condition
-When the final documented-HEAD gate for PR #22 is green and the PR is merged, the UI/UX redesign defined by `.ai/UI_UX_REDESIGN_MASTER.md` and `.ai/UI_UX_REDESIGN_PHASES.md` is complete. Continue future work from the functional project roadmap, not a new UI redesign phase, unless a new redesign scope is explicitly created.
+## Completion state
+The UI/UX redesign defined by `.ai/UI_UX_REDESIGN_MASTER.md` and `.ai/UI_UX_REDESIGN_PHASES.md` is **complete**. Future work resumes from the functional ElectroCMS roadmap. A new UI redesign phase must not be invented unless a new scope is explicitly defined.
