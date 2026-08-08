@@ -8,7 +8,7 @@ import {
   updateContentRecord as updateBaseRecord,
   validateContentRecordDefinition as validateBaseRecord,
   type ContentRecordDefinition,
-  type ContentRecordFilter,
+  type ContentRecordListOptions,
   type ContentRecordMutationResult,
   type ContentRecordValidationIssue,
   type ContentRecordValidationResult,
@@ -166,7 +166,7 @@ export function removeAdvancedContentRecord(
 
 export function listAdvancedContentRecords(
   project: CanonicalProject,
-  filter: ContentRecordFilter = {},
+  filter: ContentRecordListOptions = {},
   registry: FieldTypeRegistry = createContentFieldTypeRegistry(),
 ): ContentRecordDefinition[] {
   return listBaseRecords(project, filter, registry).filter(
