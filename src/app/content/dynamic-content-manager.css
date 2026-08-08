@@ -89,11 +89,12 @@
 }
 
 .dynamic-content-manager-panel > .content-type-editor,
-.dynamic-content-manager-panel > .taxonomy-editor {
+.dynamic-content-manager-panel > .taxonomy-editor,
+.dynamic-content-manager-panel > .field-group-editor {
   margin-top: 12px;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 760px) {
   .dynamic-content-manager-header {
     align-items: stretch;
     flex-direction: column;
@@ -103,11 +104,13 @@
 
   .dynamic-content-manager-tabs {
     width: 100%;
+    overflow-x: auto;
   }
 
   .dynamic-content-manager-tabs button {
+    min-width: max-content;
     min-height: 44px;
-    flex: 1 1 0;
+    flex: 1 0 auto;
   }
 
   .dynamic-content-manager-panel {
