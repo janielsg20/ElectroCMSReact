@@ -5,6 +5,7 @@ import {
   moveDocumentNode,
   type DocumentNode,
 } from '../../../core/project';
+import { createDocumentCommand } from '../../project/document-command-history';
 import { useProjectSession } from '../../project/project-session-context';
 
 export interface CanvasDocumentActions {
@@ -37,8 +38,8 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
         parentId: parentId ?? document.rootNodeId,
         ...(index === undefined ? {} : { index }),
       });
-      session.replaceDocument(nextDocument);
-      return id;
+      const command = createDocumentCommand('Insert container', document, nextDocument);
+      return session.executeDocumentCommand(command) ? id : null;
     },
     [session],
   );
@@ -52,8 +53,9 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
           parentId,
           ...(index === undefined ? {} : { index }),
         });
-        session.replaceDocument(nextDocument);
-        return true;
+        return session.executeDocumentCommand(
+          createDocumentCommand('Move node', document, nextDocument),
+        );
       } catch {
         return false;
       }
