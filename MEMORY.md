@@ -218,7 +218,7 @@ Nunca mezclar estos tres niveles.
 - `modeled`: relation, user, taxonomy, repeater, group, calculated, conditional.
 - `modeled` significa contrato portable registrado, no runtime completo. Relations pertenecen MF-043; repeater/group/calculated/conditional y otros advanced behaviors pertenecen MF-042.
 - El test `plugin/rating` demuestra que un tipo externo se registra, valida, crea defaults y migra config sin modificar el core registry.
-- Evidencia funcional MF-039: GitHub Actions run #786 PASS.
+- Evidencia funcional MF-039: GitHub Actions run #786 PASS; cierre documental #800 PASS.
 
 ## Evidencia F04
 - MF-034 definitiva: run #568 PASS.
@@ -231,5 +231,5 @@ Nunca mezclar estos tres niveles.
 - F05 — Contenido dinámico está activa en `agent/f05-dynamic-content` / draft PR #6.
 - MF-037 CPT model + editor: DONE, run #730 PASS; docs #740 PASS.
 - MF-038 Taxonomy model + editor: DONE, run #766 PASS; docs #776 PASS.
-- MF-039 Field type registry: DONE funcional, run #786 PASS; cierre documental pendiente de gate final.
-- MF-040 Custom field groups: siguiente; no iniciar hasta que el HEAD documental de MF-039 quede verde.
+- MF-039 Field type registry: DONE, run #786 PASS; docs #800 PASS.
+- MF-040 Custom field groups: siguiente microfase; no iniciada todavía.
