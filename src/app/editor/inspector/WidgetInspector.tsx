@@ -180,15 +180,18 @@ export function WidgetInspector({ node, onSetProps }: WidgetInspectorProps) {
           {schema.sections.map((section) => (
             <fieldset key={section.id} className="widget-inspector-section">
               <legend>{section.label}</legend>
-              {section.fields.map((field) => (
-                <InspectorFieldControl
-                  key={field.key}
-                  node={node}
-                  field={field}
-                  issue={issues[field.key]}
-                  onCommit={commit}
-                />
-              ))}
+              {section.fields.map((field) => {
+                const fieldIssue = issues[field.key];
+                return (
+                  <InspectorFieldControl
+                    key={field.key}
+                    node={node}
+                    field={field}
+                    {...(fieldIssue === undefined ? {} : { issue: fieldIssue })}
+                    onCommit={commit}
+                  />
+                );
+              })}
             </fieldset>
           ))}
         </div>
