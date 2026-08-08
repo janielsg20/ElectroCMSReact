@@ -2,6 +2,8 @@ import { createContext, useContext } from 'react';
 import type {
   ContentTypeDefinition,
   ContentTypeMutationErrorCode,
+  TaxonomyDefinition,
+  TaxonomyMutationErrorCode,
 } from '../../core/content';
 import type { CanonicalProject } from '../../core/project';
 import type {
@@ -22,6 +24,10 @@ export type ContentTypeSessionMutationResult =
   | { ok: true; value: ContentTypeDefinition; changed: boolean }
   | { ok: false; code: ContentTypeMutationErrorCode; message: string };
 
+export type TaxonomySessionMutationResult =
+  | { ok: true; value: TaxonomyDefinition; changed: boolean }
+  | { ok: false; code: TaxonomyMutationErrorCode; message: string };
+
 export interface ProjectSessionState {
   project: CanonicalProject;
   activeDocumentId: string;
@@ -41,6 +47,9 @@ export interface ProjectSessionState {
   createContentType(input: unknown): ContentTypeSessionMutationResult;
   updateContentType(id: string, input: unknown): ContentTypeSessionMutationResult;
   removeContentType(id: string): ContentTypeSessionMutationResult;
+  createTaxonomy(input: unknown): TaxonomySessionMutationResult;
+  updateTaxonomy(id: string, input: unknown): TaxonomySessionMutationResult;
+  removeTaxonomy(id: string): TaxonomySessionMutationResult;
   executeDocumentCommand(command: DocumentCommand): boolean;
   undo(): boolean;
   redo(): boolean;
