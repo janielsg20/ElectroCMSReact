@@ -13,6 +13,7 @@ import type {
 import { updateFieldGroupWithRecordIntegrity } from './field-group-update-integrity';
 import { FieldTypeRegistry } from './field-type-registry';
 import { listRelationDefinitions } from './relation';
+import { validateReferenceContentRecordDefinition } from './reference-content-record';
 import {
   createContentFieldTypeRegistry,
   isMf043ReferenceField,
@@ -103,5 +104,25 @@ export function updateReferenceFieldGroup(
 ): FieldGroupMutationResult {
   const validation = validateReferenceFieldGroupDefinition(project, input, registry);
   if (!validation.ok) return invalidMutation(validation);
-  return updateFieldGroupWithRecordIntegrity(project, id, validation.value, registry);
+
+  const updated = updateFieldGroupWithRecordIntegrity(project, id, validation.value, registry);
+  if (!updated.ok) return updated;
+
+  for (const [recordId, raw] of Object.entries(updated.project.records)) {
+    const recordValidation = validateReferenceContentRecordDefinition(raw, updated.project, registry);
+    if (!recordValidation.ok) {
+      const first = recordValidation.issues[0];
+      return {
+        ok: false,
+        error: {
+          code: 'FIELD_GROUP_IN_USE',
+          message: first
+            ? `Field group ${id} cannot be updated because record ${recordId} would become invalid: ${first.message}`
+            : `Field group ${id} cannot be updated because record ${recordId} would become invalid.`,
+        },
+      };
+    }
+  }
+
+  return updated;
 }
