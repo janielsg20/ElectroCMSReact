@@ -90,7 +90,8 @@
 
 .dynamic-content-manager-panel > .content-type-editor,
 .dynamic-content-manager-panel > .taxonomy-editor,
-.dynamic-content-manager-panel > .field-group-editor {
+.dynamic-content-manager-panel > .field-group-editor,
+.dynamic-content-manager-panel > .records-editor {
   margin-top: 12px;
 }
 
