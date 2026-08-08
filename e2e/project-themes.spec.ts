@@ -15,6 +15,8 @@ test('frontend and backend themes change independently and survive autosave relo
     'frontend.bento-grid',
   );
   await expect(app).toHaveAttribute('data-editor-preset', editorPreset!);
+  await expect(page.getByText('Unsaved changes')).toBeVisible();
+  await expect(page.getByText('Saved locally')).toBeVisible({ timeout: 10_000 });
 
   const navigation = page.getByRole('navigation', { name: 'Primary workspaces' });
   await navigation.getByRole('button', { name: 'Backend' }).click();
@@ -28,6 +30,7 @@ test('frontend and backend themes change independently and survive autosave relo
     'backend.developer-console',
   );
   await expect(app).toHaveAttribute('data-editor-preset', editorPreset!);
+  await expect(page.getByText('Unsaved changes')).toBeVisible();
   await expect(page.getByText('Saved locally')).toBeVisible({ timeout: 10_000 });
 
   await page.reload();
