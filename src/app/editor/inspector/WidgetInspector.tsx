@@ -9,12 +9,19 @@ import {
   type WidgetPropValidationIssue,
 } from '../../../core/widgets';
 import { useEditorWidgetRegistry } from '../../widgets/editor-widget-registry-context';
-import type { CanvasPropEditResult } from '../canvas/use-canvas-document-actions';
+import type {
+  CanvasPropEditResult,
+  CanvasStyleEditResult,
+} from '../canvas/use-canvas-document-actions';
+import { WidgetStyleInspector } from './WidgetStyleInspector';
 import './widget-inspector.css';
 
 export interface WidgetInspectorProps {
   node: DocumentNode | null;
+  breakpointId?: string;
   onSetProps?: (nodeId: string, patch: JsonObject) => CanvasPropEditResult;
+  onSetStyle?: (nodeId: string, key: string, value: JsonValue) => CanvasStyleEditResult;
+  onUnsetStyle?: (nodeId: string, key: string) => CanvasStyleEditResult;
 }
 
 interface InspectorFieldControlProps {
@@ -111,7 +118,13 @@ function InspectorFieldControl({ node, field, issue, onCommit }: InspectorFieldC
   );
 }
 
-export function WidgetInspector({ node, onSetProps }: WidgetInspectorProps) {
+export function WidgetInspector({
+  node,
+  breakpointId = 'desktop',
+  onSetProps,
+  onSetStyle,
+  onUnsetStyle,
+}: WidgetInspectorProps) {
   const registry = useEditorWidgetRegistry();
   const [issues, setIssues] = useState<Readonly<Record<string, string>>>({});
   const definition = node && registry.has(node.type, node.version)
@@ -198,6 +211,12 @@ export function WidgetInspector({ node, onSetProps }: WidgetInspectorProps) {
       ) : (
         <div className="widget-inspector-empty">This widget has no editable properties in its inspector schema.</div>
       )}
+      <WidgetStyleInspector
+        node={node}
+        breakpointId={breakpointId}
+        {...(onSetStyle ? { onSetStyle } : {})}
+        {...(onUnsetStyle ? { onUnsetStyle } : {})}
+      />
     </aside>
   );
 }
