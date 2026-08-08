@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
