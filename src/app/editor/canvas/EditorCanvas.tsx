@@ -27,6 +27,7 @@ export function EditorCanvas({
   actions,
 }: EditorCanvasProps) {
   const selection = useCanvasSelection(Object.keys(document.nodes));
+  const clearSelection = selection.clearSelection;
   const [clipboard, setClipboard] = useState<DocumentClipboardPayload | null>(null);
   const [guides, setGuides] = useState<readonly SnapGuide[]>([]);
   const selectedNodes = useMemo(
@@ -48,20 +49,20 @@ export function EditorCanvas({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        selection.clearSelection();
+        clearSelection();
         setGuides([]);
       }
     };
     globalThis.addEventListener('keydown', handleKeyDown);
     return () => globalThis.removeEventListener('keydown', handleKeyDown);
-  }, [selection.clearSelection]);
+  }, [clearSelection]);
 
   const stopToolbarPropagation = (event: MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
   };
 
   const selectIds = (nodeIds: readonly string[]) => {
-    selection.clearSelection();
+    clearSelection();
     setGuides([]);
     nodeIds.forEach((nodeId, index) => selection.selectNode(nodeId, index > 0));
   };
@@ -80,7 +81,7 @@ export function EditorCanvas({
     const nextClipboard = actions?.cutNodes(selection.selectedNodeIds) ?? null;
     if (!nextClipboard) return;
     setClipboard(nextClipboard);
-    selection.clearSelection();
+    clearSelection();
     setGuides([]);
   };
 
@@ -98,7 +99,7 @@ export function EditorCanvas({
   const ungroupSelection = () => {
     if (!actions || !selection.primaryNodeId || !canUngroup) return;
     if (actions.ungroupNode(selection.primaryNodeId)) {
-      selection.clearSelection();
+      clearSelection();
       setGuides([]);
     }
   };
@@ -132,7 +133,7 @@ export function EditorCanvas({
       aria-label="Visual document canvas"
       data-testid="editor-canvas"
       onClick={() => {
-        selection.clearSelection();
+        clearSelection();
         setGuides([]);
       }}
     >
