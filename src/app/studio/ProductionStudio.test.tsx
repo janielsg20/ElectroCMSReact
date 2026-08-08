@@ -40,6 +40,29 @@ function makeDynamicProject() {
   };
 }
 
+function makeWorkflowProject() {
+  const project = makeDynamicProject();
+  return {
+    ...project,
+    forms: {
+      contact_form: {
+        name: 'Contact form',
+        fields: ['name', 'email', 'message'],
+        conditions: { emailRequired: true },
+        actions: ['create-record', 'email'],
+      },
+    },
+    filters: {
+      product_search: {
+        name: 'Product search',
+        source: 'featured_products',
+        filters: ['search', 'category'],
+        liveApply: true,
+      },
+    },
+  };
+}
+
 describe('ProductionStudio', () => {
   it('uses the permanent Studio module rail and keeps the real builder available', async () => {
     window.history.replaceState({}, '', '/editor');
@@ -109,6 +132,28 @@ describe('ProductionStudio', () => {
     const queryStudio = screen.getByRole('region', { name: 'Dynamic Content Studio' });
     expect(within(queryStudio).getByRole('tab', { name: /Queries/i })).toHaveAttribute('aria-selected', 'true');
     expect(within(queryStudio).getByRole('button', { name: /Featured products/i })).toBeInTheDocument();
+  });
+
+  it('uses canonical forms filters and queries in the workflow studio', async () => {
+    window.history.replaceState({}, '', '/editor');
+    const user = userEvent.setup();
+    render(<App initialProject={makeWorkflowProject()} preferencesRepository={new MemoryWorkspacePreferencesRepository()} />);
+
+    const modules = screen.getByRole('navigation', { name: 'Studio modules' });
+    await user.click(within(modules).getByRole('button', { name: 'Forms' }));
+
+    const studio = screen.getByRole('region', { name: 'Forms Filters Workflow Studio' });
+    expect(within(studio).getByRole('heading', { name: 'Forms, filters & workflow' })).toBeInTheDocument();
+    expect(within(studio).getByRole('tab', { name: /Forms/i })).toHaveAttribute('aria-selected', 'true');
+    expect(within(studio).getByRole('button', { name: /Contact form/i })).toBeInTheDocument();
+    expect(within(studio).getByRole('main', { name: 'Workflow canvas' })).toHaveTextContent('conditions');
+    expect(within(studio).getByRole('complementary', { name: 'Workflow details' })).toHaveTextContent('Featured products');
+
+    await user.click(within(modules).getByRole('button', { name: 'Filters' }));
+    const filterStudio = screen.getByRole('region', { name: 'Forms Filters Workflow Studio' });
+    expect(within(filterStudio).getByRole('tab', { name: /Smart Filters/i })).toHaveAttribute('aria-selected', 'true');
+    expect(within(filterStudio).getByRole('button', { name: /Product search/i })).toBeInTheDocument();
+    expect(within(filterStudio).getByRole('main', { name: 'Workflow canvas' })).toHaveTextContent('featured_products');
   });
 
   it('keeps Preview, Backend and Export in the real workspace navigation', async () => {

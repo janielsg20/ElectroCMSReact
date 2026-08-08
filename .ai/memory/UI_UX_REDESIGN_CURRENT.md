@@ -6,9 +6,9 @@
 - This redesign is presentation-only. Functional phases/tracking remain independent.
 
 ## Current UI phase
-**UI-04 — Dynamic Content Studio — DONE pending final documented-HEAD gate and merge**
+**UI-05 — Forms / Filters / Workflow — DONE pending final documented-HEAD gate and merge**
 
-Next after merge: **UI-05 — Forms / Filters / Workflow**.
+Next after merge: **UI-06 — Backend Builder / Roles**.
 
 ## Durable decisions
 - Tailwind CSS v4 is the official visual styling foundation for the ElectroCMS application chrome.
@@ -20,7 +20,7 @@ Next after merge: **UI-05 — Forms / Filters / Workflow**.
 - Migrated surfaces use semantic tokens instead of hard-coded product colors.
 - Canvas remains the dominant editor surface.
 - UI must not bypass canonical project/document APIs just to make a control appear functional.
-- UI redesign phases may expose read/navigation surfaces for canonical state already present in `main`, but must not invent functional CRUD/relations/query execution before those contracts exist.
+- UI redesign phases may expose read/navigation surfaces for canonical state already present in `main`, but must not invent functional CRUD/relations/query/form/filter execution before those contracts exist.
 
 ## UI-01 completed
 - Added semantic V2 UI foundation and durable redesign documentation.
@@ -64,4 +64,17 @@ Next after merge: **UI-05 — Forms / Filters / Workflow**.
 - The surface remains read-only where `main` lacks validated mutable F05 contracts; no CRUD, relation mutation, bulk action or query execution behavior was invented.
 - Quality Gate #1154 exposed strict TypeScript issues before tests; those were corrected under `noUncheckedIndexedAccess` without changing behavior.
 - Corrected implementation validation: Quality Gate #1155 PASS.
-- Final documented-HEAD gate is required before merge and UI-05.
+- Final validation: Quality Gate #1157 PASS; merged into `main` as `9d2130b945e285f0e8c89ebb5cc067b182a840d9`.
+
+## UI-05 completed
+- Replaced generic Forms and Filters feature cards with a dedicated workflow-oriented Studio surface.
+- Forms derive directly from `CanonicalProject.forms`; Filters derive from `CanonicalProject.filters`; query connections derive from `CanonicalProject.queries`.
+- Added canonical definition navigation, search, counts, workflow composition and contextual inspector/connection panes.
+- Stored form field/condition/action structures are presented without inventing form runtime behavior.
+- Stored filter/query structures are presented without inventing filter execution behavior.
+- Forms and Filters module entries open the same Studio in their correct initial context.
+- Create/update/delete actions remain disabled where `main` lacks validated mutable F06 contracts.
+- No parallel forms/filters/query store or fake workflow runtime was introduced.
+- Added unit coverage with canonical form, filter and query data.
+- Initial validation: Quality Gate #1159 PASS.
+- Final documented-HEAD gate is required before merge and UI-06.

@@ -9,6 +9,7 @@ import { ProjectThemeControls } from '../themes/ProjectThemeControls';
 import { useEditorWidgetRegistry } from '../widgets/editor-widget-registry-context';
 import { useWorkspacePreferences } from '../workspace/workspace-preferences-store';
 import { DynamicContentWorkspace } from './DynamicContentWorkspace';
+import { FormsFiltersWorkspace } from './FormsFiltersWorkspace';
 import { PagesAssetsWorkspace } from './PagesAssetsWorkspace';
 
 type StudioModuleId =
@@ -67,17 +68,7 @@ const primaryWorkspaces: readonly { id: WorkspaceId; label: string; icon: IconNa
   { id: 'export', label: 'Export', icon: 'export' },
 ];
 
-const moduleFeatures: Record<Exclude<StudioModuleId, 'builder' | 'themes' | 'pages' | 'media' | 'content' | 'queries'>, readonly FeatureGroup[]> = {
-  forms: [
-    { title: 'Fields', description: 'Build accessible data-entry experiences.', icon: 'form', items: ['Text', 'Email', 'Phone', 'Select', 'Checkbox', 'Date', 'File', 'Repeater'] },
-    { title: 'Behavior', description: 'Control validation and form logic.', icon: 'command', items: ['Validation', 'Conditional fields', 'Multi-step', 'Calculations', 'Spam protection'] },
-    { title: 'Actions', description: 'Define what happens after submission.', icon: 'link', items: ['Create record', 'Update record', 'Email', 'Redirect', 'Relation update', 'Success state'] },
-  ],
-  filters: [
-    { title: 'Filter types', description: 'Provide multiple discovery patterns.', icon: 'filter', items: ['Search', 'Taxonomy', 'Select', 'Checkbox', 'Range', 'Date', 'Sorting'] },
-    { title: 'Interaction', description: 'Control how filters affect the page.', icon: 'command', items: ['Live apply', 'URL sync', 'Result counts', 'Reset', 'Active chips'] },
-    { title: 'Targets', description: 'Attach filtering to dynamic collections.', icon: 'grid', items: ['Listing grids', 'Directories', 'Archives', 'Commerce', 'Query results'] },
-  ],
+const moduleFeatures: Record<Exclude<StudioModuleId, 'builder' | 'themes' | 'pages' | 'media' | 'content' | 'queries' | 'forms' | 'filters'>, readonly FeatureGroup[]> = {
   users: [
     { title: 'Roles', description: 'Define responsibilities for every team.', icon: 'users', items: ['Administrator', 'Designer', 'Editor', 'Author', 'Manager', 'Client', 'Custom roles'] },
     { title: 'Capabilities', description: 'Control actions at a granular level.', icon: 'shield', items: ['View', 'Create', 'Edit', 'Delete', 'Publish', 'Export', 'Manage users'] },
@@ -196,7 +187,7 @@ function EmptyState({ icon, title, description }: { icon: IconName; title: strin
 
 function FeatureCard({ icon, title, description, items }: FeatureGroup) { return <article className="rounded-[var(--ec-radius-lg)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] p-4 shadow-[var(--ec-shadow-panel)]"><div className="flex items-start gap-3"><span className="grid size-9 shrink-0 place-items-center rounded-[var(--ec-radius-md)] bg-[var(--color-ec-accent-soft)] text-[var(--color-ec-accent)]"><Icon name={icon} size={16} /></span><div className="min-w-0 flex-1"><strong className="block text-[11px] font-semibold text-[var(--color-ec-text)]">{title}</strong><p className="mt-0.5 text-[9px] leading-4 text-[var(--color-ec-text-muted)]">{description}</p></div></div><div className="mt-4 grid gap-1 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">{items.map((item) => <button key={item} type="button" className="ec-focus-ring flex h-8 items-center justify-between rounded-[var(--ec-radius-sm)] px-2 text-left text-[9px] font-medium text-[var(--color-ec-text-muted)] transition-colors hover:bg-[var(--color-ec-surface-muted)] hover:text-[var(--color-ec-text)]"><span>{item}</span><Icon name="expand" size={11} /></button>)}</div></article>; }
 
-function ModuleWorkspace({ module }: { module: Exclude<StudioModuleId, 'builder' | 'themes' | 'pages' | 'media' | 'content' | 'queries'> }) {
+function ModuleWorkspace({ module }: { module: Exclude<StudioModuleId, 'builder' | 'themes' | 'pages' | 'media' | 'content' | 'queries' | 'forms' | 'filters'> }) {
   const definition = modules.find((item) => item.id === module);
   return <section className="min-h-0 flex-1 overflow-y-auto bg-[var(--color-ec-app)] p-4 md:p-5" aria-label={`${definition?.label ?? module} workspace`}><header className="mx-auto flex max-w-[1280px] flex-col gap-3 border-b border-[var(--color-ec-border)] pb-4 sm:flex-row sm:items-end sm:justify-between"><div><span className="text-[8px] font-semibold uppercase tracking-[.18em] text-[var(--color-ec-accent)]">ElectroCMS</span><h2 className="mt-1 text-xl font-semibold tracking-[-.03em] text-[var(--color-ec-text)]">{definition?.label ?? module}</h2><p className="mt-1 max-w-2xl text-[10px] leading-5 text-[var(--color-ec-text-muted)]">{definition?.description}</p></div><button type="button" className={quietButton}><Icon name="more" size={13} />Options</button></header><div className="mx-auto mt-5 grid max-w-[1280px] gap-3 lg:grid-cols-3">{moduleFeatures[module].map((group) => <FeatureCard key={group.title} {...group} />)}</div></section>;
 }
@@ -215,6 +206,8 @@ function EditorModuleWorkspace({ module, onOpenBuilder }: { module: StudioModule
   if (module === 'media') return <PagesAssetsWorkspace key="media" initialView="assets" onOpenBuilder={onOpenBuilder} />;
   if (module === 'content') return <DynamicContentWorkspace key="content" initialResource="content-types" />;
   if (module === 'queries') return <DynamicContentWorkspace key="queries" initialResource="queries" />;
+  if (module === 'forms') return <FormsFiltersWorkspace key="forms" initialResource="forms" />;
+  if (module === 'filters') return <FormsFiltersWorkspace key="filters" initialResource="filters" />;
   if (module === 'themes') return <ThemesWorkspace />;
   return <ModuleWorkspace module={module} />;
 }
