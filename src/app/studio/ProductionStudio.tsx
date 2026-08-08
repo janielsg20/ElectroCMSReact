@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
 import type { WidgetDefinition } from '../../core/widgets';
 import { Icon, type IconName } from '../components/Icon';
 import { EditorCanvas } from '../editor/canvas/EditorCanvas';
@@ -6,6 +6,7 @@ import { useCanvasDocumentActions } from '../editor/canvas/use-canvas-document-a
 import { useProjectSession } from '../project/project-session-context';
 import type { WorkspaceId } from '../routing/workspaces';
 import { useEditorWidgetRegistry } from '../widgets/editor-widget-registry-context';
+import { MAX_NAVIGATION_WIDTH, MIN_NAVIGATION_WIDTH } from '../workspace/workspace-preferences';
 import { useWorkspacePreferences } from '../workspace/workspace-preferences-store';
 import { BackendRolesWorkspace } from './BackendRolesWorkspace';
 import { DynamicContentWorkspace } from './DynamicContentWorkspace';
@@ -97,15 +98,48 @@ function StudioRail({ compactLayout, workspaceId, activeModule, settingsOpen, on
   onSelectModule(moduleId: StudioModuleId): void;
   onClose(): void;
 }) {
-  const { preferences, setNavigationPosition, setNavigationCollapsed, setNavigationDisplayMode, moveWorkspace, setDensity, reset } = useWorkspacePreferences();
+  const { preferences, setNavigationPosition, setNavigationWidth, setNavigationCollapsed, setNavigationDisplayMode, moveWorkspace, setDensity, reset } = useWorkspacePreferences();
   const collapsed = !compactLayout && preferences.navigationCollapsed;
   const displayMode = collapsed ? 'icons' : preferences.navigationDisplayMode;
   const showLabels = displayMode !== 'icons';
   const showIcons = displayMode !== 'labels';
   const railButtonClass = 'ec-focus-ring group relative flex h-9 w-full items-center gap-2 rounded-[var(--ec-radius-md)] px-2 text-left text-[11px] font-medium text-white/55 transition-colors hover:bg-white/[.06] hover:text-white data-[active=true]:bg-[var(--color-ec-accent-soft)] data-[active=true]:text-[var(--color-ec-accent)]';
 
+  const handleResizeStart = (event: PointerEvent<HTMLDivElement>) => {
+    if (compactLayout || collapsed) return;
+    event.preventDefault();
+    const startX = event.clientX;
+    const startWidth = preferences.navigationWidth;
+    const direction = preferences.navigationPosition === 'left' ? 1 : -1;
+    const onMove = (moveEvent: globalThis.PointerEvent) => {
+      setNavigationWidth(startWidth + (moveEvent.clientX - startX) * direction);
+    };
+    const onUp = () => {
+      globalThis.removeEventListener('pointermove', onMove);
+      globalThis.removeEventListener('pointerup', onUp);
+    };
+    globalThis.addEventListener('pointermove', onMove);
+    globalThis.addEventListener('pointerup', onUp);
+  };
+
+  const handleResizeKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    event.preventDefault();
+    const delta = event.key === 'ArrowRight' ? 12 : -12;
+    const direction = preferences.navigationPosition === 'left' ? 1 : -1;
+    setNavigationWidth(preferences.navigationWidth + delta * direction);
+  };
+
   return (
-    <aside className={`workspace-navigation studio-rail flex h-full shrink-0 flex-col border-white/[.06] bg-[var(--color-ec-chrome)] p-2 text-white ${collapsed ? 'w-[58px]' : 'w-[216px]'} ${preferences.navigationPosition === 'right' ? 'border-l' : 'border-r'}`} aria-label="Workspace navigation" data-position={preferences.navigationPosition} data-collapsed={collapsed ? 'true' : 'false'} data-display-mode={displayMode}>
+    <aside
+      className={`workspace-navigation studio-rail relative flex h-full shrink-0 flex-col border-white/[.06] bg-[var(--color-ec-chrome)] p-2 text-white ${collapsed ? 'w-[58px]' : compactLayout ? 'w-full' : 'min-w-[196px] max-w-[360px]'} ${preferences.navigationPosition === 'right' ? 'border-l' : 'border-r'}`}
+      aria-label="Workspace navigation"
+      data-position={preferences.navigationPosition}
+      data-collapsed={collapsed ? 'true' : 'false'}
+      data-display-mode={displayMode}
+      data-navigation-width={preferences.navigationWidth}
+      style={!compactLayout && !collapsed ? { width: preferences.navigationWidth } : undefined}
+    >
       <div className="mb-2 flex h-10 items-center justify-between gap-2 px-1">
         <div className="flex min-w-0 items-center gap-2">
           <div className="grid size-8 shrink-0 place-items-center rounded-[var(--ec-radius-md)] bg-[var(--color-ec-chrome-raised)] text-[var(--color-ec-accent)] ring-1 ring-white/[.07]"><Icon name="bolt" size={16} /></div>
@@ -141,6 +175,8 @@ function StudioRail({ compactLayout, workspaceId, activeModule, settingsOpen, on
           <button className="ec-control ec-focus-ring mt-3 h-8 w-full text-[10px] font-semibold" type="button" onClick={reset}>Reset workspace layout</button>
         </div>
       </details>
+
+      {!compactLayout && !collapsed ? <div className={`group/resizer absolute inset-y-0 z-20 w-2 touch-none cursor-col-resize outline-none ${preferences.navigationPosition === 'left' ? '-right-1' : '-left-1'}`} role="separator" aria-label="Resize navigation" aria-orientation="vertical" aria-valuemin={MIN_NAVIGATION_WIDTH} aria-valuemax={MAX_NAVIGATION_WIDTH} aria-valuenow={preferences.navigationWidth} aria-valuetext={`${preferences.navigationWidth} pixels`} tabIndex={0} onPointerDown={handleResizeStart} onKeyDown={handleResizeKeyDown}><span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-transparent transition-colors group-hover/resizer:bg-[var(--color-ec-accent)] group-focus-visible/resizer:bg-[var(--color-ec-accent)]" aria-hidden="true" /></div> : null}
     </aside>
   );
 }
