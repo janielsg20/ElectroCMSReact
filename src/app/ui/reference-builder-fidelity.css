@@ -1,0 +1,706 @@
+/*
+ * ElectroCMS — professional visual-builder fidelity pass
+ *
+ * Final layout corrections for the single Bento High Density editor theme.
+ * This layer intentionally makes the authoring surface feel like a real
+ * visual builder: continuous chrome, strict panel proportions, quiet borders,
+ * dominant canvas, compact controls and predictable responsive behavior.
+ */
+
+.electrocms-app[data-editor-preset="bento-high-density"] {
+  --ec-builder-rail: 60px;
+  --ec-builder-panel: clamp(286px, 20vw, 312px);
+  --ec-builder-inspector: clamp(324px, 23vw, 344px);
+  --ec-builder-toolbar: 50px;
+  --ec-builder-line: color-mix(in srgb, var(--color-ec-border) 94%, transparent);
+  --ec-builder-line-strong: color-mix(in srgb, var(--color-ec-text-muted) 25%, var(--color-ec-border));
+  --ec-builder-hover: color-mix(in srgb, var(--color-ec-surface-muted) 76%, var(--color-ec-surface));
+  --ec-builder-selected: color-mix(in srgb, var(--color-ec-accent-soft) 72%, var(--color-ec-surface));
+  --ec-builder-canvas-dot: color-mix(in srgb, var(--color-ec-text-muted) 20%, transparent);
+  --ec-builder-panel-shadow: 0 1px 2px rgb(17 24 39 / .025);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* ----------------------------------------------------------------------
+   1. App bar — one continuous professional toolbar
+   ---------------------------------------------------------------------- */
+.electrocms-app[data-editor-preset="bento-high-density"] .app-header {
+  min-height: 60px;
+  padding: 7px 12px;
+  gap: 10px;
+  border-bottom: 1px solid var(--ec-builder-line);
+  background: var(--color-ec-surface);
+  box-shadow: 0 1px 8px rgb(17 24 39 / .035);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .header-project {
+  min-width: 226px;
+  gap: 10px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .app-header .brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-ec-accent) 16%, transparent);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .project-name {
+  font-size: 12px;
+  font-weight: 720;
+  letter-spacing: -.015em;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .save-state {
+  margin-top: 2px;
+  font-size: 9px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .header-controls {
+  gap: 8px;
+  padding: 0;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .header-controls > div,
+.electrocms-app[data-editor-preset="bento-high-density"] .header-controls > label,
+.electrocms-app[data-editor-preset="bento-high-density"] .header-controls .segmented-control {
+  border-color: var(--ec-builder-line);
+  border-radius: 8px;
+  background: var(--color-ec-surface);
+  box-shadow: var(--ec-builder-panel-shadow);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .header-controls select {
+  font-weight: 620;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .header-actions {
+  gap: 5px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .header-actions button {
+  min-height: 34px;
+  border-radius: 8px;
+}
+
+/* ----------------------------------------------------------------------
+   2. Builder shell — remove redundant rows on desktop
+   The reference starts Pages/Components, canvas toolbar and inspector at the
+   same vertical line. ElectroCMS already exposes document/breakpoint context
+   in the app header and the left navigator, so duplicate rows waste canvas.
+   ---------------------------------------------------------------------- */
+@media (min-width: 961px) {
+  .electrocms-app[data-editor-preset="bento-high-density"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"]
+    .studio-context-bar,
+  .electrocms-app[data-editor-preset="bento-high-density"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"]
+    .builder-document-bar {
+    display: none;
+  }
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio,
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio-main,
+.electrocms-app[data-editor-preset="bento-high-density"] .reference-builder-workspace,
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-editor-region {
+  gap: 0;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* ----------------------------------------------------------------------
+   3. Global rail — reference-like 60px utility strip
+   ---------------------------------------------------------------------- */
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail[data-reference-rail="true"] {
+  width: var(--ec-builder-rail) !important;
+  min-width: var(--ec-builder-rail) !important;
+  max-width: var(--ec-builder-rail) !important;
+  padding: 8px 7px;
+  border-right: 1px solid var(--ec-builder-line);
+  background: var(--color-ec-surface);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail[data-reference-rail="true"][data-position="right"] {
+  border-right: 0;
+  border-left: 1px solid var(--ec-builder-line);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail[data-reference-rail="true"] > div:first-child {
+  height: 28px;
+  min-height: 28px;
+  margin: 0 0 7px;
+  padding: 0;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail[data-reference-rail="true"] > div:first-child::before {
+  content: "Menu";
+  color: var(--color-ec-text-muted);
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: .02em;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail[data-reference-rail="true"] .studio-rail-brand {
+  display: none;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail nav {
+  gap: 4px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail nav button,
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail details > summary {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  border-radius: 8px;
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail nav button:hover:not(:disabled),
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail details > summary:hover {
+  background: var(--ec-builder-hover);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail nav button[data-active="true"] {
+  background: var(--ec-builder-selected);
+  color: var(--color-ec-accent);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail-active-mark {
+  display: block;
+  inset-block: 7px;
+  left: -7px;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--color-ec-accent);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail[data-position="right"] .studio-rail-active-mark {
+  right: -7px;
+  left: auto;
+  border-radius: 2px 0 0 2px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail > .my-2 {
+  width: 30px;
+  margin: 8px auto;
+  background: var(--ec-builder-line);
+}
+
+/* ----------------------------------------------------------------------
+   4. Pages / Components navigator — larger and calmer
+   ---------------------------------------------------------------------- */
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-context-panel {
+  width: var(--ec-builder-panel);
+  min-width: var(--ec-builder-panel);
+  border-right: 1px solid var(--ec-builder-line);
+  background: var(--color-ec-surface);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-context-tabs {
+  min-height: var(--ec-builder-toolbar);
+  height: var(--ec-builder-toolbar);
+  gap: 5px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--ec-builder-line);
+  background: var(--color-ec-surface-subtle);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-context-tabs button {
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-ec-text-muted);
+  font-size: 10px;
+  font-weight: 680;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-context-tabs button:hover {
+  background: var(--color-ec-surface);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-context-tabs button[data-active="true"] {
+  border-color: var(--ec-builder-line);
+  background: var(--color-ec-surface);
+  color: var(--color-ec-text);
+  box-shadow: 0 1px 3px rgb(17 24 39 / .06);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-context-tabs button[data-active="true"]::after {
+  display: none;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-pages-section > header {
+  min-height: 46px;
+  padding-inline: 13px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-pages-section > header strong {
+  font-size: 11px;
+  font-weight: 720;
+  letter-spacing: -.01em;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-page-list {
+  gap: 2px;
+  padding: 0 9px 11px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-page-row {
+  min-height: 40px;
+  gap: 9px;
+  padding-inline: 10px;
+  border-radius: 7px;
+  font-size: 10px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-page-row[data-active="true"] {
+  background: var(--ec-builder-hover);
+  color: var(--color-ec-text);
+  box-shadow: inset 2px 0 0 var(--color-ec-accent);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-widget-tree {
+  padding: 0 7px 14px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-tree-row {
+  min-height: 32px;
+  gap: 7px;
+  border-radius: 6px;
+  font-size: 9.5px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-tree-row:hover {
+  background: var(--ec-builder-hover);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-tree-row > small {
+  max-width: 72px;
+  font-size: 7.5px;
+}
+
+/* Components library: retain information density without tiny cards. */
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-components-panel > .p-2\.5 {
+  padding: 10px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-components-panel .ec-control {
+  min-height: 36px;
+  border-color: var(--ec-builder-line);
+  border-radius: 7px;
+  background: var(--color-ec-surface);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-components-panel section > div:last-child {
+  gap: 7px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-components-panel section > div:last-child > button {
+  min-height: 68px;
+  padding: 9px;
+  border-color: var(--ec-builder-line);
+  border-radius: 8px;
+  background: var(--color-ec-surface);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .builder-components-panel section > div:last-child > button:hover {
+  border-color: color-mix(in srgb, var(--color-ec-accent) 38%, var(--ec-builder-line));
+  background: var(--ec-builder-selected);
+}
+
+/* ----------------------------------------------------------------------
+   5. Canvas — dominant neutral work surface, not another card
+   ---------------------------------------------------------------------- */
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-editor-region .editor-canvas-v2 {
+  grid-template-columns: minmax(0, 1fr) var(--ec-builder-inspector);
+  grid-template-rows: var(--ec-builder-toolbar) minmax(0, 1fr);
+  background: var(--ec-reference-canvas);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-command-bar-v2 {
+  min-height: var(--ec-builder-toolbar);
+  height: var(--ec-builder-toolbar);
+  gap: 8px;
+  padding: 6px 9px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-right: 1px solid var(--ec-builder-line);
+  border-bottom: 1px solid var(--ec-builder-line);
+  background: var(--color-ec-surface);
+  box-shadow: none;
+  scrollbar-width: none;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-command-bar-v2::-webkit-scrollbar {
+  display: none;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .canvas-command-cluster {
+  flex: 0 0 auto;
+  gap: 5px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .canvas-command-cluster--selection {
+  margin-left: auto;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .canvas-command-label {
+  color: var(--color-ec-text-muted);
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: .02em;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .canvas-insert-control select {
+  min-width: 142px;
+  max-width: 190px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-command-bar button,
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-command-bar select,
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-geometry-controls input {
+  height: 32px;
+  min-height: 32px;
+  border-color: var(--ec-builder-line);
+  border-radius: 7px;
+  background: var(--color-ec-surface);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-command-bar button:hover:not(:disabled),
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-command-bar select:hover:not(:disabled) {
+  background: var(--ec-builder-hover);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-command-primary {
+  border-color: var(--color-ec-accent) !important;
+  background: var(--color-ec-accent) !important;
+  box-shadow: 0 3px 9px color-mix(in srgb, var(--color-ec-accent) 14%, transparent);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-command-bar button:disabled {
+  opacity: .36;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-stage-v2 {
+  padding: clamp(28px, 3.4vw, 48px) clamp(24px, 4.2vw, 60px) clamp(70px, 6vw, 96px);
+  background-color: var(--ec-reference-canvas);
+  background-image: radial-gradient(var(--ec-builder-canvas-dot) .75px, transparent .75px);
+  background-size: 15px 15px;
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-scaled-document {
+  border: 1px solid var(--ec-builder-line-strong);
+  border-radius: 8px;
+  box-shadow: 0 20px 54px rgb(17 24 39 / .13), 0 2px 8px rgb(17 24 39 / .06);
+}
+
+/* ----------------------------------------------------------------------
+   6. Inspector — wider, flatter and easier to scan
+   ---------------------------------------------------------------------- */
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-inspector-dock {
+  width: var(--ec-builder-inspector);
+  min-width: var(--ec-builder-inspector);
+  border-left: 1px solid var(--ec-builder-line);
+  background: var(--color-ec-surface);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-v2 {
+  height: 100%;
+  border-radius: 0;
+  background: var(--color-ec-surface);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-header-v2 {
+  min-height: 54px;
+  padding: 9px 13px;
+  border-bottom: 1px solid var(--ec-builder-line);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .widget-inspector-header-v2 strong {
+  font-size: 12px;
+  letter-spacing: -.012em;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .widget-inspector-header-v2 code {
+  max-width: 120px;
+  overflow: hidden;
+  color: var(--ec-reference-text-soft);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-tabs {
+  min-height: 44px;
+  margin: 0;
+  padding: 6px 9px;
+  gap: 4px;
+  border: 0;
+  border-bottom: 1px solid var(--ec-builder-line);
+  border-radius: 0;
+  background: var(--color-ec-surface);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-tabs button {
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--color-ec-text-muted);
+  font-size: 10px;
+  font-weight: 680;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-tabs button[data-active="true"] {
+  border-color: var(--ec-builder-line);
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-accent);
+  box-shadow: 0 1px 2px rgb(17 24 39 / .04);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-scroll {
+  padding: 0 12px 24px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-section {
+  gap: 9px;
+  padding: 12px 0 14px;
+  border: 0;
+  border-bottom: 1px solid var(--ec-builder-line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-disclosure-trigger {
+  min-height: 34px;
+  padding-inline: 3px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-disclosure-trigger[aria-expanded="true"] {
+  background: transparent;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-disclosure-trigger:hover {
+  background: var(--ec-builder-hover);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-section-fields {
+  gap: 10px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-field {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 5px;
+  font-size: 9.5px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-field > span:first-child {
+  color: var(--color-ec-text);
+  font-size: 9px;
+  font-weight: 620;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-field input:not([type="checkbox"]),
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-field select,
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-field textarea {
+  width: 100%;
+  min-height: 34px;
+  padding-inline: 9px;
+  border-color: var(--ec-builder-line);
+  border-radius: 6px;
+  background: var(--color-ec-surface-subtle);
+  font-size: 10px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-field textarea {
+  min-height: 82px;
+  padding-block: 8px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-field small,
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-error {
+  grid-column: 1;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-field--boolean {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-field--boolean small,
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-field--boolean .widget-inspector-error {
+  grid-column: 1 / -1;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .widget-inspector-empty-v2 {
+  max-width: 220px;
+  margin: auto;
+}
+
+/* ----------------------------------------------------------------------
+   7. Responsive corrections
+   ---------------------------------------------------------------------- */
+@media (max-width: 1360px) and (min-width: 1181px) {
+  .electrocms-app[data-editor-preset="bento-high-density"] {
+    --ec-builder-panel: 278px;
+    --ec-builder-inspector: 318px;
+  }
+}
+
+@media (max-width: 1180px) and (min-width: 961px) {
+  .electrocms-app[data-editor-preset="bento-high-density"] {
+    --ec-builder-panel: 238px;
+    --ec-builder-inspector: 286px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .canvas-insert-control select {
+    min-width: 118px;
+    max-width: 146px;
+  }
+}
+
+@media (max-width: 960px) {
+  .electrocms-app[data-editor-preset="bento-high-density"] .builder-context-panel {
+    width: 100%;
+    min-width: 0;
+    height: 174px;
+    min-height: 174px;
+    border-right: 0;
+    border-bottom: 1px solid var(--ec-builder-line);
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .builder-context-tabs {
+    height: 46px;
+    min-height: 46px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .builder-document-bar {
+    height: 34px;
+    min-height: 34px;
+  }
+}
+
+@media (max-width: 820px) {
+  .electrocms-app[data-editor-preset="bento-high-density"] .studio-editor-region .editor-canvas-v2 {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) minmax(238px, 37dvh);
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-inspector-dock {
+    width: 100%;
+    min-width: 0;
+    max-height: 37dvh;
+    border-left: 0;
+    border-top: 1px solid var(--ec-builder-line);
+  }
+}
+
+@media (max-width: 720px) {
+  .electrocms-app[data-editor-preset="bento-high-density"] .app-header {
+    min-height: 96px;
+    padding: 6px 7px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .header-project {
+    min-width: 0;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .builder-context-panel {
+    height: 162px;
+    min-height: 162px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .builder-context-tabs,
+  .electrocms-app[data-editor-preset="bento-high-density"] .builder-context-tabs button,
+  .electrocms-app[data-editor-preset="bento-high-density"] .builder-page-row {
+    min-height: 44px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-command-bar-v2 {
+    min-height: 52px;
+    height: auto;
+    padding-inline: 7px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-command-bar button,
+  .electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-command-bar select,
+  .electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-geometry-controls input {
+    min-height: 44px;
+    height: 44px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-stage-v2 {
+    padding: 18px 10px 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .electrocms-app[data-editor-preset="bento-high-density"] .builder-context-panel {
+    height: 154px;
+    min-height: 154px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .builder-components-panel section > div:last-child {
+    grid-template-columns: repeat(2, minmax(112px, 1fr));
+  }
+}
+
+/* ----------------------------------------------------------------------
+   8. Motion and accessibility remain subordinate to usability
+   ---------------------------------------------------------------------- */
+@media (hover: hover) and (pointer: fine) {
+  .electrocms-app[data-editor-preset="bento-high-density"] .studio-rail nav button,
+  .electrocms-app[data-editor-preset="bento-high-density"] .builder-context-tabs button,
+  .electrocms-app[data-editor-preset="bento-high-density"] .builder-page-row,
+  .electrocms-app[data-editor-preset="bento-high-density"] .canvas-command-bar button,
+  .electrocms-app[data-editor-preset="bento-high-density"] .widget-inspector-tabs button {
+    transition:
+      background-color var(--ec-motion-fast) var(--ec-ease-standard),
+      border-color var(--ec-motion-fast) var(--ec-ease-standard),
+      color var(--ec-motion-fast) var(--ec-ease-standard),
+      box-shadow var(--ec-motion-fast) var(--ec-ease-standard);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .electrocms-app[data-editor-preset="bento-high-density"] .reference-builder-workspace *,
+  .electrocms-app[data-editor-preset="bento-high-density"] .studio-rail * {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .electrocms-app[data-editor-preset="bento-high-density"] {
+    --ec-builder-line: var(--color-ec-text-muted);
+    --ec-builder-line-strong: var(--color-ec-text);
+  }
+}
+
+@media (forced-colors: active) {
+  .electrocms-app[data-editor-preset="bento-high-density"] .studio-rail-active-mark {
+    background: Highlight;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .builder-page-row[data-active="true"],
+  .electrocms-app[data-editor-preset="bento-high-density"] .builder-context-tabs button[data-active="true"],
+  .electrocms-app[data-editor-preset="bento-high-density"] .widget-inspector-tabs button[data-active="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}
