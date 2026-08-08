@@ -67,7 +67,7 @@ describe('field group update record integrity', () => {
   it('allows schema changes that keep existing records valid', () => {
     const project = projectWithRecord();
     const current = project.fieldGroups['product-details'];
-    expect(current).toBeDefined();
+    if (!current) throw new Error('product-details field group was not created.');
 
     const result = updateFieldGroup(project, 'product-details', {
       ...current,
@@ -87,7 +87,7 @@ describe('field group update record integrity', () => {
   it('blocks schema changes that would invalidate an existing record', () => {
     const project = projectWithRecord();
     const current = project.fieldGroups['product-details'];
-    expect(current).toBeDefined();
+    if (!current) throw new Error('product-details field group was not created.');
 
     const result = updateFieldGroup(project, 'product-details', {
       ...current,
