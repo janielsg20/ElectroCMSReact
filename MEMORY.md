@@ -47,7 +47,7 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - Guarda recovery snapshot antes del proyecto principal.
 - Recovery snapshots son limitados por configuración.
 - F03 integra autosave al `ProjectSession`: commands/undo/redo encolan cambios y el header muestra `dirty/saving/saved/error` real.
-- F04 usa el mismo autosave para `frontendThemeId` y `backendThemeId`.
+- F04 usa el mismo autosave para `frontendThemeId`, `backendThemeId` y merges selectivos de recursos.
 - `EditorProjectPersistence` elige al hidratar el candidato más fresco entre project store y recovery por revision + `updatedAt`.
 - Revisiones permanecen monotónicas incluso si un payload pendiente trae metadata stale.
 - Un callback de save fusiona metadata; nunca reemplaza contenido editor más nuevo.
@@ -147,20 +147,36 @@ Nunca mezclar estos tres niveles.
 - Valida ID por scope (`frontend.*` / `backend.*`), versión positiva, metadata y tokens JSON portables.
 - Rechaza objetos con prototipos no JSON (`Date`, `Map`, class instances), incluso anidados.
 - Built-ins al cierre F04: 8 frontend + 7 backend.
+- Built-ins son inmutables; se duplican antes de editar.
+- Copias locales usan IDs collision-safe y empiezan en v1.
+- `ProjectThemeTokenEditor` edita metadata y semantic tokens; cada save crea vN+1.
 - `ProjectSession.setProjectTheme()` valida scope, actualiza solo el ID correspondiente y encola autosave.
 
 ### Theme package library
 - Formato: `kind=electrocms-theme-package`, `schemaVersion=1`.
 - Tamaño máximo: 256 KB.
-- Parse valida envelope + theme definition.
+- Parse valida envelope, theme definition y recursos opcionales.
 - Imports se guardan localmente en `electrocms:project-theme-packages:v1`, fuera de `CanonicalProject`.
 - El proyecto guarda solo el ID activo; el catálogo local resuelve la definición.
 - IDs importados no pueden colisionar con built-ins o paquetes ya instalados.
 - Export genera `*.electrocms-theme.json` versionado.
-- E2E cubre import → selección → autosave → reload → export y rechazo de colisión.
+
+### Recursos transferibles y merge
+- Recursos opcionales: documents/templates, content models, queries/forms/filters, roles/dashboards/backend y records demo.
+- Demo data está desactivada por defecto tanto en export selection como en import review.
+- Importar es dos pasos: elegir archivo solo valida y muestra review; `Apply selected import` realiza mutaciones.
+- Cada categoría puede desactivarse antes de importar.
+- Merge es no destructivo: si un ID/key ya existe en el proyecto, el valor existente se preserva y el conflicto se contabiliza.
+- Usuarios, credenciales y media binaries quedan fuera del formato F04.
+- El merge resultante vuelve a pasar `validateCanonicalProject` antes de commit/autosave.
+
+## Evidencia F04
+- MF-034 definitiva: run #568 PASS.
+- MF-035 definitiva, incluyendo duplicate/edit/version: run #662 PASS.
+- MF-036 definitiva, incluyendo selective import/demo option/non-destructive merge: run #688 PASS.
 
 ## Última fase cerrada funcionalmente
-F04 — Widgets, inspector, responsive y themes. Evidencia funcional: GitHub Actions run #622 PASS. Falta el cierre documental/higiene final y un gate completo sobre ese estado antes del merge.
+F04 — Widgets, inspector, responsive y themes. Evidencia funcional definitiva: GitHub Actions run #688 PASS. Falta un único gate de cierre sobre código + documentación final antes del merge.
 
 ## Siguiente trabajo
-Después de integrar PR #5 a `main`, recuperar el contrato exacto de F05 desde `phases/` y comenzar en una rama nueva. No iniciar F05 desde la rama F04 antes del merge.
+Después de integrar PR #5 a `main`, leer el contrato exacto de F05 y comenzar en una rama nueva. No iniciar F05 desde la rama F04 antes del merge.
