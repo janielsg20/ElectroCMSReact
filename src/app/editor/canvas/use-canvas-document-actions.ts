@@ -1,8 +1,15 @@
 import { useCallback } from 'react';
 import { createEntityId } from '../../../core/domain';
 import {
+  cutDocumentSubtrees,
+  groupDocumentNodes,
   insertDocumentNode,
   moveDocumentNode,
+  pasteDocumentClipboard,
+  setDocumentNodesHidden,
+  setDocumentNodesLocked,
+  ungroupDocumentNode,
+  type DocumentClipboardPayload,
   type DocumentNode,
 } from '../../../core/project';
 import { createDocumentCommand } from '../../project/document-command-history';
@@ -11,6 +18,16 @@ import { useProjectSession } from '../../project/project-session-context';
 export interface CanvasDocumentActions {
   insertContainer(parentId?: string, index?: number): string | null;
   moveNode(nodeId: string, parentId: string, index?: number): boolean;
+  cutNodes(nodeIds: readonly string[]): DocumentClipboardPayload | null;
+  pasteClipboard(
+    clipboard: DocumentClipboardPayload,
+    parentId?: string,
+    index?: number,
+  ): readonly string[];
+  groupNodes(nodeIds: readonly string[]): string | null;
+  ungroupNode(groupId: string): boolean;
+  setLocked(nodeIds: readonly string[], locked: boolean): boolean;
+  setHidden(nodeIds: readonly string[], hidden: boolean): boolean;
 }
 
 function createContainerNode(id: string, ordinal: number): DocumentNode {
@@ -25,12 +42,31 @@ function createContainerNode(id: string, ordinal: number): DocumentNode {
   };
 }
 
+function createGroupNode(id: string): DocumentNode {
+  return {
+    id,
+    type: 'core/group',
+    version: 1,
+    name: 'Group',
+    props: {},
+    styles: {},
+    children: [],
+  };
+}
+
 export function useCanvasDocumentActions(): CanvasDocumentActions {
   const session = useProjectSession();
+  const activeDocument = () => session.project.documents[session.activeDocumentId];
+
+  const execute = useCallback(
+    (label: string, before: NonNullable<ReturnType<typeof activeDocument>>, after: NonNullable<ReturnType<typeof activeDocument>>) =>
+      session.executeDocumentCommand(createDocumentCommand(label, before, after)),
+    [session],
+  );
 
   const insertContainer = useCallback(
     (parentId?: string, index?: number): string | null => {
-      const document = session.project.documents[session.activeDocumentId];
+      const document = activeDocument();
       if (!document) return null;
       const id = createEntityId('node');
       const ordinal = Object.keys(document.nodes).length;
@@ -38,30 +74,136 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
         parentId: parentId ?? document.rootNodeId,
         ...(index === undefined ? {} : { index }),
       });
-      const command = createDocumentCommand('Insert container', document, nextDocument);
-      return session.executeDocumentCommand(command) ? id : null;
+      return execute('Insert container', document, nextDocument) ? id : null;
     },
-    [session],
+    [execute, session.activeDocumentId, session.project.documents],
   );
 
   const moveNode = useCallback(
     (nodeId: string, parentId: string, index?: number): boolean => {
-      const document = session.project.documents[session.activeDocumentId];
+      const document = activeDocument();
       if (!document) return false;
       try {
         const nextDocument = moveDocumentNode(document, nodeId, {
           parentId,
           ...(index === undefined ? {} : { index }),
         });
-        return session.executeDocumentCommand(
-          createDocumentCommand('Move node', document, nextDocument),
+        return execute('Move node', document, nextDocument);
+      } catch {
+        return false;
+      }
+    },
+    [execute, session.activeDocumentId, session.project.documents],
+  );
+
+  const cutNodes = useCallback(
+    (nodeIds: readonly string[]): DocumentClipboardPayload | null => {
+      const document = activeDocument();
+      if (!document) return null;
+      try {
+        const cut = cutDocumentSubtrees(document, nodeIds);
+        return execute('Cut nodes', document, cut.document) ? cut.clipboard : null;
+      } catch {
+        return null;
+      }
+    },
+    [execute, session.activeDocumentId, session.project.documents],
+  );
+
+  const pasteClipboard = useCallback(
+    (
+      clipboard: DocumentClipboardPayload,
+      parentId?: string,
+      index?: number,
+    ): readonly string[] => {
+      const document = activeDocument();
+      if (!document) return [];
+      try {
+        const pasted = pasteDocumentClipboard(
+          document,
+          clipboard,
+          parentId ?? document.rootNodeId,
+          () => createEntityId('node'),
+          index,
+        );
+        return execute('Paste nodes', document, pasted.document) ? pasted.pastedRootNodeIds : [];
+      } catch {
+        return [];
+      }
+    },
+    [execute, session.activeDocumentId, session.project.documents],
+  );
+
+  const groupNodes = useCallback(
+    (nodeIds: readonly string[]): string | null => {
+      const document = activeDocument();
+      if (!document) return null;
+      try {
+        const groupId = createEntityId('node');
+        const nextDocument = groupDocumentNodes(document, nodeIds, createGroupNode(groupId));
+        return execute('Group nodes', document, nextDocument) ? groupId : null;
+      } catch {
+        return null;
+      }
+    },
+    [execute, session.activeDocumentId, session.project.documents],
+  );
+
+  const ungroupNode = useCallback(
+    (groupId: string): boolean => {
+      const document = activeDocument();
+      if (!document) return false;
+      try {
+        return execute('Ungroup nodes', document, ungroupDocumentNode(document, groupId));
+      } catch {
+        return false;
+      }
+    },
+    [execute, session.activeDocumentId, session.project.documents],
+  );
+
+  const setLocked = useCallback(
+    (nodeIds: readonly string[], locked: boolean): boolean => {
+      const document = activeDocument();
+      if (!document || nodeIds.length === 0) return false;
+      try {
+        return execute(
+          locked ? 'Lock nodes' : 'Unlock nodes',
+          document,
+          setDocumentNodesLocked(document, nodeIds, locked),
         );
       } catch {
         return false;
       }
     },
-    [session],
+    [execute, session.activeDocumentId, session.project.documents],
   );
 
-  return { insertContainer, moveNode };
+  const setHidden = useCallback(
+    (nodeIds: readonly string[], hidden: boolean): boolean => {
+      const document = activeDocument();
+      if (!document || nodeIds.length === 0) return false;
+      try {
+        return execute(
+          hidden ? 'Hide nodes' : 'Show nodes',
+          document,
+          setDocumentNodesHidden(document, nodeIds, hidden),
+        );
+      } catch {
+        return false;
+      }
+    },
+    [execute, session.activeDocumentId, session.project.documents],
+  );
+
+  return {
+    insertContainer,
+    moveNode,
+    cutNodes,
+    pasteClipboard,
+    groupNodes,
+    ungroupNode,
+    setLocked,
+    setHidden,
+  };
 }
