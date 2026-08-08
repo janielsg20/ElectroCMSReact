@@ -8,16 +8,9 @@ ElectroCMS mantiene separados:
 
 Nunca se debe aplicar un cambio del editor a frontend/backend de forma implícita.
 
-## Editor theme mode
-`WorkspacePreferences.editorThemeMode` admite:
-- `light`
-- `dark`
-- `auto`
-
-`auto` sigue `prefers-color-scheme` y solo resuelve la apariencia de ElectroCMS.
-
-## Editor theme presets — F04
-`WorkspacePreferences.editorThemePresetId` controla la personalidad visual del chrome del editor, separada del mode claro/oscuro.
+## Editor theme mode y presets
+`WorkspacePreferences.editorThemeMode` admite `light`, `dark`, `auto`.
+`WorkspacePreferences.editorThemePresetId` controla solo la personalidad visual del chrome de ElectroCMS.
 
 Presets incluidos:
 - High Density
@@ -31,42 +24,26 @@ Presets incluidos:
 - Monochrome Pro
 - Developer Console
 
-Un preset del editor puede cambiar tokens de color, elevación, radius, énfasis tipográfico y densidad dentro de límites soportados. No puede cambiar:
-- datos de `CanonicalProject`;
-- comportamiento de widgets;
-- semántica de Undo/Redo;
-- nombres accesibles;
-- contratos de routing;
-- estructura canónica del canvas.
+Un preset del editor puede cambiar tokens de color, elevación, radius, énfasis tipográfico y densidad; nunca datos de `CanonicalProject`, comportamiento de widgets, Undo/Redo, accesibilidad o estructura del canvas.
 
 ## Design system del editor
 Fuentes de verdad:
 - `design-system/electrocms-editor/MASTER.md`
 - `design-system/electrocms-editor/pages/editor.md`
 
-Principios externos adaptados desde `nextlevelbuilder/ui-ux-pro-max-skill`:
+Principios adaptados desde `nextlevelbuilder/ui-ux-pro-max-skill`:
 - `ui-ux-pro-max`
 - `design-system`
 - `ui-styling`
 
-ElectroCMS usa arquitectura de tokens de tres capas:
-
-```text
-Primitive → Semantic → Component
-```
-
-Los componentes deben consumir tokens semánticos/de componente cuando sea práctico. El editor conserva un lenguaje Minimal/Flat + Data-Dense + Accessible orientado a productividad no-code.
+Arquitectura visual: `Primitive → Semantic → Component`.
+El editor usa lenguaje Minimal/Flat + Data-Dense + Accessible orientado a productividad no-code.
 
 ## Project themes — F04
-`CanonicalProject` persiste:
-- `frontendThemeId`
-- `backendThemeId`
-
-Estos IDs son independientes y se modifican mediante `ProjectSession.setProjectTheme(scope, id)`, con validación y autosave real.
+`CanonicalProject` persiste `frontendThemeId` y `backendThemeId` de forma independiente.
+`ProjectSession.setProjectTheme(scope,id)` valida contra `ProjectThemeRegistry` y encola autosave.
 
 ### ProjectThemeRegistry
-`src/core/themes/theme-system.ts` define un registry framework-neutral.
-
 Cada `ProjectThemeDefinition` contiene:
 - `id`
 - `version`
@@ -76,94 +53,78 @@ Cada `ProjectThemeDefinition` contiene:
 - `tokens`
 
 Reglas:
-- IDs frontend: `frontend.*`.
-- IDs backend: `backend.*`.
+- IDs `frontend.*` o `backend.*` según scope.
 - versión positiva.
-- tokens deben ser JSON portable plano/recursivo.
-- se rechazan `Date`, `Map`, class instances y otros prototipos no JSON, incluso anidados.
-- el registry devuelve clones defensivos.
+- tokens JSON portables profundos.
+- objetos con prototipos no JSON se rechazan.
+- clones defensivos.
 - IDs duplicados no se registran.
 
-## Built-in project themes
-### Frontend
-- `frontend.minimal-clean`
-- `frontend.bento-grid`
-- `frontend.elegant-editorial`
-- `frontend.sophisticated-dark`
-- `frontend.material-neutral`
-- `frontend.neobrutalist-modern`
-- `frontend.corporate-pro`
-- `frontend.glassmorphism`
+### Built-ins
+Frontend: `minimal-clean`, `bento-grid`, `elegant-editorial`, `sophisticated-dark`, `material-neutral`, `neobrutalist-modern`, `corporate-pro`, `glassmorphism`.
 
-### Backend
-- `backend.high-density`
-- `backend.saas-dashboard`
-- `backend.enterprise-corporate`
-- `backend.developer-console`
-- `backend.monochrome-pro`
-- `backend.material-neutral`
-- `backend.sophisticated-dark`
+Backend: `high-density`, `saas-dashboard`, `enterprise-corporate`, `developer-console`, `monochrome-pro`, `material-neutral`, `sophisticated-dark`.
+
+Built-ins son inmutables. `Duplicate to edit` crea una copia local collision-safe en v1. El editor local permite modificar metadata y semantic tokens; cada guardado incrementa versión automáticamente.
 
 ## Theme package format — MF-036
-Formato exportable/importable:
+Envelope:
 
 ```json
 {
   "schemaVersion": 1,
   "kind": "electrocms-theme-package",
-  "theme": {
-    "id": "frontend.example",
-    "version": 1,
-    "scope": "frontend",
-    "label": "Example",
-    "description": "...",
-    "tokens": {}
-  }
+  "theme": {},
+  "resources": {}
 }
 ```
 
-### Reglas de seguridad/portabilidad
-- Máximo 256 KB por paquete.
-- JSON inválido se rechaza antes de registrar.
-- Schema futuro se rechaza.
-- Kind incorrecto se rechaza.
-- Theme inválido se rechaza.
-- Colisiones con built-ins o paquetes ya instalados se rechazan.
-- El import nunca modifica silenciosamente el theme activo: instala primero y el usuario selecciona después.
+Límite: 256 KB.
 
-## Biblioteca local de themes importados
-Los paquetes importados se guardan en:
+### Recursos opcionales
+- Pages & templates: documents + order.
+- Content models: contentTypes, taxonomies, fieldGroups, relations.
+- Queries, forms & filters.
+- Roles, dashboards & backend configuration.
+- Demo content records.
 
-`electrocms:project-theme-packages:v1`
+El paquete F04 no transfiere usuarios ni binarios de media.
 
-La biblioteca pertenece al editor/browser, no a `CanonicalProject`.
+### Export selectivo
+El usuario elige categorías antes de exportar. Demo Data está desactivada por defecto.
 
-Motivo:
-- un theme instalado puede reutilizarse en varios proyectos;
-- evita duplicar definitions completas dentro de cada proyecto;
-- permite evolucionar la librería de themes sin migrar el schema canónico por cada instalación.
+### Import seguro en dos pasos
+1. Elegir archivo → parsear, validar schema/theme/resources y mostrar review.
+2. `Apply selected import` → instalar definición seleccionada y/o fusionar categorías seleccionadas.
 
-El proyecto guarda únicamente el ID seleccionado. Los exporters futuros deberán resolver/bundlear la definición activa mediante el registry/package library.
+Elegir un archivo nunca modifica el proyecto por sí solo.
 
-## UI de gestión F04
-Los shells Preview y Backend exponen:
-- selector de theme compatible con el scope;
-- preview visual de semantic tokens;
-- indicador Built-in / Imported;
-- Import package;
-- Export selected;
-- estado accesible de éxito/error mediante `aria-live`.
+### Merge no destructivo
+- Un ID/key existente nunca se sobrescribe.
+- Nuevos IDs se añaden.
+- Conflictos se cuentan como `skippedConflicts` y se preserva el valor actual.
+- Demo records solo entran si `demoData=true`.
+- El proyecto resultante se valida con `validateCanonicalProject` antes de commit/autosave.
 
-Estos shells siguen siendo shells hasta sus fases de renderer/export; F04 no debe presentarlos como output final.
+## Biblioteca local de themes
+Clave: `electrocms:project-theme-packages:v1`.
 
-## Persistencia y tests
-Playwright valida:
-- frontend/backend cambian independientemente;
-- cambiar project theme no cambia editor preset;
-- selección sobrevive autosave/reload;
-- import agrega el paquete al catálogo;
-- imported theme sobrevive reload;
-- export produce `*.electrocms-theme.json`;
-- colisiones se rechazan.
+La biblioteca pertenece al editor/browser, no a `CanonicalProject`. El proyecto guarda solo el ID activo y el registry resuelve la definición instalada.
 
-Evidencia funcional F04: GitHub Actions run #622 PASS.
+## UI F04
+Preview/Backend exponen:
+- selector por scope;
+- token preview;
+- Built-in/Imported + versión;
+- Duplicate to edit;
+- editor de tokens para copies/imports locales;
+- Export contents selectivo;
+- Import validate → review → merge;
+- estado accesible `aria-live`.
+
+Los workspaces siguen siendo shells hasta sus fases dedicadas.
+
+## Evidencia definitiva
+- MF-034: run #568 PASS.
+- MF-035 editable/duplicable/versionada: run #662 PASS.
+- MF-036 selective import/demo option/non-destructive merge: run #688 PASS.
