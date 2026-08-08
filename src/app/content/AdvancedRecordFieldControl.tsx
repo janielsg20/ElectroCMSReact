@@ -5,17 +5,22 @@ import {
   evaluateCalculatedField,
   evaluateConditionalField,
   isMf042AdvancedField,
+  isMf043ReferenceField,
   MAX_ADVANCED_FIELD_DEPTH,
   MAX_REPEATER_ITEMS,
   type CustomFieldDefinition,
   type FieldGroupDefinition,
 } from '../../core/content';
 import { isJsonObject, type JsonObject, type JsonValue } from '../../core/domain';
+import type { CanonicalProject } from '../../core/project';
+import { ReferenceRecordFieldControl } from './ReferenceRecordFieldControl';
 import './advanced-record-field-control.css';
 
 const registry = createContentFieldTypeRegistry();
 
 interface AdvancedRecordFieldControlProps {
+  project: CanonicalProject;
+  ownerContentTypeId: string;
   field: CustomFieldDefinition;
   value: JsonValue | undefined;
   siblingValues: JsonObject;
@@ -139,12 +144,16 @@ function PrimitiveNestedField({
 }
 
 function NestedGroupEditor({
+  project,
+  ownerContentTypeId,
   group,
   value,
   fieldGroups,
   onChange,
   depth,
 }: {
+  project: CanonicalProject;
+  ownerContentTypeId: string;
   group: FieldGroupDefinition;
   value: JsonObject;
   fieldGroups: readonly FieldGroupDefinition[];
@@ -163,6 +172,7 @@ function NestedGroupEditor({
       {group.fields.map((field) => {
         const current = values[field.name];
         const advanced = isMf042AdvancedField(field);
+        const reference = isMf043ReferenceField(field);
         return (
           <div className="advanced-record-nested-field" key={field.id}>
             <div className="advanced-record-nested-label">
@@ -171,12 +181,22 @@ function NestedGroupEditor({
             </div>
             {advanced ? (
               <AdvancedRecordFieldControl
+                project={project}
+                ownerContentTypeId={ownerContentTypeId}
                 field={field}
                 value={current}
                 siblingValues={values}
                 fieldGroups={fieldGroups}
                 onChange={(next) => onChange({ ...values, [field.name]: next })}
                 depth={depth + 1}
+              />
+            ) : reference ? (
+              <ReferenceRecordFieldControl
+                project={project}
+                ownerContentTypeId={ownerContentTypeId}
+                field={field}
+                value={current}
+                onChange={(next) => onChange({ ...values, [field.name]: next })}
               />
             ) : (
               <PrimitiveNestedField
@@ -194,6 +214,8 @@ function NestedGroupEditor({
 }
 
 export function AdvancedRecordFieldControl({
+  project,
+  ownerContentTypeId,
   field,
   value,
   siblingValues,
@@ -241,7 +263,7 @@ export function AdvancedRecordFieldControl({
     return (
       <div className="advanced-record-group-shell">
         <div className="advanced-record-group-heading"><strong>{group.label}</strong><span>Conditional group</span></div>
-        <NestedGroupEditor group={group} value={current} fieldGroups={fieldGroups} onChange={onChange} depth={depth + 1} />
+        <NestedGroupEditor project={project} ownerContentTypeId={ownerContentTypeId} group={group} value={current} fieldGroups={fieldGroups} onChange={onChange} depth={depth + 1} />
       </div>
     );
   }
@@ -253,7 +275,7 @@ export function AdvancedRecordFieldControl({
     return (
       <div className="advanced-record-group-shell">
         <div className="advanced-record-group-heading"><strong>{group.label}</strong><span>Nested group</span></div>
-        <NestedGroupEditor group={group} value={current} fieldGroups={fieldGroups} onChange={onChange} depth={depth + 1} />
+        <NestedGroupEditor project={project} ownerContentTypeId={ownerContentTypeId} group={group} value={current} fieldGroups={fieldGroups} onChange={onChange} depth={depth + 1} />
       </div>
     );
   }
@@ -283,6 +305,8 @@ export function AdvancedRecordFieldControl({
                 <button type="button" onClick={() => onChange(rows.filter((_, rowIndex) => rowIndex !== index))}>Remove</button>
               </div>
               <NestedGroupEditor
+                project={project}
+                ownerContentTypeId={ownerContentTypeId}
                 group={group}
                 value={row}
                 fieldGroups={fieldGroups}
