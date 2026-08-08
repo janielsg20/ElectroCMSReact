@@ -6,7 +6,9 @@ import { useWorkspacePreferences } from '../workspace/workspace-preferences-stor
 import { Icon } from './Icon';
 
 export interface AppHeaderProps {
+  compactLayout: boolean;
   activeWorkspace: WorkspaceId;
+  onOpenNavigation(): void;
   onNavigate(workspaceId: WorkspaceId): void;
 }
 
@@ -17,7 +19,7 @@ const saveLabels = {
   error: 'Save error',
 } as const;
 
-export function AppHeader({ activeWorkspace, onNavigate }: AppHeaderProps) {
+export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, onNavigate }: AppHeaderProps) {
   const session = useProjectSession();
   const { preferences, setEditorThemeMode, setEditorThemePresetId } = useWorkspacePreferences();
   const activeDocument = session.project.documents[session.activeDocumentId];
@@ -26,6 +28,11 @@ export function AppHeader({ activeWorkspace, onNavigate }: AppHeaderProps) {
   return (
     <header className="app-header" data-testid="app-header">
       <div className="header-project">
+        {compactLayout ? (
+          <button className="studio-menu-button" type="button" aria-label="Open navigation" onClick={onOpenNavigation}>
+            <Icon name="menu" size={16} />
+          </button>
+        ) : null}
         <div className="brand-mark" aria-hidden="true"><Icon name="bolt" size={15} /></div>
         <div className="project-identity">
           <strong className="project-name" title={session.project.name}>{session.project.name}</strong>
@@ -88,7 +95,7 @@ export function AppHeader({ activeWorkspace, onNavigate }: AppHeaderProps) {
         <button className="toolbar-button header-incomplete-action" type="button" aria-pressed={activeWorkspace === 'preview'} onClick={() => onNavigate('preview')}>
           <Icon name="preview" size={13} /> Preview <span className="studio-pending-dot" title="Full frontend renderer is still being implemented" aria-label="Full frontend renderer is still being implemented" />
         </button>
-        <button className="toolbar-button toolbar-button-primary header-incomplete-action" type="button" aria-pressed={activeWorkspace === 'export'} onClick={() => onNavigate('export')}>
+        <button className="toolbar-button toolbar-button-primary header-incomplete-action" type="button" aria-label="Export" aria-pressed={activeWorkspace === 'export'} onClick={() => onNavigate('export')}>
           <Icon name="export" size={13} /> Publish <span className="studio-pending-dot" title="Publishing/export is still being implemented" aria-label="Publishing/export is still being implemented" />
         </button>
       </div>
