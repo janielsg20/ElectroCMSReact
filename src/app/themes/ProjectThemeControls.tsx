@@ -1,8 +1,9 @@
-import { useState, type ChangeEvent, type CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { isJsonObject } from '../../core/domain';
 import type { JsonObject } from '../../core/domain';
 import type { ProjectThemeScope } from '../../core/themes';
 import { useProjectSession } from '../project/project-session-context';
+import { ProjectThemePackageTransfer } from './ProjectThemePackageTransfer';
 import { ProjectThemeTokenEditor } from './ProjectThemeTokenEditor';
 import {
   useProjectThemePackageLibrary,
@@ -57,43 +58,6 @@ export function ProjectThemeControls({ scope }: ProjectThemeControlsProps) {
       } as CSSProperties)
     : undefined;
 
-  const handleImport = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-    if (!file) return;
-
-    try {
-      const result = packageLibrary.importPackageText(await file.text());
-      setPackageStatus(
-        result.ok
-          ? { tone: 'success', message: `Installed ${result.themeId}. Select it from the compatible theme list.` }
-          : { tone: 'error', message: result.message },
-      );
-    } catch {
-      setPackageStatus({ tone: 'error', message: 'Theme package could not be read.' });
-    }
-  };
-
-  const handleExport = () => {
-    if (!theme) return;
-    const result = packageLibrary.exportPackage(theme.id);
-    if (!result.ok) {
-      setPackageStatus({ tone: 'error', message: result.message });
-      return;
-    }
-
-    const blob = new Blob([result.text], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = result.fileName;
-    document.body.append(anchor);
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(url);
-    setPackageStatus({ tone: 'success', message: `Exported ${theme.id}.` });
-  };
-
   const handleDuplicate = () => {
     if (!theme) return;
     const result = packageLibrary.duplicateTheme(theme.id);
@@ -144,22 +108,9 @@ export function ProjectThemeControls({ scope }: ProjectThemeControlsProps) {
           </select>
         </label>
 
-        <div className="project-theme-package-actions" aria-label={`${fieldLabel} package actions`}>
+        <div className="project-theme-package-actions" aria-label={`${fieldLabel} theme actions`}>
           <button type="button" onClick={handleDuplicate} disabled={!theme}>
             Duplicate to edit
-          </button>
-          <label className="project-theme-package-button">
-            <span>Import package</span>
-            <input
-              className="sr-only"
-              type="file"
-              accept=".json,application/json"
-              aria-label="Import theme package"
-              onChange={handleImport}
-            />
-          </label>
-          <button type="button" onClick={handleExport} disabled={!theme}>
-            Export selected
           </button>
         </div>
 
@@ -195,6 +146,8 @@ export function ProjectThemeControls({ scope }: ProjectThemeControlsProps) {
           onMutation={handleThemeMutation}
         />
       ) : null}
+
+      {theme ? <ProjectThemePackageTransfer theme={theme} /> : null}
     </section>
   );
 }
