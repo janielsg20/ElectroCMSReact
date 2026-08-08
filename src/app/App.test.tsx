@@ -40,7 +40,7 @@ describe('ElectroCMS editor shell', () => {
     await user.click(within(navigation).getByRole('button', { name: 'Preview' }));
 
     expect(window.location.pathname).toBe('/preview');
-    expect(screen.getByRole('heading', { name: 'Preview workspace' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Preview workspace', level: 2 })).toBeInTheDocument();
     expect(screen.getByLabelText('Zoom level')).toHaveTextContent('110%');
   });
 
