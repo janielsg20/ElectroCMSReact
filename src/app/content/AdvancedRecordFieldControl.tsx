@@ -4,6 +4,8 @@ import {
   createGroupDefaultValue,
   evaluateCalculatedField,
   evaluateConditionalField,
+  MAX_ADVANCED_FIELD_DEPTH,
+  MAX_REPEATER_ITEMS,
   MF042_ADVANCED_FIELD_TYPES,
   type CustomFieldDefinition,
   type FieldGroupDefinition,
@@ -150,6 +152,10 @@ function NestedGroupEditor({
   onChange(value: JsonObject): void;
   depth: number;
 }) {
+  if (depth > MAX_ADVANCED_FIELD_DEPTH) {
+    return <div className="advanced-record-error">Nested field depth exceeds the safe editor limit.</div>;
+  }
+
   const defaults = groupDefaults(group, fieldGroups, depth);
   const values: JsonObject = { ...defaults, ...value };
 
@@ -196,6 +202,10 @@ export function AdvancedRecordFieldControl({
   onChange,
   depth = 0,
 }: AdvancedRecordFieldControlProps) {
+  if (depth > MAX_ADVANCED_FIELD_DEPTH) {
+    return <div className="advanced-record-error">Advanced field depth exceeds the safe editor limit.</div>;
+  }
+
   if (field.type === 'core/calculated') {
     const result = evaluateCalculatedField(field, siblingValues);
     return (
@@ -244,7 +254,8 @@ export function AdvancedRecordFieldControl({
     const group = resolveGroup(fieldGroups, field);
     if (!group) return <div className="advanced-record-error">Referenced Field Group is unavailable.</div>;
     const rows = Array.isArray(value) ? value.filter(isJsonObject) : [];
-    const maxItems = typeof field.config.maxItems === 'number' ? field.config.maxItems : Number.POSITIVE_INFINITY;
+    const configuredMax = typeof field.config.maxItems === 'number' ? field.config.maxItems : MAX_REPEATER_ITEMS;
+    const maxItems = Math.min(configuredMax, MAX_REPEATER_ITEMS);
     return (
       <div className="advanced-record-repeater">
         <div className="advanced-record-repeater-heading">
