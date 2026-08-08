@@ -6,9 +6,10 @@ test('frontend and backend themes change independently and survive autosave relo
   const app = page.locator('.electrocms-app');
   const editorPreset = await app.getAttribute('data-editor-preset');
   expect(editorPreset).toBeTruthy();
+  const frontendTheme = page.getByLabel('Frontend theme', { exact: true });
 
-  await expect(page.getByLabel('Frontend theme')).toHaveValue('frontend.minimal-clean');
-  await page.getByLabel('Frontend theme').selectOption('frontend.bento-grid');
+  await expect(frontendTheme).toHaveValue('frontend.minimal-clean');
+  await frontendTheme.selectOption('frontend.bento-grid');
   await expect(page.locator('[data-theme-scope="frontend"] [data-project-theme-id]')).toHaveAttribute(
     'data-project-theme-id',
     'frontend.bento-grid',
@@ -18,9 +19,10 @@ test('frontend and backend themes change independently and survive autosave relo
   const navigation = page.getByRole('navigation', { name: 'Primary workspaces' });
   await navigation.getByRole('button', { name: 'Backend' }).click();
   await expect(page).toHaveURL(/\/backend$/);
-  await expect(page.getByLabel('Backend theme')).toHaveValue('backend.high-density');
+  const backendTheme = page.getByLabel('Backend theme', { exact: true });
+  await expect(backendTheme).toHaveValue('backend.high-density');
 
-  await page.getByLabel('Backend theme').selectOption('backend.developer-console');
+  await backendTheme.selectOption('backend.developer-console');
   await expect(page.locator('[data-theme-scope="backend"] [data-project-theme-id]')).toHaveAttribute(
     'data-project-theme-id',
     'backend.developer-console',
@@ -29,9 +31,9 @@ test('frontend and backend themes change independently and survive autosave relo
   await expect(page.getByText('Saved locally')).toBeVisible({ timeout: 10_000 });
 
   await page.reload();
-  await expect(page.getByLabel('Backend theme')).toHaveValue('backend.developer-console');
+  await expect(page.getByLabel('Backend theme', { exact: true })).toHaveValue('backend.developer-console');
 
   await page.getByRole('navigation', { name: 'Primary workspaces' }).getByRole('button', { name: 'Preview' }).click();
-  await expect(page.getByLabel('Frontend theme')).toHaveValue('frontend.bento-grid');
+  await expect(page.getByLabel('Frontend theme', { exact: true })).toHaveValue('frontend.bento-grid');
   await expect(app).toHaveAttribute('data-editor-preset', editorPreset!);
 });
