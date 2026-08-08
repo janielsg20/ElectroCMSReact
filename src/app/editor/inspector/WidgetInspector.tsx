@@ -111,15 +111,29 @@ export function WidgetInspector({
 }: WidgetInspectorProps) {
   const registry = useEditorWidgetRegistry();
   const [issues, setIssues] = useState<Readonly<Record<string, string>>>({});
+  const [activeTab, setActiveTab] = useState<'content' | 'style'>('content');
   const definition = node && registry.has(node.type, node.version) ? registry.core.resolve(node.type, node.version) : null;
   const schema = useMemo(() => definition && node ? normalizeInspectorSchema(definition.inspectorSchema, node.props) : { sections: [] }, [definition, node]);
 
   if (!node) {
-    return <aside className="widget-inspector" aria-label="Widget inspector" data-state="empty"><div className="widget-inspector-empty">Select one widget to inspect its properties.</div></aside>;
+    return (
+      <aside className="widget-inspector widget-inspector-v2" aria-label="Widget inspector" data-state="empty">
+        <div className="widget-inspector-empty widget-inspector-empty-v2">
+          <span className="widget-inspector-empty-mark" aria-hidden="true">+</span>
+          <strong>Nothing selected</strong>
+          <span>Select a single element on the canvas to edit its content and appearance.</span>
+        </div>
+      </aside>
+    );
   }
 
   if (!definition) {
-    return <aside className="widget-inspector" aria-label="Widget inspector" data-state="unregistered"><header><strong>{node.name ?? node.type}</strong><code>{node.type}</code></header><div className="widget-inspector-empty">No registered inspector schema is available.</div></aside>;
+    return (
+      <aside className="widget-inspector widget-inspector-v2" aria-label="Widget inspector" data-state="unregistered">
+        <header className="widget-inspector-header"><div><strong>{node.name ?? node.type}</strong><span className="widget-inspector-eyebrow">Unregistered element</span></div><code>{node.type}</code></header>
+        <div className="widget-inspector-empty">No registered inspector schema is available.</div>
+      </aside>
+    );
   }
 
   const commit = (field: InspectorFieldSchema, rawValue: string | boolean) => {
@@ -142,33 +156,50 @@ export function WidgetInspector({
   };
 
   return (
-    <aside className="widget-inspector" aria-label="Widget inspector" data-state="ready">
-      <header className="widget-inspector-header">
-        <div><span className="widget-inspector-eyebrow">{definition.metadata.category}</span><strong>{node.name ?? definition.metadata.name}</strong></div>
-        <code>{definition.type}@{definition.version}</code>
-      </header>
-      <div className="widget-inspector-capability" data-status={definition.capabilities.local}>Local: {definition.capabilities.local}</div>
-      {schema.sections.length > 0 ? (
-        <div className="widget-inspector-sections">
-          {schema.sections.map((section) => (
-            <fieldset key={section.id} className="widget-inspector-section">
-              <legend>{section.label}</legend>
-              {section.fields.map((field) => {
-                const fieldIssue = issues[field.key];
-                return <InspectorFieldControl key={field.key} node={node} field={field} {...(fieldIssue === undefined ? {} : { issue: fieldIssue })} onCommit={commit} />;
-              })}
-            </fieldset>
-          ))}
+    <aside className="widget-inspector widget-inspector-v2" aria-label="Widget inspector" data-state="ready">
+      <header className="widget-inspector-header widget-inspector-header-v2">
+        <div className="min-w-0">
+          <span className="widget-inspector-eyebrow">{definition.metadata.category}</span>
+          <strong>{node.name ?? definition.metadata.name}</strong>
         </div>
-      ) : <div className="widget-inspector-empty">This widget has no editable properties in its inspector schema.</div>}
-      <WidgetStyleInspector
-        node={node}
-        breakpointId={breakpointId}
-        breakpoints={breakpoints}
-        {...(onSetStyle ? { onSetStyle } : {})}
-        {...(onUnsetStyle ? { onUnsetStyle } : {})}
-        {...(onInheritStyle ? { onInheritStyle } : {})}
-      />
+        <code title={`${definition.type}@${definition.version}`}>{definition.type}</code>
+      </header>
+
+      <div className="widget-inspector-tabs" role="tablist" aria-label="Inspector sections">
+        <button type="button" role="tab" aria-selected={activeTab === 'content'} data-active={activeTab === 'content'} onClick={() => setActiveTab('content')}>Content</button>
+        <button type="button" role="tab" aria-selected={activeTab === 'style'} data-active={activeTab === 'style'} onClick={() => setActiveTab('style')}>Style</button>
+      </div>
+
+      <div className="widget-inspector-scroll">
+        {activeTab === 'content' ? (
+          <div role="tabpanel" aria-label="Content inspector">
+            {schema.sections.length > 0 ? (
+              <div className="widget-inspector-sections">
+                {schema.sections.map((section) => (
+                  <fieldset key={section.id} className="widget-inspector-section">
+                    <legend>{section.label}</legend>
+                    {section.fields.map((field) => {
+                      const fieldIssue = issues[field.key];
+                      return <InspectorFieldControl key={field.key} node={node} field={field} {...(fieldIssue === undefined ? {} : { issue: fieldIssue })} onCommit={commit} />;
+                    })}
+                  </fieldset>
+                ))}
+              </div>
+            ) : <div className="widget-inspector-empty">This element has no editable content properties.</div>}
+          </div>
+        ) : (
+          <div role="tabpanel" aria-label="Style inspector">
+            <WidgetStyleInspector
+              node={node}
+              breakpointId={breakpointId}
+              breakpoints={breakpoints}
+              {...(onSetStyle ? { onSetStyle } : {})}
+              {...(onUnsetStyle ? { onUnsetStyle } : {})}
+              {...(onInheritStyle ? { onInheritStyle } : {})}
+            />
+          </div>
+        )}
+      </div>
     </aside>
   );
 }
