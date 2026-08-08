@@ -1,4 +1,8 @@
 import { createContext, useContext } from 'react';
+import type {
+  ContentTypeDefinition,
+  ContentTypeMutationErrorCode,
+} from '../../core/content';
 import type { CanonicalProject } from '../../core/project';
 import type {
   ProjectThemePackageResources,
@@ -13,6 +17,10 @@ export type ProjectSaveState = 'saved' | 'dirty' | 'saving' | 'error';
 export type ProjectThemeResourceApplyResult =
   | { ok: true; report: ThemePackageMergeReport; changed: boolean }
   | { ok: false; message: string };
+
+export type ContentTypeSessionMutationResult =
+  | { ok: true; value: ContentTypeDefinition; changed: boolean }
+  | { ok: false; code: ContentTypeMutationErrorCode; message: string };
 
 export interface ProjectSessionState {
   project: CanonicalProject;
@@ -30,6 +38,9 @@ export interface ProjectSessionState {
     resources: ProjectThemePackageResources | undefined,
     selection: ThemePackageResourceSelection,
   ): ProjectThemeResourceApplyResult;
+  createContentType(input: unknown): ContentTypeSessionMutationResult;
+  updateContentType(id: string, input: unknown): ContentTypeSessionMutationResult;
+  removeContentType(id: string): ContentTypeSessionMutationResult;
   executeDocumentCommand(command: DocumentCommand): boolean;
   undo(): boolean;
   redo(): boolean;
