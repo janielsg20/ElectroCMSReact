@@ -70,16 +70,28 @@
 
 ## F05 code map — dynamic content
 ### MF-037 CPT
-- `src/core/content/content-type.ts`: `ContentTypeDefinition` v1, validation, list/create/update/remove operations, slug uniqueness and in-use delete guard.
-- `src/core/content/content-type.test.ts`: unit coverage for valid/invalid definitions, CRUD, duplicate id/slug and record-reference delete protection.
+- `src/core/content/content-type.ts`: `ContentTypeDefinition` v1, validation, list/create/update/remove operations, slug uniqueness and referential delete guards.
+- `src/core/content/content-type.test.ts`: unit coverage for valid/invalid definitions, CRUD, duplicate id/slug, record-reference and taxonomy-reference delete protection.
 - `src/core/content/index.ts`: public core content exports.
 - `src/app/content/ContentTypeEditor.tsx`: Backend master-detail CPT authoring UI with inline validation, supports, public/hierarchical flags and two-step delete.
 - `src/app/content/content-type-editor.css`: dense responsive/touch-aware CPT editor styling using semantic editor tokens.
-- `src/app/components/WorkspaceSurface.tsx`: mounts CPT authoring in Backend without claiming records/taxonomy features early.
 - `src/app/project/project-session-context.ts`: typed CPT mutation surface.
 - `src/app/project/project-session.tsx`: CPT mutations over `projectRef.current`, canonical validation and autosave.
 - `e2e/content-types.spec.ts`: create → persist → reload → invalid edit → valid edit → persist → delete → reload.
-- `e2e/project-themes.spec.ts`: durable IndexedDB assertion added to protect cross-workspace autosave regression before reload.
+- `e2e/project-themes.spec.ts`: durable IndexedDB assertion protects cross-workspace autosave before reload.
+
+### MF-038 Taxonomy
+- `src/core/content/taxonomy.ts`: `TaxonomyDefinition` v1, validation, list/create/update/remove, unique slug, multi-CPT references, field-group refs and archive-template refs.
+- `src/core/content/taxonomy.test.ts`: hierarchy/flat validation, required unique CPT targets, CRUD, duplicate id/slug, reference integrity, valid archive/field-group refs and immutable id.
+- `src/core/content/content-type.ts`: CPT deletion additionally blocked while any taxonomy targets that CPT.
+- `src/app/content/DynamicContentManager.tsx`: accessible Content Types / Taxonomies tab shell for Backend authoring.
+- `src/app/content/dynamic-content-manager.css`: dense responsive tab shell using semantic tokens.
+- `src/app/content/TaxonomyEditor.tsx`: no-code master-detail taxonomy editor with hierarchy, multi-CPT associations, archive template and existing field-group associations.
+- `src/app/content/taxonomy-editor.css`: responsive taxonomy editor styling with visible focus and 44px mobile touch targets.
+- `src/app/components/WorkspaceSurface.tsx`: mounts `DynamicContentManager` in Backend while preserving honest later-phase boundaries.
+- `src/app/project/project-session-context.ts`: typed taxonomy mutation surface.
+- `src/app/project/project-session.tsx`: taxonomy create/update/remove over `projectRef.current` with autosave.
+- `e2e/taxonomies.spec.ts`: two CPTs → multi-CPT hierarchical taxonomy → durable reload → invalid slug → flat one-target update → durable reload → delete.
 
 ## Critical invariants
 - Never mutate payloads during validation/migration.
@@ -114,7 +126,11 @@
 - Demo records are opt-in, never imported by default.
 - Resource merge never overwrites existing IDs/keys.
 - Dynamic content CRUD uses existing canonical collections (`contentTypes`, `taxonomies`, `fieldGroups`, `records`, `relations`), never parallel stores.
-- CPT IDs are immutable after creation; destructive delete is blocked while records reference the type.
+- CPT IDs and taxonomy IDs are immutable after creation.
+- CPT deletion is blocked while records or taxonomies reference it.
+- Every taxonomy must target at least one existing unique CPT.
+- Taxonomy field-group references must already exist; MF-038 does not create field groups early.
+- Taxonomy archive template references must resolve to an existing `CanonicalDocument` whose `kind` is `archive`.
 - Vercel deployments are manual-only.
 - Do not use root overflow hiding as a substitute for responsive layout fixes.
 
@@ -153,7 +169,10 @@
 ## Tests added in F05
 - MF-037 ContentType definition/CRUD/slug uniqueness/delete-in-use unit tests.
 - MF-037 Backend CPT authoring/persistence/validation/delete E2E.
-- Durable theme persistence test now polls `electrocms/projects` before reload, preventing false confidence from UI save text alone.
+- Durable theme persistence test polls `electrocms/projects` before reload, preventing false confidence from UI save text alone.
+- MF-038 Taxonomy definition/reference integrity/CRUD unit tests.
+- MF-038 Backend multi-CPT taxonomy authoring, hierarchy/flat transition, durable IndexedDB persistence and delete E2E.
+- CPT regression verifies taxonomy association blocks destructive CPT delete.
 
 ## Functional evidence
 ### F04
@@ -170,5 +189,6 @@
 - F04 closing gate: run #712 PASS; merged PR #5.
 
 ### F05
-- MF-037 CPT model + editor: run #730 PASS.
-- MF-038 Taxonomy model + editor: current.
+- MF-037 CPT model + editor: run #730 PASS; documentation closure #740 PASS.
+- MF-038 Taxonomy model + editor: run #766 PASS; documentation closure pending final HEAD gate.
+- MF-039 Field type registry: NEXT, not started.
