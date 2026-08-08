@@ -16,7 +16,7 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - El modelo canónico no depende de React ni del DOM.
 - UI/editor, renderer y exporters permanecen desacoplados.
 - Persistencia se consume mediante contratos; componentes no acceden directamente a IndexedDB.
-- Registries explícitos resuelven widgets/themes/field types; el core del editor no debe crecer mediante `switch` por cada tipo.
+- Registries explícitos resuelven widgets/themes/field types; el core no debe crecer mediante `switch` distribuido por cada tipo.
 - Los modelos dinámicos F05 se implementan como motores puros sobre las colecciones existentes de `CanonicalProject`; no crear stores paralelos.
 
 ## Estado del modelo
@@ -47,7 +47,6 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - Clona input antes de migrar.
 - F01 soporta legacy v0 del scaffold inicial y lo transforma a canonical v1.
 - Errores de migración/validación se conservan; persistencia no los oculta.
-- `FieldTypeRegistry` permite migraciones explícitas de config N→N+1 y rechaza rutas faltantes o output no portable.
 
 ## Autosave y recovery
 - Autosave debounced y serializado.
@@ -135,10 +134,7 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - Arquetipo del editor: Productivity Tool + Design System tooling + Data-Dense SaaS.
 - Lenguaje base: Minimal/Swiss + Flat + Data-Dense + Accessible, con micro-interacciones funcionales.
 - Editor = entorno de autoría no-code, no un dashboard genérico de cards.
-- Anatomía principal: header global + **Insert/Elements Library izquierda** + canvas central dominante + inspector contextual derecho.
-- El modelo mental debe resultar familiar a builders profesionales como Elementor, pero ElectroCMS conserva identidad, terminología, assets, código y composición originales.
-- La Insert Library es una superficie de autoría principal: búsqueda, categorías, icono+label, click-to-insert, drag-to-canvas, estados modeled/disabled honestos y futuras vistas Elements/Layers/Templates.
-- En desktop la library/inspector permanecen persistentes cuando el espacio lo permita; en tablet/móvil pueden convertirse en drawers/sheets sin perder acceso.
+- Anatomía objetivo: header global, navegación/insert/layers lateral, canvas dominante y inspector/context panels.
 - Ritmo: micro-grid 4px, base 8px; desktop denso, touch crítico >=44px.
 - Editores de modelos dinámicos usan master-detail cuando la tarea es list + inspect/edit; formularios rutinarios no deben forzar modales.
 - `DynamicContentManager` agrupa Content Types/Taxonomies/Field Groups/Records mediante tabs para mantener densidad sin apilar herramientas extensas.
@@ -206,7 +202,7 @@ Nunca mezclar estos tres niveles.
 - Cada taxonomía debe asociarse a uno o más CPT IDs únicos existentes.
 - `hierarchical=true` modela categorías/árbol; `false` modela taxonomías planas tipo tags.
 - ID es inmutable tras crear y slug debe ser único entre taxonomías.
-- `fieldGroupIds` solo acepta IDs presentes en `project.fieldGroups`; MF-040 ya implementa la creación/edición de esos grupos.
+- `fieldGroupIds` solo acepta IDs presentes en `project.fieldGroups`; MF-038 permite enlazar grupos existentes sin implementar su constructor antes de MF-039/MF-040.
 - `archiveTemplateId` solo puede apuntar a un `CanonicalDocument.kind === 'archive'` existente.
 - `createTaxonomy`, `updateTaxonomy`, `removeTaxonomy` son operaciones core React-free que validan referencias y el proyecto resultante.
 - `TaxonomyEditor` ofrece identity, hierarchy/flat, multi-CPT associations, archive template y field-group associations en master-detail responsive.
@@ -214,21 +210,18 @@ Nunca mezclar estos tres niveles.
 - E2E prueba 2 CPTs → multi-CPT taxonomy → persistencia → slug inválido → flat + 1 target → persistencia → delete, verificando IndexedDB.
 - Evidencia funcional MF-038: run #766 PASS; cierre documental #776 PASS.
 
-## Contenido dinámico F05 — MF-039 Field Type Registry
-- `FieldTypeRegistry` vive en `src/core/content` y no importa React ni estado de proyecto.
-- Tipos se identifican con namespace, por ejemplo `core/text` o `plugin/rating`, y se resuelven por `type@version`.
-- Cada `FieldTypeDefinition` declara metadata, category, availability, `valueShape`, `configSchema`, `defaultConfig`, `validateConfig`, `createDefaultValue`, `validateValue`, feature capability matrix y migrations N→N+1.
-- Registry rechaza definiciones inválidas, duplicados, configs/values no JSON-portable, rutas de migración incompletas y outputs de migración inválidos.
-- `resolve()` devuelve clones defensivos; consumidores no pueden mutar la definición almacenada.
-- Built-ins mínimos del prompt: 27 contratos. 20 son `available` para construir schemas básicos y 7 permanecen `modeled`.
-- `available`: text, textarea, rich-text, number, currency, email, phone, url, date, time, datetime, color, select, radio, checkbox, switch, image, gallery, file, map.
-- `modeled`: relation, user, taxonomy, repeater, group, calculated, conditional.
-- `modeled` significa contrato portable registrado, no runtime completo. Relations pertenecen MF-043; repeater/group/calculated/conditional y otros advanced behaviors pertenecen MF-042.
-- El test `plugin/rating` demuestra que un tipo externo se registra, valida, crea defaults y migra config sin modificar el core registry.
-- Evidencia funcional MF-039: GitHub Actions run #786 PASS; cierre documental #800 PASS.
+## Contenido dinámico F05 — MF-039 Field type registry
+- `FieldTypeDefinition` es framework-neutral y versionado por `type@version`.
+- `FieldTypeRegistry` registra/resuelve definiciones, valida config/value, crea defaults y ejecuta migraciones secuenciales de config.
+- El core incluye 27 contratos mínimos: 20 `available` y 7 avanzados `modeled`.
+- Tipos available: text, textarea, rich-text, number, currency, email, phone, url, date, time, datetime, color, select, radio, checkbox, switch, image, gallery, file, map.
+- Tipos modeled: relation, user, taxonomy, repeater, group, calculated, conditional.
+- Un plugin puede registrar nuevos tipos (prueba real `plugin/rating`) sin editar el registry central.
+- Config/value validators y migration hooks viven en runtime registry; nunca se serializan en el proyecto.
+- Evidencia funcional MF-039: run #786 PASS; cierre documental #800 PASS.
 
-## Contenido dinámico F05 — MF-040 Custom Field Groups
-- `CanonicalProject.fieldGroups` es la única fuente persistente de field groups; no existe store paralelo.
+## Contenido dinámico F05 — MF-040 Custom field groups
+- `CanonicalProject.fieldGroups` es la única fuente persistente de grupos de campos.
 - `FieldGroupDefinition.version = 1`; `CustomFieldDefinition.version = 1`.
 - Group IDs son kebab-case e inmutables después de crear.
 - Field IDs son kebab-case; field `name` es lowercase snake_case; ambos deben ser únicos dentro del grupo.
@@ -258,7 +251,7 @@ Nunca mezclar estos tres niveles.
 - Featured image se reconoce como capability del CPT, pero Media Library/picker permanece fuera de MF-041; la UI no simula una función inexistente.
 - La API pública de removal de Field Groups pasa por `removeFieldGroupWithRecordIntegrity`: bloquea grupos usados por records antes de delegar al guard de taxonomías.
 - E2E Records verifica create → required validation → custom values → durable IndexedDB → search/status filters → reload → edit/archive → durable update → delete → durable removal.
-- Evidencia funcional MF-041: GitHub Actions run #901 PASS; cierre documental pendiente.
+- Evidencia funcional MF-041: GitHub Actions run #901 PASS; cierre documental #915 PASS.
 
 ## Evidencia F04
 - MF-034 definitiva: run #568 PASS.
@@ -273,5 +266,5 @@ Nunca mezclar estos tres niveles.
 - MF-038 Taxonomy model + editor: DONE, run #766 PASS; docs #776 PASS.
 - MF-039 Field type registry: DONE, run #786 PASS; docs #800 PASS.
 - MF-040 Custom field groups: DONE, run #834 PASS; docs #850 PASS.
-- MF-041 Records CRUD: DONE, run #901 PASS; cierre documental pendiente.
-- Siguiente: MF-042 Advanced fields, únicamente después de un cierre documental completamente verde.
+- MF-041 Records CRUD: DONE, run #901 PASS; docs #915 PASS.
+- Siguiente: MF-042 Advanced fields, después de confirmar verde el HEAD de sincronización de evidencia.
