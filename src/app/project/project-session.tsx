@@ -5,6 +5,8 @@ import {
   type CanonicalDocument,
   type CanonicalProject,
 } from '../../core/project';
+import type { ProjectThemeScope } from '../../core/themes';
+import { useProjectThemeRegistry } from '../themes/project-theme-registry-context';
 import {
   EMPTY_DOCUMENT_HISTORY,
   recordDocumentCommand,
@@ -94,6 +96,7 @@ export function ProjectSessionProvider({
   initialProject,
   persistence,
 }: ProjectSessionProviderProps) {
+  const themeRegistry = useProjectThemeRegistry();
   const [initialSessionProject] = useState<CanonicalProject>(() =>
     structuredClone(initialProject ?? createDefaultSessionProject()),
   );
@@ -205,6 +208,30 @@ export function ProjectSessionProvider({
     setZoomState(clampZoom(nextZoom));
   }, []);
 
+  const setProjectTheme = useCallback(
+    (scope: ProjectThemeScope, themeId: string): boolean => {
+      if (!themeRegistry.has(themeId, scope)) return false;
+      const key = scope === 'frontend' ? 'frontendThemeId' : 'backendThemeId';
+      if (project[key] === themeId) return true;
+
+      const nextProject: CanonicalProject = {
+        ...project,
+        [key]: themeId,
+        metadata: {
+          ...project.metadata,
+          updatedAt: new Date().toISOString(),
+        },
+      };
+      const validation = validateCanonicalProject(nextProject);
+      if (!validation.ok) return false;
+
+      commitProject(validation.value);
+      queueAutosave(validation.value);
+      return true;
+    },
+    [commitProject, project, queueAutosave, themeRegistry],
+  );
+
   const executeDocumentCommand = useCallback(
     (command: DocumentCommand): boolean => {
       const currentDocument = project.documents[command.documentId];
@@ -274,6 +301,7 @@ export function ProjectSessionProvider({
       setActiveDocumentId,
       setActiveBreakpointId,
       setZoom,
+      setProjectTheme,
       executeDocumentCommand,
       undo,
       redo,
@@ -289,6 +317,7 @@ export function ProjectSessionProvider({
       saveState,
       setActiveBreakpointId,
       setActiveDocumentId,
+      setProjectTheme,
       setZoom,
       undo,
       zoom,
