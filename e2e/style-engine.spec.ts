@@ -10,6 +10,7 @@ test('edits an explicit responsive style, keeps breakpoint isolation and support
   await headingNode.locator('.canvas-node-label').click();
 
   const inspector = page.getByRole('complementary', { name: 'Widget inspector' });
+  await inspector.getByRole('tab', { name: 'Style' }).click();
   const fontSize = inspector.getByLabel('Style Font size');
   await fontSize.fill('36');
   await fontSize.blur();
