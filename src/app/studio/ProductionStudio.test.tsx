@@ -84,21 +84,23 @@ function makeBackendProject() {
 }
 
 describe('ProductionStudio', () => {
-  it('uses the permanent Studio module rail and keeps the real builder available', async () => {
+  it('uses the compact Studio rail and reference-style builder navigator with real project data', async () => {
     window.history.replaceState({}, '', '/editor');
     const user = userEvent.setup();
     render(<App initialProject={makeProject()} preferencesRepository={new MemoryWorkspacePreferencesRepository()} />);
 
     const modules = screen.getByRole('navigation', { name: 'Studio modules' });
     expect(within(modules).getByRole('button', { name: 'Builder' })).toBeInTheDocument();
-    expect(screen.getByRole('complementary', { name: 'Insert library' })).toBeInTheDocument();
-    expect(screen.getByTestId('editor-canvas')).toBeInTheDocument();
 
-    const navigationResizer = screen.getByRole('separator', { name: 'Resize navigation' });
-    expect(navigationResizer).toHaveAttribute('aria-valuenow', '232');
-    navigationResizer.focus();
-    await user.keyboard('{ArrowRight}');
-    expect(navigationResizer).toHaveAttribute('aria-valuenow', '244');
+    const navigator = screen.getByRole('complementary', { name: 'Builder navigator' });
+    expect(within(navigator).getByRole('tab', { name: 'Pages' })).toHaveAttribute('aria-selected', 'true');
+    expect(within(navigator).getByRole('tab', { name: 'Components' })).toBeInTheDocument();
+    expect(within(navigator).getByRole('tree', { name: 'Current document widget tree' })).toBeInTheDocument();
+    expect(screen.getByTestId('editor-canvas')).toBeInTheDocument();
+    expect(screen.queryByRole('separator', { name: 'Resize navigation' })).not.toBeInTheDocument();
+
+    await user.click(within(navigator).getByRole('tab', { name: 'Components' }));
+    expect(within(navigator).getByLabelText('Search elements')).toHaveAttribute('placeholder', 'Search components');
 
     await user.click(within(modules).getByRole('button', { name: 'Pages' }));
     expect(screen.getByRole('heading', { name: 'Pages, templates & assets' })).toBeInTheDocument();
