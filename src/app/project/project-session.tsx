@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
+  createContentType as createCanonicalContentType,
+  removeContentType as removeCanonicalContentType,
+  updateContentType as updateCanonicalContentType,
+} from '../../core/content';
+import {
   createCanonicalProject,
   validateCanonicalProject,
   type CanonicalDocument,
@@ -26,6 +31,7 @@ import {
 } from './editor-project-persistence';
 import {
   ProjectSessionContext,
+  type ContentTypeSessionMutationResult,
   type ProjectSaveState,
   type ProjectSessionState,
   type ProjectThemeResourceApplyResult,
@@ -217,14 +223,15 @@ export function ProjectSessionProvider({
   const setProjectTheme = useCallback(
     (scope: ProjectThemeScope, themeId: string): boolean => {
       if (!themeRegistry.has(themeId, scope)) return false;
+      const currentProject = projectRef.current;
       const key = scope === 'frontend' ? 'frontendThemeId' : 'backendThemeId';
-      if (project[key] === themeId) return true;
+      if (currentProject[key] === themeId) return true;
 
       const nextProject: CanonicalProject = {
-        ...project,
+        ...currentProject,
         [key]: themeId,
         metadata: {
-          ...project.metadata,
+          ...currentProject.metadata,
           updatedAt: new Date().toISOString(),
         },
       };
@@ -235,7 +242,7 @@ export function ProjectSessionProvider({
       queueAutosave(validation.value);
       return true;
     },
-    [commitProject, project, queueAutosave, themeRegistry],
+    [commitProject, queueAutosave, themeRegistry],
   );
 
   const applyThemePackageResources = useCallback(
@@ -243,7 +250,7 @@ export function ProjectSessionProvider({
       resources: ProjectThemePackageResources | undefined,
       selection: ThemePackageResourceSelection,
     ): ProjectThemeResourceApplyResult => {
-      const result = mergeThemePackageResources(project, resources, selection);
+      const result = mergeThemePackageResources(projectRef.current, resources, selection);
       if (!result.ok) return { ok: false, message: result.message };
       if (result.changed) {
         commitProject(result.project);
@@ -251,14 +258,59 @@ export function ProjectSessionProvider({
       }
       return { ok: true, report: result.report, changed: result.changed };
     },
-    [commitProject, project, queueAutosave],
+    [commitProject, queueAutosave],
+  );
+
+  const createContentType = useCallback(
+    (input: unknown): ContentTypeSessionMutationResult => {
+      const result = createCanonicalContentType(projectRef.current, input);
+      if (!result.ok) {
+        return { ok: false, code: result.error.code, message: result.error.message };
+      }
+      commitProject(result.project);
+      queueAutosave(result.project);
+      return { ok: true, value: result.value, changed: true };
+    },
+    [commitProject, queueAutosave],
+  );
+
+  const updateContentType = useCallback(
+    (id: string, input: unknown): ContentTypeSessionMutationResult => {
+      const result = updateCanonicalContentType(projectRef.current, id, input);
+      if (!result.ok) {
+        return { ok: false, code: result.error.code, message: result.error.message };
+      }
+      const before = projectRef.current.contentTypes[id];
+      const after = result.project.contentTypes[id];
+      const changed = JSON.stringify(before) !== JSON.stringify(after);
+      if (changed) {
+        commitProject(result.project);
+        queueAutosave(result.project);
+      }
+      return { ok: true, value: result.value, changed };
+    },
+    [commitProject, queueAutosave],
+  );
+
+  const removeContentType = useCallback(
+    (id: string): ContentTypeSessionMutationResult => {
+      const result = removeCanonicalContentType(projectRef.current, id);
+      if (!result.ok) {
+        return { ok: false, code: result.error.code, message: result.error.message };
+      }
+      commitProject(result.project);
+      queueAutosave(result.project);
+      return { ok: true, value: result.value, changed: true };
+    },
+    [commitProject, queueAutosave],
   );
 
   const executeDocumentCommand = useCallback(
     (command: DocumentCommand): boolean => {
-      const currentDocument = project.documents[command.documentId];
+      const currentProject = projectRef.current;
+      const currentDocument = currentProject.documents[command.documentId];
       if (!currentDocument || currentDocument.id !== command.before.id) return false;
-      const nextProject = replaceProjectDocument(project, command.after);
+      const nextProject = replaceProjectDocument(currentProject, command.after);
       if (!nextProject) return false;
 
       commitProject(nextProject);
@@ -272,14 +324,14 @@ export function ProjectSessionProvider({
       queueAutosave(nextProject);
       return true;
     },
-    [commitProject, project, queueAutosave],
+    [commitProject, queueAutosave],
   );
 
   const undo = useCallback((): boolean => {
     const history = historyByDocument[activeDocumentId] ?? EMPTY_DOCUMENT_HISTORY;
     const transition = undoDocumentCommand(history);
     if (!transition) return false;
-    const nextProject = replaceProjectDocument(project, transition.document);
+    const nextProject = replaceProjectDocument(projectRef.current, transition.document);
     if (!nextProject) return false;
 
     commitProject(nextProject);
@@ -289,13 +341,13 @@ export function ProjectSessionProvider({
     }));
     queueAutosave(nextProject);
     return true;
-  }, [activeDocumentId, commitProject, historyByDocument, project, queueAutosave]);
+  }, [activeDocumentId, commitProject, historyByDocument, queueAutosave]);
 
   const redo = useCallback((): boolean => {
     const history = historyByDocument[activeDocumentId] ?? EMPTY_DOCUMENT_HISTORY;
     const transition = redoDocumentCommand(history);
     if (!transition) return false;
-    const nextProject = replaceProjectDocument(project, transition.document);
+    const nextProject = replaceProjectDocument(projectRef.current, transition.document);
     if (!nextProject) return false;
 
     commitProject(nextProject);
@@ -305,7 +357,7 @@ export function ProjectSessionProvider({
     }));
     queueAutosave(nextProject);
     return true;
-  }, [activeDocumentId, commitProject, historyByDocument, project, queueAutosave]);
+  }, [activeDocumentId, commitProject, historyByDocument, queueAutosave]);
 
   const activeHistory = historyByDocument[activeDocumentId] ?? EMPTY_DOCUMENT_HISTORY;
   const canUndo = activeHistory.past.length > 0;
@@ -325,6 +377,9 @@ export function ProjectSessionProvider({
       setZoom,
       setProjectTheme,
       applyThemePackageResources,
+      createContentType,
+      updateContentType,
+      removeContentType,
       executeDocumentCommand,
       undo,
       redo,
@@ -335,15 +390,18 @@ export function ProjectSessionProvider({
       applyThemePackageResources,
       canRedo,
       canUndo,
+      createContentType,
       executeDocumentCommand,
       project,
       redo,
+      removeContentType,
       saveState,
       setActiveBreakpointId,
       setActiveDocumentId,
       setProjectTheme,
       setZoom,
       undo,
+      updateContentType,
       zoom,
     ],
   );
