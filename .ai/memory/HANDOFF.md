@@ -13,9 +13,9 @@ MF-039 — Field type registry is DONE. Functional run #786 PASS; documentation 
 
 MF-040 — Custom field groups is DONE. Functional run #834 PASS; documentation closure run #850 PASS.
 
-MF-041 — Records CRUD is DONE. Functional run #901 PASS; documentation closure is pending on the current documentation commits.
+MF-041 — Records CRUD is DONE. Functional run #901 PASS; documentation closure run #915 PASS.
 
-Next microphase after a green documentation closure: MF-042 — Advanced fields.
+Next microphase: MF-042 — Advanced fields, after the current evidence-sync HEAD is fully green.
 
 ## Durable F05 facts through MF-041
 - Dynamic content uses existing `CanonicalProject` collections; never create a second persistence model.
@@ -32,9 +32,10 @@ Next microphase after a green documentation closure: MF-042 — Advanced fields.
 - Backend `RecordsEditor` is a dense master-detail tool because this is list/edit content management, not a visual canvas task.
 - Records UI respects CPT supports. Featured image support is acknowledged but Media Library binding is not faked before its owning phase.
 - Field value controls cover current available primitive/media/location shapes while core registry validation remains authoritative.
-- Field Group deletion now routes through `removeFieldGroupWithRecordIntegrity`; deletion is blocked while either a taxonomy or a content record references the group.
+- Field Group deletion routes through `removeFieldGroupWithRecordIntegrity`; deletion is blocked while either a taxonomy or a content record references the group.
 - Durable Records E2E performs create → required validation → save → real IndexedDB assertion → search/filter → reload → edit/archive → durable save → delete → durable removal.
-- MF-041 functional evidence: GitHub Actions run #901 PASS with lint, TypeScript, unit tests, coverage, production build and Playwright E2E green.
+- MF-041 functional evidence: GitHub Actions #901 PASS.
+- MF-041 documentation closure evidence: GitHub Actions #915 PASS.
 
 ## Durable editor design direction
 - Editor design source of truth is `design-system/electrocms-editor/MASTER.md` + `pages/editor.md`.
@@ -56,7 +57,7 @@ Next microphase after a green documentation closure: MF-042 — Advanced fields.
 
 ## Resume protocol
 1. Read `AI_ENTRYPOINT.md`, `RULES.md`, `MEMORY.md`, `TRACKING.md`, then this handoff; follow root `DECISIONS.md` and `.ai/memory/DECISIONS_LOG.md`.
-2. Confirm MF-041 functional run #901 and its documentation closure are green before starting MF-042.
+2. Confirm MF-041 functional #901 and documentation closure #915 remain green, and confirm the current HEAD gate is green before starting MF-042.
 3. Recover the exact MF-042 Advanced Fields contract from the F05/master specification before editing code.
 4. Reuse the existing `FieldTypeRegistry` and field/group/record schemas; do not create a separate advanced-field storage model.
 5. MF-042 should activate only the advanced types owned by that microphase (for example repeater/group/calculated/conditional as defined by the contract). Relations remain owned by MF-043.
@@ -72,7 +73,7 @@ Next microphase after a green documentation closure: MF-042 — Advanced fields.
 - MF-038 — Taxonomy model + editor — DONE — run #766; docs #776
 - MF-039 — Field type registry — DONE — run #786; docs #800
 - MF-040 — Custom field groups — DONE — run #834; docs #850
-- MF-041 — Records CRUD — DONE — run #901; docs pending
-- MF-042 — Advanced fields — NEXT after docs gate
+- MF-041 — Records CRUD — DONE — run #901; docs #915
+- MF-042 — Advanced fields — NEXT after current HEAD gate
 - MF-043 — Relations — BLOCKED
 - MF-044 — Dynamic bindings — BLOCKED
