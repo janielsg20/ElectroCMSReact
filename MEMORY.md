@@ -17,10 +17,12 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - UI/editor, renderer y exporters permanecen desacoplados.
 - Persistencia se consume mediante contratos; componentes no acceden directamente a IndexedDB.
 - Registries explícitos resuelven widgets/themes; el core del editor no debe crecer mediante `switch` por cada tipo.
+- Los modelos dinámicos F05 se implementan como motores puros sobre las colecciones existentes de `CanonicalProject`; no crear stores paralelos.
 
 ## Estado del modelo
 - `CanonicalProject.schemaVersion = 1`.
 - `DocumentNode.version = 1`.
+- `ContentTypeDefinition.version = 1` desde MF-037.
 - Proyecto inicial crea una página Home con nodo `core/root`.
 - Breakpoints iniciales: desktop, laptop, tablet landscape, tablet portrait, mobile large y mobile small.
 - Responsive distingue explícitamente `explicit`, `inherited` y `unset`.
@@ -33,6 +35,7 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - `create` duplicado produce `CONFLICT`; `save` es upsert validado.
 - `load` pasa siempre por hydration/migration antes de exponer datos editables.
 - Versionado IndexedDB y `CanonicalProject.schemaVersion` son independientes.
+- E2E que dependa de persistencia durable debe poder comprobar IndexedDB antes del reload; el texto visual `Saved locally` no es por sí solo prueba de escritura durable observable.
 
 ## Migraciones
 - Registry puro y secuencial N→N+1.
@@ -48,9 +51,11 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - Recovery snapshots son limitados por configuración.
 - F03 integra autosave al `ProjectSession`: commands/undo/redo encolan cambios y el header muestra `dirty/saving/saved/error` real.
 - F04 usa el mismo autosave para `frontendThemeId`, `backendThemeId` y merges selectivos de recursos.
+- F05 reutiliza el mismo flujo para content model CRUD.
 - `EditorProjectPersistence` elige al hidratar el candidato más fresco entre project store y recovery por revision + `updatedAt`.
 - Revisiones permanecen monotónicas incluso si un payload pendiente trae metadata stale.
 - Un callback de save fusiona metadata; nunca reemplaza contenido editor más nuevo.
+- Mutaciones compartidas de `ProjectSession` leen `projectRef.current` para evitar closures stale entre workspaces o acciones consecutivas.
 
 ## Editor shell F02
 - Routing interno usa History API + `useSyncExternalStore`, sin dependencia de router externa.
@@ -102,7 +107,7 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - Binding React vive en `EditorWidgetRegistry`; el core no importa React.
 - Un plugin/widget externo puede registrar definición + preview sin editar `CanvasRenderer` por tipo.
 - F04 registra 10 widgets estructurales, 16 básicos/contenido y 19 contratos dynamic/commerce/form/filter.
-- Widgets de datos/forms/filters permanecen explícitamente `modeled`; comportamiento real corresponde a F05/F06.
+- Widgets de datos/forms/filters permanecen explícitamente `modeled`; comportamiento real se activa solo en sus microfases F05/F06.
 
 ## Inspector F04
 - `WidgetInspector` se genera desde schema; no mantiene una copia persistente de props.
@@ -119,14 +124,15 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - Heredar desde breakpoint superior es una relación dinámica; cambios futuros de la fuente se reflejan en el descendiente.
 - Geometría `layout.*` y estilos visuales comparten `ResponsiveStyleSet` pero conservan responsabilidades claras.
 
-## Editor design system F04
+## Editor design system F04+
 - Fuentes de verdad: `design-system/electrocms-editor/MASTER.md` y `pages/editor.md`.
 - Referencias seleccionadas de `nextlevelbuilder/ui-ux-pro-max-skill`: `ui-ux-pro-max`, `design-system`, `ui-styling`.
 - Arquetipo del editor: Productivity Tool + Design System tooling + Data-Dense SaaS.
 - Lenguaje base: Minimal/Swiss + Flat + Data-Dense + Accessible, con micro-interacciones funcionales.
 - Editor = entorno de autoría no-code, no un dashboard genérico de cards.
-- Anatomía objetivo: header global, navegación/insert/layers lateral, canvas dominante y inspector contextual derecho.
+- Anatomía objetivo: header global, navegación/insert/layers lateral, canvas dominante y inspector/context panels.
 - Ritmo: micro-grid 4px, base 8px; desktop denso, touch crítico >=44px.
+- Editores de modelos dinámicos usan master-detail cuando la tarea es list + inspect/edit; formularios rutinarios no deben forzar modales.
 - Tokens siguen primitive → semantic → component.
 - No forzar Tailwind/shadcn; adaptar principios al stack React/CSS existente salvo decisión futura explícita.
 
@@ -170,13 +176,28 @@ Nunca mezclar estos tres niveles.
 - Usuarios, credenciales y media binaries quedan fuera del formato F04.
 - El merge resultante vuelve a pasar `validateCanonicalProject` antes de commit/autosave.
 
+## Contenido dinámico F05 — MF-037 CPT
+- `CanonicalProject.contentTypes` es la única fuente persistente de content types.
+- `ContentTypeDefinition` v1 incluye: `id`, `label`, `singularLabel`, `slug`, `description`, `public`, `hierarchical` y supports `title/editor/excerpt/featuredImage`.
+- ID usa kebab-case, comienza por letra, máximo 64 y es inmutable después de creación.
+- Slug usa lowercase kebab-case, máximo 80 y debe ser único.
+- Labels máximo 80; description máximo 280.
+- `createContentType`, `updateContentType`, `removeContentType` son operaciones core puras que devuelven un proyecto canónico validado.
+- Delete se rechaza si records referencian el CPT mediante `contentTypeId` o `contentType`; la migración explícita de records pertenece a MF posteriores.
+- `ProjectSession` expone las mutations y autosave; lee `projectRef.current` para evitar estado stale.
+- `ContentTypeEditor` vive en Backend y usa patrón master-detail responsive con validación inline, flags, supports y delete de dos pasos.
+- E2E cubre create → save → reload → validation → edit → save → reload → delete → reload.
+- Evidencia: GitHub Actions run #730 PASS.
+
 ## Evidencia F04
 - MF-034 definitiva: run #568 PASS.
 - MF-035 definitiva, incluyendo duplicate/edit/version: run #662 PASS.
 - MF-036 definitiva, incluyendo selective import/demo option/non-destructive merge: run #688 PASS.
+- Cierre completo F04: run #712 PASS; PR #5 fusionada por squash a `main` en `57798d9e00f4a3bb87867a847c3bccfccc82f764`.
 
-## Última fase cerrada funcionalmente
-F04 — Widgets, inspector, responsive y themes. Evidencia funcional definitiva: GitHub Actions run #688 PASS. Falta un único gate de cierre sobre código + documentación final antes del merge.
-
-## Siguiente trabajo
-Después de integrar PR #5 a `main`, leer el contrato exacto de F05 y comenzar en una rama nueva. No iniciar F05 desde la rama F04 antes del merge.
+## Estado actual
+- F04 está cerrada y fusionada.
+- F05 — Contenido dinámico está activa en `agent/f05-dynamic-content` / draft PR #6.
+- MF-037 CPT model + editor: DONE, run #730 PASS.
+- MF-038 Taxonomy model + editor: siguiente microfase activa.
+- No avanzar a MF-039 hasta que MF-038 tenga gate completo verde y memoria/tracking actualizados.
