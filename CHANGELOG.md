@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+### F04 — Widgets, inspector, responsive y themes
+- Added framework-neutral widget definitions and `WidgetRegistry` resolved by `type@version`.
+- Added React editor preview binding without widget-type branching in `CanvasRenderer`.
+- Added 10 structural widgets, 16 basic/content widgets and 19 modeled dynamic/commerce/form/filter contracts.
+- Added registry-driven widget insertion and factories.
+- Added schema-generated widget inspector with validation and reversible property commands.
+- Added responsive style engine using existing `ResponsiveStyleSet` with explicit/inherited/unset resolution.
+- Added breakpoint engine for ordering, adjacency and nearest-wider inheritance.
+- Added style inspector controls and responsive inheritance E2E.
+- Added 10 editor-only visual presets independent from generated project themes.
+- Added ElectroCMS no-code editor design system based on adapted `ui-ux-pro-max`, `design-system` and `ui-styling` principles.
+- Hardened no-code DnD with stable insertion hit areas and paint-only transient drag feedback, avoiding React rerenders during native drag gestures.
+- Added framework-neutral `ProjectThemeRegistry` with portable JSON token validation.
+- Added 8 built-in frontend themes and 7 built-in backend themes.
+- Added independent frontend/backend theme selection, token previews, autosave and reload persistence.
+- Added versioned `electrocms-theme-package` import/export format with 256 KB limit.
+- Added local imported-theme library at `electrocms:project-theme-packages:v1`, defensive validation and collision rejection.
+- Added accessible package Import/Export controls and E2E coverage for install → select → reload → export.
+- Disabled automatic Vercel Git deployments; preview deployment is now manual-only by explicit user request.
+- Functional F04 quality evidence: runs #424, #434, #446, #456, #479, #505, #529, #568, #600 and #622.
+
 ### F03 — Canvas, nodos, DnD e historial
 - Added immutable canonical document tree engine with derived parent/depth/traversal indexes and structural validation.
 - Added recursive canvas renderer with overlay separation, empty-root state and invalid-tree fallback.
@@ -14,7 +35,7 @@
 - Added geometry nudge/resize controls and full Undo/Redo support.
 - Integrated editor commands with F01 autosave/recovery and native IndexedDB hydration after reload.
 - Added monotonic autosave revisions and metadata-only save completion merging to protect newer edits.
-- Added automatic Vercel preview configuration and SPA route fallback.
+- Added automatic Vercel preview configuration and SPA route fallback (later changed to manual-only in F04).
 - Added unit/component/E2E coverage across tree invariants, DnD, selection, history, clipboard, geometry, autosave and reload recovery.
 
 ### F02 — Editor shell y workspace responsive
