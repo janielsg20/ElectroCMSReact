@@ -70,10 +70,6 @@ function EditorApplicationShell() {
     }
   }, [preferences.lastWorkspace, route, setLastWorkspace]);
 
-  useEffect(() => {
-    if (!compactLayout) setNavigationOpen(false);
-  }, [compactLayout]);
-
   return (
     <div
       className="electrocms-app"
@@ -93,7 +89,7 @@ function EditorApplicationShell() {
       <ProductionStudio
         workspaceId={activeWorkspace}
         compactLayout={compactLayout}
-        navigationOpen={navigationOpen}
+        navigationOpen={compactLayout && navigationOpen}
         onCloseNavigation={() => setNavigationOpen(false)}
         onNavigate={navigate}
       />
