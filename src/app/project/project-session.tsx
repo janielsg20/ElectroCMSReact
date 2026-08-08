@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   createContentType as createCanonicalContentType,
+  createFieldGroup as createCanonicalFieldGroup,
   createTaxonomy as createCanonicalTaxonomy,
   removeContentType as removeCanonicalContentType,
+  removeFieldGroup as removeCanonicalFieldGroup,
   removeTaxonomy as removeCanonicalTaxonomy,
   updateContentType as updateCanonicalContentType,
+  updateFieldGroup as updateCanonicalFieldGroup,
   updateTaxonomy as updateCanonicalTaxonomy,
 } from '../../core/content';
 import {
@@ -35,6 +38,7 @@ import {
 import {
   ProjectSessionContext,
   type ContentTypeSessionMutationResult,
+  type FieldGroupSessionMutationResult,
   type ProjectSaveState,
   type ProjectSessionState,
   type ProjectThemeResourceApplyResult,
@@ -353,6 +357,50 @@ export function ProjectSessionProvider({
     [commitProject, queueAutosave],
   );
 
+  const createFieldGroup = useCallback(
+    (input: unknown): FieldGroupSessionMutationResult => {
+      const result = createCanonicalFieldGroup(projectRef.current, input);
+      if (!result.ok) {
+        return { ok: false, code: result.error.code, message: result.error.message };
+      }
+      commitProject(result.project);
+      queueAutosave(result.project);
+      return { ok: true, value: result.value, changed: true };
+    },
+    [commitProject, queueAutosave],
+  );
+
+  const updateFieldGroup = useCallback(
+    (id: string, input: unknown): FieldGroupSessionMutationResult => {
+      const result = updateCanonicalFieldGroup(projectRef.current, id, input);
+      if (!result.ok) {
+        return { ok: false, code: result.error.code, message: result.error.message };
+      }
+      const before = projectRef.current.fieldGroups[id];
+      const after = result.project.fieldGroups[id];
+      const changed = JSON.stringify(before) !== JSON.stringify(after);
+      if (changed) {
+        commitProject(result.project);
+        queueAutosave(result.project);
+      }
+      return { ok: true, value: result.value, changed };
+    },
+    [commitProject, queueAutosave],
+  );
+
+  const removeFieldGroup = useCallback(
+    (id: string): FieldGroupSessionMutationResult => {
+      const result = removeCanonicalFieldGroup(projectRef.current, id);
+      if (!result.ok) {
+        return { ok: false, code: result.error.code, message: result.error.message };
+      }
+      commitProject(result.project);
+      queueAutosave(result.project);
+      return { ok: true, value: result.value, changed: true };
+    },
+    [commitProject, queueAutosave],
+  );
+
   const executeDocumentCommand = useCallback(
     (command: DocumentCommand): boolean => {
       const currentProject = projectRef.current;
@@ -431,6 +479,9 @@ export function ProjectSessionProvider({
       createTaxonomy,
       updateTaxonomy,
       removeTaxonomy,
+      createFieldGroup,
+      updateFieldGroup,
+      removeFieldGroup,
       executeDocumentCommand,
       undo,
       redo,
@@ -442,11 +493,13 @@ export function ProjectSessionProvider({
       canRedo,
       canUndo,
       createContentType,
+      createFieldGroup,
       createTaxonomy,
       executeDocumentCommand,
       project,
       redo,
       removeContentType,
+      removeFieldGroup,
       removeTaxonomy,
       saveState,
       setActiveBreakpointId,
@@ -455,6 +508,7 @@ export function ProjectSessionProvider({
       setZoom,
       undo,
       updateContentType,
+      updateFieldGroup,
       updateTaxonomy,
       zoom,
     ],
