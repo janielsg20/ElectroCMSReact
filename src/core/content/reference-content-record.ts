@@ -1,4 +1,4 @@
-import { isJsonObject, isJsonValue, type JsonObject, type JsonValue } from '../domain';
+import { isJsonObject, isJsonValue, type JsonObject } from '../domain';
 import type { CanonicalProject } from '../project';
 import {
   createAdvancedContentRecord,
@@ -17,7 +17,7 @@ import type {
   ContentRecordValidationIssue,
   ContentRecordValidationResult,
 } from './content-record';
-import type { CustomFieldDefinition, FieldGroupDefinition } from './field-group';
+import type { FieldGroupDefinition } from './field-group';
 import { FieldTypeRegistry } from './field-type-registry';
 import {
   createContentFieldTypeRegistry,
@@ -194,10 +194,10 @@ export function removeReferenceContentRecord(
     return {
       ok: false,
       error: {
-        code: 'RECORD_IN_USE',
+        code: 'PROJECT_INVALID',
         message: `Record ${id} is referenced by relation fields in record ${referencing.id} and cannot be deleted.`,
       },
-    } as ContentRecordMutationResult;
+    };
   }
   return removeAdvancedContentRecord(project, id, registry);
 }
