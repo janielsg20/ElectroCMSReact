@@ -1,12 +1,11 @@
 # TRACKING.md — Estado de ejecución
 
 ## Estado global
-- Estado: IN_PROGRESS
+- Estado: CLOSING
 - Fase completada: F03 — Canvas, nodos, DnD e historial
 - Fase actual: F04 — Widgets, inspector, responsive y themes
-- Microfase actual: MF-034 — Editor theme presets
-- Último quality gate completo: GitHub Actions run #529 PASS (MF-033)
-- Último build válido: GitHub Actions run #553 PASS en verify/lint/types/unit/coverage/build; E2E pendiente por regresión DnD de reorder
+- Microfase actual: MF-036 — DONE; cierre documental/CI de fase en curso
+- Último quality gate funcional completo: GitHub Actions run #622 PASS
 - Repositorio oficial: `janielsg20/ElectroCMSReact`
 - PR de fase: #5 `agent/f04-widgets-inspector-themes -> main`
 - Preview deployment: MANUAL ONLY. `vercel.json` usa `git.deploymentEnabled: false`; no desplegar por push/PR.
@@ -64,9 +63,9 @@
 | MF-031 | DONE | Inspector schema engine, controles generados, validación, edición canónica y Undo/Redo; run #479 PASS |
 | MF-032 | DONE | Style engine responsive, resolución explicit/inherited/unset, renderer seguro, inspector y Undo; run #505 PASS |
 | MF-033 | DONE | Breakpoint engine, cadena wider/narrower, herencia desde breakpoint superior y E2E; run #529 PASS |
-| MF-034 | IN_PROGRESS | Editor theme presets implementados; preset E2E pasa. Cerrando regresión E2E de reorder DnD y alineando editor con design system no-code. |
-| MF-035 | TODO | Frontend/backend theme system |
-| MF-036 | TODO | Theme packages import/export |
+| MF-034 | DONE | 10 presets de editor separados de proyecto + DnD con hit areas estables/no rerender durante gesto; run #568 PASS |
+| MF-035 | DONE | Registry de themes frontend/backend, 15 paquetes built-in, selección independiente, preview de tokens y autosave/reload; run #600 PASS |
+| MF-036 | DONE | Paquetes versionados, validación JSON portable, biblioteca local, import/export, persistencia y colisión segura; run #622 PASS |
 
 ## Design system del editor
 - Fuente de verdad: `design-system/electrocms-editor/MASTER.md`.
@@ -75,7 +74,17 @@
 - Arquetipo: productivity tool + design-system tooling + data-dense SaaS.
 - Base visual: Minimal/Flat + Data-Dense + Accessible, con micro-interacciones funcionales.
 - El editor debe sentirse como un no-code builder profesional: header global, canvas dominante, navegación/paleta lateral y inspector contextual.
+- El DnD usa hit areas estables y cambios de pintura transitorios; no re-renderizar React en medio de un gesto nativo.
 - No forzar migración a Tailwind/shadcn; adaptar las reglas al React/CSS actual salvo que una fase futura justifique explícitamente esa migración.
+
+## Sistema de themes F04
+- Editor theme mode (`light`/`dark`/`auto`) y editor theme preset viven en workspace preferences, nunca en el proyecto exportado.
+- `frontendThemeId` y `backendThemeId` viven en `CanonicalProject` y se guardan por autosave.
+- `ProjectThemeRegistry` es framework-neutral y valida scope, id, versión y tokens JSON portables.
+- Built-ins actuales: 8 frontend + 7 backend.
+- Los paquetes importados viven en `electrocms:project-theme-packages:v1`, separados de `CanonicalProject`; el proyecto referencia solo su ID activo.
+- Formato exportable: `kind=electrocms-theme-package`, `schemaVersion=1`, máximo 256 KB.
+- No se permiten colisiones de IDs con built-ins o paquetes ya instalados.
 
 ## Invariantes consolidadas
 - El DOM nunca es fuente de verdad; el canvas es una proyección de `CanonicalDocument`.
@@ -90,7 +99,8 @@
 - Geometría usa `ResponsiveStyleSet` por breakpoint.
 - Autosave reutiliza repositorios F01 y no reemplaza contenido nuevo con callbacks stale.
 - Editor theme/preset vive en workspace preferences; frontend/backend theme IDs viven en `CanonicalProject`.
+- Imported theme library es local al editor; solo IDs seleccionados entran al proyecto.
 - Los deployments de preview son manuales y solo se ejecutan bajo petición explícita del usuario.
 
 ## Regla de salida
-F04 solo puede marcarse DONE cuando MF-027…MF-036 estén implementadas y el gate completo final esté verde. No avanzar a F05 con ningún gate rojo.
+F04 solo puede marcarse como fase completada/mergeada cuando el cierre documental y cualquier higiene final vuelvan a pasar el gate completo. No avanzar a F05 con ningún gate rojo.
