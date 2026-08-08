@@ -98,21 +98,22 @@
 .electrocms-app[data-editor-preset="glassmorphism"] .app-header,
 .electrocms-app[data-editor-preset="glassmorphism"] .workspace-navigation,
 .electrocms-app[data-editor-preset="glassmorphism"] .widget-inspector {
-  background: color-mix(in srgb, var(--surface-raised) 78%, transparent);
+  background: color-mix(in srgb, var(--color-ec-surface) 78%, transparent);
   backdrop-filter: blur(18px) saturate(1.15);
 }
 
 .electrocms-app[data-editor-preset="sophisticated-dark"][data-theme="light"] {
-  --surface: #15171c;
-  --surface-raised: #1b1e25;
-  --surface-subtle: #20242c;
-  --text: #d8dde7;
-  --text-strong: #f7f8fb;
-  --text-muted: #9ea6b5;
-  --text-faint: #70798a;
-  --border: #323744;
-  --border-subtle: #272c36;
-  --border-strong: #454c5b;
+  --color-ec-app: #111318;
+  --color-ec-surface: #171a20;
+  --color-ec-surface-subtle: #1d2128;
+  --color-ec-surface-muted: #252a33;
+  --color-ec-border: #333a46;
+  --color-ec-text: #f4f6fa;
+  --color-ec-text-muted: #a2aaba;
+  --color-ec-accent: #35b8ae;
+  --color-ec-accent-soft: #173a36;
+  --color-ec-chrome: #0b0d11;
+  --color-ec-chrome-raised: #13161b;
 }
 
 .electrocms-app[data-editor-preset="monochrome-pro"] {
