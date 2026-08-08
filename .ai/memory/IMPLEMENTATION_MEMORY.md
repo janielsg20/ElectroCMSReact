@@ -204,5 +204,5 @@
 ### F05
 - MF-037 CPT model + editor: run #730 PASS; documentation closure #740 PASS.
 - MF-038 Taxonomy model + editor: run #766 PASS; documentation closure #776 PASS.
-- MF-039 Field type registry: run #786 PASS; documentation closure pending final HEAD gate.
+- MF-039 Field type registry: run #786 PASS; documentation closure #800 PASS.
 - MF-040 Custom field groups: NEXT, not started.
