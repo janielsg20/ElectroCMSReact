@@ -47,7 +47,8 @@ describe('UI-08 preview and publishing', () => {
     const user = userEvent.setup();
     render(<App initialProject={makeProject()} preferencesRepository={new MemoryWorkspacePreferencesRepository()} />);
 
-    await user.click(screen.getByRole('button', { name: 'Export' }));
+    const header = screen.getByTestId('app-header');
+    await user.click(within(header).getByRole('button', { name: 'Export' }));
     const publishing = screen.getByRole('region', { name: 'Export workspace' });
     expect(within(publishing).getByRole('heading', { name: 'Export workspace' })).toBeInTheDocument();
     expect(within(publishing).getByText('No simulated publishing')).toBeInTheDocument();
