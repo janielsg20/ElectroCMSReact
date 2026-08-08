@@ -118,7 +118,7 @@ export function LayersNavigator({
             <input
               autoFocus
               className="canvas-layer-rename"
-              aria-label={`Rename ${label}`}
+              aria-label={`Layer name for ${label}`}
               value={renameValue}
               onChange={(event) => setRenameValue(event.target.value)}
               onClick={stopPropagation}
