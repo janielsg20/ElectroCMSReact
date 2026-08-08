@@ -14,7 +14,7 @@ test('duplicates a built-in theme into an editable versioned local theme', async
   await themeSelect.selectOption('frontend.minimal-clean-copy');
 
   await expect(page.getByText('Imported · frontend.minimal-clean-copy · v1')).toBeVisible();
-  await expect(page.getByText('Version 1')).toBeVisible();
+  await expect(page.getByText('Version 1', { exact: true })).toBeVisible();
   await expect(app).toHaveAttribute('data-editor-preset', editorPreset!);
 
   await page.getByLabel('Theme label').fill('Ocean Builder');
@@ -25,7 +25,7 @@ test('duplicates a built-in theme into an editable versioned local theme', async
 
   await expect(page.getByText('Saved frontend.minimal-clean-copy as version 2.')).toBeVisible();
   await expect(page.getByText('Imported · frontend.minimal-clean-copy · v2')).toBeVisible();
-  await expect(page.getByText('Version 2')).toBeVisible();
+  await expect(page.getByText('Version 2', { exact: true })).toBeVisible();
   await expect(themeSelect.locator('option[value="frontend.minimal-clean-copy"]')).toContainText('Ocean Builder · v2');
   await expect(page.locator('[data-project-theme-id="frontend.minimal-clean-copy"]')).toHaveCSS(
     'border-radius',
