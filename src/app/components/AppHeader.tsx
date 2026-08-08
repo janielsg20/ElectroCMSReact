@@ -60,6 +60,8 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
           <span
             className="save-state mt-0.5 flex items-center gap-1.5 text-[9px] font-medium text-[var(--color-ec-text-muted)]"
             data-state={session.saveState}
+            role="status"
+            aria-live="polite"
           >
             <span
               className={`save-dot size-1.5 rounded-full ${session.saveState === 'error' ? 'bg-[var(--color-ec-danger-600)]' : session.saveState === 'dirty' ? 'bg-[var(--color-ec-warning-600)]' : session.saveState === 'saving' ? 'bg-[var(--color-ec-violet-600)]' : 'bg-[var(--color-ec-success-600)]'}`}
@@ -72,9 +74,14 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
 
       <div
         className="header-controls flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        role="toolbar"
         aria-label="Editor controls"
       >
-        <div className="flex h-9 shrink-0 items-center gap-1 rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface-subtle)] p-0.5">
+        <div
+          className="flex h-9 shrink-0 items-center gap-1 rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface-subtle)] p-0.5"
+          role="group"
+          aria-label="Document and breakpoint"
+        >
           <label className="compact-field shrink-0">
             <span className="sr-only">Active document</span>
             <select
@@ -109,6 +116,7 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
 
         <div
           className="segmented-control zoom-control flex h-8 shrink-0 items-center rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] p-0.5"
+          role="group"
           aria-label="Canvas zoom"
         >
           <button className={segmentButtonClass} type="button" aria-label="Zoom out" disabled={session.zoom <= 50} onClick={() => session.setZoom(session.zoom - 10)}>
@@ -122,6 +130,7 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
 
         <div
           className="segmented-control history-control flex h-8 shrink-0 items-center rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] p-0.5"
+          role="group"
           aria-label="Document history"
         >
           <button className={segmentButtonClass} type="button" aria-label="Undo" disabled={!session.canUndo} title={session.canUndo ? 'Undo last document command' : 'Nothing to undo'} onClick={session.undo}>
@@ -169,7 +178,7 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
         </button>
       </div>
 
-      <span className="sr-only" aria-live="polite">Active document: {activeDocument?.name ?? 'None'}. Zoom {session.zoom} percent.</span>
+      <span className="sr-only">Active document: {activeDocument?.name ?? 'None'}. Zoom {session.zoom} percent.</span>
     </header>
   );
 }
