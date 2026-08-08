@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { AdvancedFieldEditor } from './AdvancedFieldEditor';
 import { ContentTypeEditor } from './ContentTypeEditor';
 import { FieldGroupEditor } from './FieldGroupEditor';
 import { RecordsEditor } from './RecordsEditor';
 import { TaxonomyEditor } from './TaxonomyEditor';
 import './dynamic-content-manager.css';
 
-type DynamicContentPanel = 'content-types' | 'taxonomies' | 'field-groups' | 'advanced-fields' | 'records';
+type DynamicContentPanel = 'content-types' | 'taxonomies' | 'field-groups' | 'records';
 
 export function DynamicContentManager() {
   const [panel, setPanel] = useState<DynamicContentPanel>('content-types');
@@ -17,7 +16,7 @@ export function DynamicContentManager() {
         <div>
           <span className="dynamic-content-manager-eyebrow">Local-first data modeling</span>
           <h2>Dynamic Content</h2>
-          <p>Define content structure, classification, reusable fields, advanced schemas and records from one authoring workspace.</p>
+          <p>Define content structure, classification, reusable custom fields and records from one authoring workspace.</p>
         </div>
         <div className="dynamic-content-manager-tabs" role="tablist" aria-label="Dynamic content sections">
           <button
@@ -51,16 +50,6 @@ export function DynamicContentManager() {
             Field Groups
           </button>
           <button
-            id="dynamic-content-tab-advanced-fields"
-            type="button"
-            role="tab"
-            aria-selected={panel === 'advanced-fields'}
-            aria-controls="dynamic-content-panel-advanced-fields"
-            onClick={() => setPanel('advanced-fields')}
-          >
-            Advanced Fields
-          </button>
-          <button
             id="dynamic-content-tab-records"
             type="button"
             role="tab"
@@ -85,8 +74,6 @@ export function DynamicContentManager() {
           <TaxonomyEditor />
         ) : panel === 'field-groups' ? (
           <FieldGroupEditor />
-        ) : panel === 'advanced-fields' ? (
-          <AdvancedFieldEditor />
         ) : (
           <RecordsEditor />
         )}
