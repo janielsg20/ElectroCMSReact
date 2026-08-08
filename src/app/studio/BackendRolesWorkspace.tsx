@@ -3,6 +3,7 @@ import type { JsonObject, JsonValue } from '../../core/domain';
 import { Icon, type IconName } from '../components/Icon';
 import { useProjectSession } from '../project/project-session-context';
 import { ProjectThemeControls } from '../themes/ProjectThemeControls';
+import { CapabilityStatus } from './CapabilityStatus';
 
 type BackendView = 'overview' | 'dashboards' | 'backend-documents' | 'roles' | 'users';
 
@@ -87,7 +88,7 @@ export function BackendRolesWorkspace({ initialView = 'overview' }: BackendRoles
       <header className="shrink-0 border-b border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] px-4 py-3 md:px-5">
         <div className="mx-auto flex max-w-[1480px] flex-wrap items-end justify-between gap-3">
           <div><span className="text-[8px] font-bold uppercase tracking-[.16em] text-[var(--color-ec-accent)]">Administrative system</span><h2 className="mt-1 text-[18px] font-semibold tracking-[-.03em] text-[var(--color-ec-text)]">Backend Builder</h2><p className="mt-1 text-[9px] text-[var(--color-ec-text-muted)]">Inspect the canonical admin structure, dashboards, roles and users without creating parallel backend state.</p></div>
-          <button type="button" className="ec-control ec-focus-ring inline-flex h-8 items-center gap-1.5 px-2.5 text-[9px] font-semibold text-[var(--color-ec-text-muted)]" disabled><Icon name="plus" size={12} />New</button>
+          <CapabilityStatus label="Read-only admin" detail="Validated project commands for creating or mutating dashboards, admin pages, roles and users are not implemented yet; current canonical resources remain inspectable." />
         </div>
       </header>
 
