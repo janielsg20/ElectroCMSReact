@@ -27,6 +27,6 @@ export function isEditorThemePresetId(value: unknown): value is EditorThemePrese
   return value === 'bento-high-density';
 }
 
-export function getEditorThemePreset(_id: EditorThemePresetId): EditorThemePreset {
-  return EDITOR_THEME_PRESETS[0]!;
+export function getEditorThemePreset(id: EditorThemePresetId): EditorThemePreset {
+  return EDITOR_THEME_PRESETS.find((preset) => preset.id === id) ?? EDITOR_THEME_PRESETS[0]!;
 }
