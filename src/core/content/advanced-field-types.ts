@@ -1,5 +1,10 @@
 import { isJsonObject, type JsonObject, type JsonValue } from '../domain';
-import { CONDITIONAL_OPERATORS, validateCalculationExpression } from './advanced-field-runtime';
+import {
+  CONDITIONAL_OPERATORS,
+  MAX_CALC_EXPRESSION_LENGTH,
+  MAX_REPEATER_ITEMS,
+  validateCalculationExpression,
+} from './advanced-field-runtime';
 import { createBuiltinFieldTypeDefinitions } from './builtin-field-types';
 import {
   FIELD_TYPE_FEATURES,
@@ -56,6 +61,12 @@ function validateRepeaterConfig(config: JsonObject): FieldTypeValidationResult {
   if (config.maxItems !== undefined && (!Number.isInteger(config.maxItems) || Number(config.maxItems) < 1)) {
     issues.push({ code: 'INVALID_MAX_ITEMS', path: 'maxItems', message: 'maxItems must be a positive integer.' });
   }
+  if (typeof config.minItems === 'number' && config.minItems > MAX_REPEATER_ITEMS) {
+    issues.push({ code: 'REPEATER_LIMIT_EXCEEDED', path: 'minItems', message: `minItems cannot exceed ${MAX_REPEATER_ITEMS}.` });
+  }
+  if (typeof config.maxItems === 'number' && config.maxItems > MAX_REPEATER_ITEMS) {
+    issues.push({ code: 'REPEATER_LIMIT_EXCEEDED', path: 'maxItems', message: `maxItems cannot exceed ${MAX_REPEATER_ITEMS}.` });
+  }
   if (typeof config.minItems === 'number' && typeof config.maxItems === 'number' && config.minItems > config.maxItems) {
     issues.push({ code: 'INVALID_ITEM_RANGE', path: '$', message: 'minItems cannot exceed maxItems.' });
   }
@@ -66,7 +77,13 @@ function validateCalculatedConfig(config: JsonObject): FieldTypeValidationResult
   const unknown = rejectUnknownKeys(config, ['expression']);
   if (unknown) return unknown;
   const expression = typeof config.expression === 'string' ? config.expression.trim() : '';
-  if (!expression) return invalidFieldTypeValue('INVALID_EXPRESSION', 'expression', 'expression is required.');
+  if (!expression || expression.length > MAX_CALC_EXPRESSION_LENGTH) {
+    return invalidFieldTypeValue(
+      'INVALID_EXPRESSION',
+      'expression',
+      `expression is required and must be at most ${MAX_CALC_EXPRESSION_LENGTH} characters.`,
+    );
+  }
   const syntax = validateCalculationExpression(expression);
   return syntax.ok
     ? validFieldTypeValue()
@@ -83,8 +100,20 @@ function validateConditionalConfig(config: JsonObject): FieldTypeValidationResul
   if (typeof config.sourceField !== 'string') {
     issues.push({ code: 'INVALID_SOURCE_FIELD', path: 'sourceField', message: 'sourceField must be a string.' });
   }
-  if (!CONDITIONAL_OPERATORS.includes(config.operator as (typeof CONDITIONAL_OPERATORS)[number])) {
+  const operator = config.operator as (typeof CONDITIONAL_OPERATORS)[number];
+  if (!CONDITIONAL_OPERATORS.includes(operator)) {
     issues.push({ code: 'INVALID_CONDITION_OPERATOR', path: 'operator', message: 'operator must be a supported conditional operator.' });
+    return { valid: false, issues };
+  }
+  const hasCompareValue = Object.prototype.hasOwnProperty.call(config, 'compareValue');
+  if ((operator === 'equals' || operator === 'notEquals') && !hasCompareValue) {
+    issues.push({ code: 'MISSING_COMPARE_VALUE', path: 'compareValue', message: `${operator} requires compareValue.` });
+  }
+  if (
+    (operator === 'greaterThan' || operator === 'lessThan')
+    && (typeof config.compareValue !== 'number' || !Number.isFinite(config.compareValue))
+  ) {
+    issues.push({ code: 'INVALID_COMPARE_VALUE', path: 'compareValue', message: `${operator} requires a finite numeric compareValue.` });
   }
   return { valid: issues.length === 0, issues };
 }
