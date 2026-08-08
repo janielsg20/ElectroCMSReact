@@ -308,20 +308,25 @@ export function AdvancedFieldEditor() {
                 const definition = registry.resolve(field.type, field.typeVersion);
                 const advanced = definitions.some((candidate) => candidate.type === field.type);
                 return (
-                  <button
+                  <div
                     key={field.id}
-                    type="button"
                     className="advanced-order-item"
                     data-selected={selectedFieldId === field.id ? 'true' : 'false'}
-                    onClick={() => setSelectedFieldId(field.id)}
                   >
-                    <span><strong>{field.label}</strong><small>{field.name} · {definition.metadata.label}</small></span>
+                    <button
+                      type="button"
+                      className="advanced-order-select"
+                      aria-pressed={selectedFieldId === field.id}
+                      onClick={() => setSelectedFieldId(field.id)}
+                    >
+                      <span><strong>{field.label}</strong><small>{field.name} · {definition.metadata.label}</small></span>
+                    </button>
                     <span className="advanced-order-actions">
                       {advanced ? <code>Advanced</code> : <code>Base</code>}
-                      <button type="button" aria-label={`Move ${field.label} up`} disabled={index === 0} onClick={(event) => { event.stopPropagation(); setDraft(moveField(draft, field.id, -1)); }}>↑</button>
-                      <button type="button" aria-label={`Move ${field.label} down`} disabled={index === draft.fields.length - 1} onClick={(event) => { event.stopPropagation(); setDraft(moveField(draft, field.id, 1)); }}>↓</button>
+                      <button type="button" aria-label={`Move ${field.label} up`} disabled={index === 0} onClick={() => setDraft(moveField(draft, field.id, -1))}>↑</button>
+                      <button type="button" aria-label={`Move ${field.label} down`} disabled={index === draft.fields.length - 1} onClick={() => setDraft(moveField(draft, field.id, 1))}>↓</button>
                     </span>
-                  </button>
+                  </div>
                 );
               })}
             </div>
