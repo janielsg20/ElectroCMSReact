@@ -1,11 +1,11 @@
 # KNOWN_ISSUES.md
 
 ## Blocking
-- **MF-042 gate blocked by GitHub Actions runner initialization.** Runs #986, #990, #994, #1000 and #1002 complete as `failure` with both jobs containing zero executed steps and no downloadable logs. These are not valid code-test results and must not be used to mark MF-042 PASS or FAIL.
+- **MF-042 gate blocked by GitHub Actions runner initialization.** Runs #986, #990, #994, #1000, #1002, #1014 and #1018 complete as `failure` before either job executes a step. Run #1018 was triggered from a brand-new quality PR (`pull_request.opened`) against the exact MF-042 HEAD and still returned `steps=[]`; therefore the blocker is not caused by reusing PR #7 or by the workflow event shape. These runs are not valid code-test results and must not be used to mark MF-042 PASS or FAIL.
 - MF-043 remains blocked until a real MF-042 gate executes verify, lint, TypeScript, unit, coverage, Playwright and build successfully.
 
 ## Environment
-- El sandbox local de esta sesión no resuelve `registry.npmjs.org` ni `github.com`; no puede sustituir el gate mediante `npm ci` local.
+- El sandbox local de esta sesión no resuelve `github.com`; `git ls-remote` falla por DNS. `npm` apunta a un mirror interno que no contiene React, por lo que tampoco puede sustituir el gate mediante `npm ci` local.
 - GitHub Actions sigue siendo el entorno oficial de instalación/test/build cuando sus runners están disponibles.
 - La conexión actual de Vercel expone documentación de Sandbox, pero no una acción de ejecución de Sandbox. No convertir CI en deployment.
 - Vercel auto-deploy está desactivado con `git.deploymentEnabled=false`; desplegar solo bajo petición explícita.
@@ -36,9 +36,11 @@
 - Direct/indirect Field Group cycles se rechazan.
 - Profundidad máxima de referencias avanzadas: 8 niveles.
 - Repeater aplica `minItems/maxItems` y hard cap runtime de 100 items.
+- Group/Repeater normalizan recursivamente payloads anidados antes de persistir; Calculated y Conditional anidados no pueden quedar obsoletos solo porque validaron sobre una copia temporal.
 - Calculated usa un parser aritmético propio y nunca `eval`/Function/dynamic code.
 - Calculated solo puede referenciar siblings Number/Currency; no se permiten cadenas Calculated→Calculated dependientes del orden del schema.
-- Conditional se normaliza después de los cálculos y persiste `null` cuando la condición es falsa.
+- Conditional se normaliza después de poblar siblings y cálculos; persiste `null` cuando la condición es falsa.
+- Conditional source debe ser un sibling no avanzado. `greaterThan`/`lessThan` además requieren source Number/Currency y `compareValue` numérico finito; `equals`/`notEquals` requieren `compareValue`; `truthy`/`falsy` no lo requieren.
 - Config defaults del registry pueden contener referencias vacías durante la edición; la validación contextual del Field Group exige referencias reales antes de guardar.
 - `AdvancedRecordFieldControl` renderiza Group nested, Repeater rows, Calculated read-only y Conditional reactivo; el core sigue siendo React-free.
 
