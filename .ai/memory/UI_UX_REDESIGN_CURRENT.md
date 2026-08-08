@@ -6,9 +6,9 @@
 - This redesign is presentation-only. Functional phases/tracking remain independent.
 
 ## Current UI phase
-**UI-07 — Themes / Blueprints / Settings — DONE pending final documented-HEAD gate and merge**
+**UI-08 — Preview / Publish / Final Polish — DONE pending final documented-HEAD gate and merge**
 
-Next after merge: **UI-08 — Preview / Publish / Final Polish**.
+After the final documented-HEAD gate and merge of PR #22, **UI/UX redesign phases UI-01 through UI-08 are complete. There is no UI-09.**
 
 ## Durable decisions
 - Tailwind CSS v4 is the official visual styling foundation for the ElectroCMS application chrome.
@@ -20,9 +20,12 @@ Next after merge: **UI-08 — Preview / Publish / Final Polish**.
 - Migrated surfaces use semantic tokens instead of hard-coded product colors.
 - Canvas remains the dominant editor surface.
 - UI must not bypass canonical project/document APIs just to make a control appear functional.
-- UI redesign phases may expose read/navigation surfaces for canonical state already present in `main`, but must not invent functional CRUD/relations/query/form/filter/backend/blueprint execution before those contracts exist.
+- UI redesign phases may expose read/navigation surfaces for canonical state already present in `main`, but must not invent functional CRUD/relations/query/form/filter/backend/blueprint/export execution before those contracts exist.
 - Existing functional controls discovered by regression tests must be preserved inside the new UI rather than removed during visual replacement.
 - Display labels may differ from canonical persistence values only when the mapping is explicit and tested; for example editor “System” maps to the canonical `auto` theme mode.
+- Preview must render the canonical document model instead of maintaining a second preview document/state system.
+- Publishing UI may expose intended destinations, but must never report package/deployment success without a real validated exporter runtime.
+- Permanent chrome must not expose controls that look functional when no implementation exists.
 
 ## UI-01 completed
 - Added semantic V2 UI foundation and durable redesign documentation.
@@ -105,4 +108,31 @@ Next after merge: **UI-08 — Preview / Publish / Final Polish**.
 - Added unit coverage for module routing, real theme controls, canonical project data, disabled Blueprint Apply actions and editor preference mutations.
 - Quality Gate #1171 stopped at TypeScript because the initial UI used a non-canonical `system` value; the control was corrected to persist `auto`.
 - Corrected implementation validation: Quality Gate #1172 PASS.
-- Final documented-HEAD gate is required before merge and UI-08.
+- Final validation: Quality Gate #1174 PASS; merged into `main` as `649d3fbc9965c1e34825bf3da1374700e339c41f`.
+
+## UI-08 completed
+- Added `LivePreviewWorkspace` and replaced the static Preview mock.
+- Live Preview renders the active canonical document through the existing `CanvasRenderer` in read-only mode; selection, drag and mutation callbacks are intentionally omitted.
+- Preview device selection uses the real ProjectSession breakpoint setter and canonical breakpoint widths.
+- Preview diagnostics derive only from `inspectDocumentTree`, canonical node counts, registered widget previews, ProjectSession save state and the active breakpoint.
+- Preserved the real frontend `ProjectThemeControls` in Preview.
+- Added `PublishingWorkspace` and replaced the generic Export cards with a professional Publishing Center.
+- Publishing readiness is based on canonical documents, theme references, project history metadata and ProjectSession save state.
+- Local, React, LAMP and WordPress remain final destination entries, but Configure actions stay disabled until real exporter runtimes exist.
+- Added explicit `No simulated publishing` behavior: ElectroCMS does not claim a generated package or deployment before a validated exporter creates it.
+- Added `StudioCommandPalette` with Ctrl/Cmd+K, Escape, search, shortcut discoverability and routing to existing workspaces/modules.
+- Refined command palette accessibility to use normal navigation/button semantics.
+- Removed the non-functional Share action from permanent Studio chrome.
+- Removed the static browser-preview composition and its decorative browser-status dots.
+- Added unit coverage for canonical Preview, breakpoint changes, publishing safeguards and command navigation.
+- Added dedicated Playwright coverage for live preview, Publishing Center and command-palette routing.
+- Existing desktop/tablet/mobile workspace navigation and no-root-overflow contracts remain green.
+- Quality Gate #1176 stopped at lint because the initial palette reset React state synchronously inside an effect; reset was moved to explicit close actions.
+- Quality Gate #1177 passed lint and stopped at TypeScript because an unregistered `info` icon was used; replaced with a registered icon.
+- Quality Gate #1178 passed lint/TypeScript and stopped at Unit because the test queried two legitimate Export controls ambiguously; the test was scoped to the header CTA without changing product behavior.
+- Corrected implementation validation: Quality Gate #1179 PASS.
+- Final accessibility/E2E audit validation: Quality Gate #1181 PASS.
+- One final full gate on this exact documented HEAD is required before PR #22 can merge.
+
+## Completion condition
+When the final documented-HEAD gate for PR #22 is green and the PR is merged, the UI/UX redesign defined by `.ai/UI_UX_REDESIGN_MASTER.md` and `.ai/UI_UX_REDESIGN_PHASES.md` is complete. Continue future work from the functional project roadmap, not a new UI redesign phase, unless a new redesign scope is explicitly created.
