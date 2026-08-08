@@ -139,3 +139,8 @@
 **Decision:** `vercel.json` sets `git.deploymentEnabled=false`; Vercel deployments only occur after explicit user instruction.
 
 **Why:** automatic deployments consumed daily preview quota during phase development. GitHub Actions remains the continuous quality gate; deployment is a separate, deliberate action.
+
+## ADR-029 — Field types resolve through a framework-neutral versioned registry
+**Decision:** custom-field type behavior is described by `FieldTypeDefinition` contracts and resolved through `FieldTypeRegistry` by `type@version`. Definitions own portable config/value validation, default-value factories, feature capability states and one-step config migrations. React components and project field instances are not stored in the registry.
+
+**Why:** the master contract requires new field types to be addable through registries/adapters. Keeping the registry React-free lets Custom Field Groups, Records, exporters and plugins share one field-type contract without type switches or UI coupling. Advanced types can be registered honestly as `modeled` until MF-042/MF-043 activate their runtime behavior.
