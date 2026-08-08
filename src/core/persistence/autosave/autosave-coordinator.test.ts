@@ -24,9 +24,12 @@ describe('AutosaveCoordinator', () => {
     await projects.create(initial);
 
     let tick = 0;
+    const lifecycle: string[] = [];
     const coordinator = new AutosaveCoordinator(projects, recovery, {
       maxRecoverySnapshots: 2,
       now: () => `2026-08-07T20:00:0${++tick}.000Z`,
+      onSaving: (project) => lifecycle.push(`saving:${project.historyMetadata.revision}`),
+      onSaved: (project) => lifecycle.push(`saved:${project.historyMetadata.revision}`),
     });
 
     const first = structuredClone(initial);
@@ -41,6 +44,7 @@ describe('AutosaveCoordinator', () => {
     const saved = await projects.load(initial.id);
     expect(saved?.name).toBe('Latest edit');
     expect(saved?.historyMetadata.revision).toBe(1);
+    expect(lifecycle).toEqual(['saving:1', 'saved:1']);
     expect((await recovery.list(initial.id))).toHaveLength(1);
     expect((await coordinator.recoverLatest(initial.id))?.name).toBe('Latest edit');
 
@@ -57,6 +61,34 @@ describe('AutosaveCoordinator', () => {
     await coordinator.flush();
 
     expect((await recovery.list(initial.id))).toHaveLength(2);
+    coordinator.dispose();
+  });
+
+  it('keeps revisions monotonic even when a later queued project has stale metadata', async () => {
+    const projects = new MemoryProjectRepository();
+    const recovery = new MemoryRecoveryRepository();
+    const initial = createProject();
+    await projects.create(initial);
+
+    let tick = 0;
+    const coordinator = new AutosaveCoordinator(projects, recovery, {
+      now: () => `2026-08-07T21:00:0${++tick}.000Z`,
+    });
+
+    const first = structuredClone(initial);
+    first.name = 'First';
+    coordinator.queue(first);
+    await coordinator.flush();
+    expect((await projects.load(initial.id))?.historyMetadata.revision).toBe(1);
+
+    const stale = structuredClone(initial);
+    stale.name = 'Stale metadata, newer content';
+    coordinator.queue(stale);
+    await coordinator.flush();
+
+    const saved = await projects.load(initial.id);
+    expect(saved?.name).toBe('Stale metadata, newer content');
+    expect(saved?.historyMetadata.revision).toBe(2);
     coordinator.dispose();
   });
 });
