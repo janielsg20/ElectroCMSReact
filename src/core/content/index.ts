@@ -1,10 +1,24 @@
 export * from './content-type';
 export * from './taxonomy';
+export * from './relation';
 export * from './field-type-definition';
 export * from './field-type-registry';
 export * from './builtin-field-types';
 export * from './advanced-field-runtime';
-export * from './advanced-field-types';
+export {
+  createMf042AdvancedFieldTypeDefinitions,
+} from './advanced-field-types';
+export {
+  MF043_REFERENCE_FIELD_TYPES,
+  RELATION_FIELD_SIDES,
+  createContentFieldTypeRegistry,
+  createMf043ReferenceFieldTypeDefinitions,
+  isMf043ReferenceField,
+  resolveRelationForField,
+  validateReferenceFieldContext,
+  type Mf043ReferenceFieldType,
+  type RelationFieldSide,
+} from './reference-field-types';
 export {
   CUSTOM_FIELD_DEFINITION_VERSION,
   FIELD_GROUP_DEFINITION_VERSION,
@@ -55,15 +69,15 @@ export {
   type ContentRecordValidationResult,
 } from './content-record';
 export {
-  createAdvancedContentRecord,
-  createAdvancedContentRecord as createContentRecord,
+  createReferenceContentRecord,
+  createReferenceContentRecord as createContentRecord,
   createDefaultContentRecordDefinition,
-  listAdvancedContentRecords,
-  listAdvancedContentRecords as listContentRecords,
-  removeAdvancedContentRecord,
-  removeAdvancedContentRecord as removeContentRecord,
-  updateAdvancedContentRecord,
-  updateAdvancedContentRecord as updateContentRecord,
-  validateAdvancedContentRecordDefinition,
-  validateAdvancedContentRecordDefinition as validateContentRecordDefinition,
-} from './advanced-content-record';
+  listReferenceContentRecords,
+  listReferenceContentRecords as listContentRecords,
+  removeReferenceContentRecord,
+  removeReferenceContentRecord as removeContentRecord,
+  updateReferenceContentRecord,
+  updateReferenceContentRecord as updateContentRecord,
+  validateReferenceContentRecordDefinition,
+  validateReferenceContentRecordDefinition as validateContentRecordDefinition,
+} from './reference-content-record';
