@@ -7,7 +7,7 @@
 - Última microfase completada: MF-041 — Records CRUD
 - Siguiente microfase: MF-042 — Advanced fields
 - Último quality gate funcional completo: GitHub Actions run #901 PASS
-- Cierre documental MF-041: PENDING
+- Cierre documental MF-041: GitHub Actions run #915 PASS
 - Repositorio oficial: `janielsg20/ElectroCMSReact`
 - PR de fase: #6 `agent/f05-dynamic-content -> main` (draft)
 - Preview deployment: MANUAL ONLY. `vercel.json` usa `git.deploymentEnabled: false`; no desplegar por push/PR.
@@ -76,7 +76,7 @@
 | MF-038 | DONE | `TaxonomyDefinition` v1, hierarchy/flat, multi-CPT associations, field-group/archive refs, referential delete guard CPT, Dynamic Content tabs, autosave/reload/delete E2E; run #766 PASS; cierre documental #776 PASS |
 | MF-039 | DONE | `FieldTypeDefinition` + `FieldTypeRegistry` React-free, resolución `type@version`, config/value validation, defaults, feature matrix, migrations, 27 built-ins (20 available + 7 modeled) y plugin `plugin/rating`; run #786 PASS; cierre documental #800 PASS |
 | MF-040 | DONE | `FieldGroupDefinition`/`CustomFieldDefinition` v1, portable JSON en `CanonicalProject.fieldGroups`, library de 20 tipos disponibles, ordered schema, contextual inspector, config/default validation por registry, referential delete guard y persistencia E2E; run #834 PASS; cierre documental #850 PASS |
-| MF-041 | DONE | `ContentRecordDefinition` v1, estados draft/published/archived, CRUD canónico, búsqueda/filtros, slug único por CPT, required/default/FieldType validation, Records master-detail Backend, field-group integrity guard y persistencia IndexedDB E2E; run #901 PASS |
+| MF-041 | DONE | `ContentRecordDefinition` v1, estados draft/published/archived, CRUD canónico, búsqueda/filtros, slug único por CPT, required/default/FieldType validation, Records master-detail Backend, field-group integrity guard y persistencia IndexedDB E2E; run #901 PASS; cierre documental #915 PASS |
 | MF-042 | NEXT | Advanced fields |
 | MF-043 | BLOCKED | Relations |
 | MF-044 | BLOCKED | Dynamic bindings |
