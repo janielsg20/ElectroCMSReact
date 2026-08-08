@@ -6,9 +6,9 @@
 - This redesign is presentation-only. Functional phases/tracking remain independent.
 
 ## Current UI phase
-**UI-06 — Backend Builder / Roles — DONE pending final documented-HEAD gate and merge**
+**UI-07 — Themes / Blueprints / Settings — DONE pending final documented-HEAD gate and merge**
 
-Next after merge: **UI-07 — Themes / Blueprints / Settings**.
+Next after merge: **UI-08 — Preview / Publish / Final Polish**.
 
 ## Durable decisions
 - Tailwind CSS v4 is the official visual styling foundation for the ElectroCMS application chrome.
@@ -20,8 +20,9 @@ Next after merge: **UI-07 — Themes / Blueprints / Settings**.
 - Migrated surfaces use semantic tokens instead of hard-coded product colors.
 - Canvas remains the dominant editor surface.
 - UI must not bypass canonical project/document APIs just to make a control appear functional.
-- UI redesign phases may expose read/navigation surfaces for canonical state already present in `main`, but must not invent functional CRUD/relations/query/form/filter/backend execution before those contracts exist.
+- UI redesign phases may expose read/navigation surfaces for canonical state already present in `main`, but must not invent functional CRUD/relations/query/form/filter/backend/blueprint execution before those contracts exist.
 - Existing functional controls discovered by regression tests must be preserved inside the new UI rather than removed during visual replacement.
+- Display labels may differ from canonical persistence values only when the mapping is explicit and tested; for example editor “System” maps to the canonical `auto` theme mode.
 
 ## UI-01 completed
 - Added semantic V2 UI foundation and durable redesign documentation.
@@ -90,4 +91,18 @@ Next after merge: **UI-07 — Themes / Blueprints / Settings**.
 - Unit tests cover canonical dashboard/role/user/backend data.
 - Quality Gate #1163 exposed an ambiguous count assertion; Quality Gate #1165 then exposed the removed backend theme control and obsolete E2E heading. Both were corrected without weakening functional assertions.
 - Corrected implementation validation: Quality Gate #1167 PASS.
-- Final documented-HEAD gate is required before merge and UI-07.
+- Final validation: Quality Gate #1169 PASS; merged into `main` as `3d384074332020d79b807df53e1b7aabe1fa2a83`.
+
+## UI-07 completed
+- Added `GlobalSystemsWorkspace` as the consolidated surface for Themes, Blueprints and Settings.
+- Themes, Blueprints and Settings module navigation now enters the same global systems Studio with explicit initial context.
+- Themes preserves the existing real frontend/backend `ProjectThemeControls`, including package duplication, token editing and import/export flows.
+- Blueprints provides the final catalog structure while Apply remains disabled until a validated canonical blueprint application contract exists.
+- Project settings read canonical project metadata, schema, document/breakpoint counts and active theme ids.
+- Storage settings read the real ProjectSession save state and canonical history metadata; no alternate persistence store exists.
+- Editor settings call the existing workspace preference setters for theme mode, density and editor preset.
+- “System” appearance is a presentation label for the canonical `auto` editor theme value.
+- Added unit coverage for module routing, real theme controls, canonical project data, disabled Blueprint Apply actions and editor preference mutations.
+- Quality Gate #1171 stopped at TypeScript because the initial UI used a non-canonical `system` value; the control was corrected to persist `auto`.
+- Corrected implementation validation: Quality Gate #1172 PASS.
+- Final documented-HEAD gate is required before merge and UI-08.
