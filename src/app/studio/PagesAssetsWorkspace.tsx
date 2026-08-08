@@ -8,6 +8,11 @@ type PagesView = 'pages' | 'templates' | 'assets';
 type Density = 'table' | 'grid';
 
 const templateKinds = new Set<DocumentKind>(['template', 'header', 'footer', 'single', 'archive', '404']);
+const resourceTabIcons: Record<PagesView, IconName> = {
+  pages: 'pages',
+  templates: 'layers',
+  assets: 'media',
+};
 
 function documentKindLabel(kind: DocumentKind) {
   const labels: Record<DocumentKind, string> = {
@@ -101,14 +106,14 @@ export function PagesAssetsWorkspace({ initialView = 'pages', onOpenBuilder }: {
       <header className="shrink-0 border-b border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] px-4 py-3 md:px-5">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-end justify-between gap-3">
           <div><span className="text-[8px] font-bold uppercase tracking-[.16em] text-[var(--color-ec-accent)]">Project structure</span><h2 className="mt-1 text-[18px] font-semibold tracking-[-.03em] text-[var(--color-ec-text)]">Pages, templates & assets</h2><p className="mt-1 text-[9px] text-[var(--color-ec-text-muted)]">Manage the canonical documents and media already stored in this project.</p></div>
-          <div className="flex items-center gap-1"><CapabilityStatus label="Read-only manager" detail="Project-level create/delete commands are not implemented yet; existing canonical resources remain fully navigable." /><button type="button" className="ec-control ec-focus-ring grid size-8 place-items-center text-[var(--color-ec-text-muted)]" aria-label="Table view" aria-pressed={density === 'table'} onClick={() => setDensity('table')}><Icon name="list" size={13} /></button><button type="button" className="ec-control ec-focus-ring grid size-8 place-items-center text-[var(--color-ec-text-muted)]" aria-label="Grid view" aria-pressed={density === 'grid'} onClick={() => setDensity('grid')}><Icon name="grid" size={13} /></button></div>
+          <div className="flex items-center gap-1"><CapabilityStatus label="Read-only manager" detail="Project-level create/delete commands are not implemented yet; existing canonical resources remain fully navigable." /><button type="button" className="ec-control ec-focus-ring ec-action grid size-8 place-items-center text-[var(--color-ec-text-muted)]" aria-label="Table view" aria-pressed={density === 'table'} onClick={() => setDensity('table')}><Icon name="list" size={13} /></button><button type="button" className="ec-control ec-focus-ring ec-action grid size-8 place-items-center text-[var(--color-ec-text-muted)]" aria-label="Grid view" aria-pressed={density === 'grid'} onClick={() => setDensity('grid')}><Icon name="grid" size={13} /></button></div>
         </div>
       </header>
 
       <div className="mx-auto flex min-h-0 w-full max-w-[1440px] flex-1 flex-col p-3 md:p-4">
         <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-[var(--color-ec-border)] pb-3">
-          <div className="flex rounded-[var(--ec-radius-md)] bg-[var(--color-ec-surface-muted)] p-0.5" role="tablist" aria-label="Project resources">
-            {(['pages', 'templates', 'assets'] as const).map((item) => <button key={item} type="button" role="tab" aria-selected={view === item} className="h-7 rounded-[var(--ec-radius-sm)] px-3 text-[9px] font-semibold capitalize text-[var(--color-ec-text-muted)] data-[active=true]:bg-[var(--color-ec-surface)] data-[active=true]:text-[var(--color-ec-text)] data-[active=true]:shadow-sm" data-active={view === item ? 'true' : 'false'} onClick={() => setView(item)}>{item}<span className="ml-1.5 text-[8px] opacity-60">{item === 'pages' ? pages.length : item === 'templates' ? templates.length : assets.length}</span></button>)}
+          <div className="flex rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface-muted)] p-0.5" role="tablist" aria-label="Project resources">
+            {(['pages', 'templates', 'assets'] as const).map((item) => <button key={item} type="button" role="tab" aria-selected={view === item} className="ec-focus-ring ec-action flex h-8 items-center gap-1.5 rounded-[var(--ec-radius-sm)] px-2.5 text-[9px] font-semibold capitalize text-[var(--color-ec-text-muted)] data-[active=true]:bg-[var(--color-ec-surface)] data-[active=true]:text-[var(--color-ec-accent)]" data-active={view === item ? 'true' : 'false'} onClick={() => setView(item)}><Icon name={resourceTabIcons[item]} size={11} />{item}<span className="ml-0.5 text-[8px] opacity-60">{item === 'pages' ? pages.length : item === 'templates' ? templates.length : assets.length}</span></button>)}
           </div>
           <label className="ml-auto flex h-8 min-w-[210px] flex-1 items-center gap-2 rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] px-2.5 text-[var(--color-ec-text-muted)] sm:max-w-[320px]"><Icon name="search" size={12} /><input className="min-w-0 flex-1 bg-transparent text-[9px] text-[var(--color-ec-text)] outline-none placeholder:text-[var(--color-ec-text-muted)]" aria-label="Search project resources" placeholder={`Search ${view}…`} value={query} onChange={(event) => setQuery(event.target.value)} /></label>
         </div>
