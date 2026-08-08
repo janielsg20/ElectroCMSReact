@@ -6,9 +6,9 @@
 - This redesign is presentation-only. Functional phases/tracking remain independent.
 
 ## Current UI phase
-**UI-05 — Forms / Filters / Workflow — DONE pending final documented-HEAD gate and merge**
+**UI-06 — Backend Builder / Roles — DONE pending final documented-HEAD gate and merge**
 
-Next after merge: **UI-06 — Backend Builder / Roles**.
+Next after merge: **UI-07 — Themes / Blueprints / Settings**.
 
 ## Durable decisions
 - Tailwind CSS v4 is the official visual styling foundation for the ElectroCMS application chrome.
@@ -20,7 +20,8 @@ Next after merge: **UI-06 — Backend Builder / Roles**.
 - Migrated surfaces use semantic tokens instead of hard-coded product colors.
 - Canvas remains the dominant editor surface.
 - UI must not bypass canonical project/document APIs just to make a control appear functional.
-- UI redesign phases may expose read/navigation surfaces for canonical state already present in `main`, but must not invent functional CRUD/relations/query/form/filter execution before those contracts exist.
+- UI redesign phases may expose read/navigation surfaces for canonical state already present in `main`, but must not invent functional CRUD/relations/query/form/filter/backend execution before those contracts exist.
+- Existing functional controls discovered by regression tests must be preserved inside the new UI rather than removed during visual replacement.
 
 ## UI-01 completed
 - Added semantic V2 UI foundation and durable redesign documentation.
@@ -77,4 +78,16 @@ Next after merge: **UI-06 — Backend Builder / Roles**.
 - No parallel forms/filters/query store or fake workflow runtime was introduced.
 - Added unit coverage with canonical form, filter and query data.
 - Initial validation: Quality Gate #1159 PASS.
-- Final documented-HEAD gate is required before merge and UI-06.
+- Final validation: Quality Gate #1161 PASS; merged into `main` as `51c94898c51d36494a49ab8171ce77c52243c1a6`.
+
+## UI-06 completed
+- Added `BackendRolesWorkspace` backed directly by canonical `backend`, `dashboards`, `roles`, `users` and backend documents.
+- Replaced the previous static Backend mock with Overview, Dashboards, Admin Pages, Roles and Users surfaces.
+- Backend configuration, resource search, dense lists, details and empty states all read from the canonical project.
+- Backend workspace mounts the canonical Backend Builder; the Roles editor module opens the same Studio in Roles context.
+- Backend theme editing remains available through the existing real `ProjectThemeControls` inside the redesigned Backend overview.
+- No parallel admin model, generated CRUD runtime, fake dashboard metrics or permission engine was introduced.
+- Unit tests cover canonical dashboard/role/user/backend data.
+- Quality Gate #1163 exposed an ambiguous count assertion; Quality Gate #1165 then exposed the removed backend theme control and obsolete E2E heading. Both were corrected without weakening functional assertions.
+- Corrected implementation validation: Quality Gate #1167 PASS.
+- Final documented-HEAD gate is required before merge and UI-07.
