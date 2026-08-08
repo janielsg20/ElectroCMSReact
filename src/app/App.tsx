@@ -10,6 +10,7 @@ import type { WorkspaceId } from './routing/workspaces';
 import { EditorWidgetRegistryProvider } from './widgets/EditorWidgetRegistryProvider';
 import type { EditorWidgetRegistry } from './widgets/editor-widget-registry';
 import { useResolvedEditorTheme } from './workspace/editor-theme';
+import './workspace/editor-theme-presets.css';
 import { useMediaQuery } from './workspace/use-media-query';
 import { WorkspacePreferencesProvider } from './workspace/workspace-preferences-context';
 import type { WorkspacePreferencesRepository } from './workspace/workspace-preferences-repository';
@@ -54,12 +55,11 @@ function EditorApplicationShell() {
       className="electrocms-app"
       data-theme={resolvedTheme}
       data-theme-mode={preferences.editorThemeMode}
+      data-editor-preset={preferences.editorThemePresetId}
       data-density={preferences.density}
       data-navigation-position={preferences.navigationPosition}
     >
-      <a className="skip-link" href="#workspace-main">
-        Skip to workspace
-      </a>
+      <a className="skip-link" href="#workspace-main">Skip to workspace</a>
 
       <AppHeader
         compactLayout={compactLayout}
@@ -86,15 +86,8 @@ function EditorApplicationShell() {
   );
 }
 
-export function App({
-  initialProject,
-  projectPersistence,
-  preferencesRepository,
-  widgetRegistry,
-}: AppProps) {
-  const preferencesProviderProps = preferencesRepository
-    ? { repository: preferencesRepository }
-    : {};
+export function App({ initialProject, projectPersistence, preferencesRepository, widgetRegistry }: AppProps) {
+  const preferencesProviderProps = preferencesRepository ? { repository: preferencesRepository } : {};
   const projectProviderProps = {
     ...(initialProject ? { initialProject } : {}),
     ...(projectPersistence === undefined ? {} : { persistence: projectPersistence }),
