@@ -3,14 +3,17 @@ import {
   createContentRecord as createCanonicalContentRecord,
   createContentType as createCanonicalContentType,
   createFieldGroup as createCanonicalFieldGroup,
+  createRelation as createCanonicalRelation,
   createTaxonomy as createCanonicalTaxonomy,
   removeContentRecord as removeCanonicalContentRecord,
   removeContentType as removeCanonicalContentType,
   removeFieldGroup as removeCanonicalFieldGroup,
+  removeRelation as removeCanonicalRelation,
   removeTaxonomy as removeCanonicalTaxonomy,
   updateContentRecord as updateCanonicalContentRecord,
   updateContentType as updateCanonicalContentType,
   updateFieldGroup as updateCanonicalFieldGroup,
+  updateRelation as updateCanonicalRelation,
   updateTaxonomy as updateCanonicalTaxonomy,
 } from '../../core/content';
 import {
@@ -46,6 +49,7 @@ import {
   type ProjectSaveState,
   type ProjectSessionState,
   type ProjectThemeResourceApplyResult,
+  type RelationSessionMutationResult,
   type TaxonomySessionMutationResult,
 } from './project-session-context';
 
@@ -361,6 +365,50 @@ export function ProjectSessionProvider({
     [commitProject, queueAutosave],
   );
 
+  const createRelation = useCallback(
+    (input: unknown): RelationSessionMutationResult => {
+      const result = createCanonicalRelation(projectRef.current, input);
+      if (!result.ok) {
+        return { ok: false, code: result.error.code, message: result.error.message };
+      }
+      commitProject(result.project);
+      queueAutosave(result.project);
+      return { ok: true, value: result.value, changed: true };
+    },
+    [commitProject, queueAutosave],
+  );
+
+  const updateRelation = useCallback(
+    (id: string, input: unknown): RelationSessionMutationResult => {
+      const result = updateCanonicalRelation(projectRef.current, id, input);
+      if (!result.ok) {
+        return { ok: false, code: result.error.code, message: result.error.message };
+      }
+      const before = projectRef.current.relations[id];
+      const after = result.project.relations[id];
+      const changed = JSON.stringify(before) !== JSON.stringify(after);
+      if (changed) {
+        commitProject(result.project);
+        queueAutosave(result.project);
+      }
+      return { ok: true, value: result.value, changed };
+    },
+    [commitProject, queueAutosave],
+  );
+
+  const removeRelation = useCallback(
+    (id: string): RelationSessionMutationResult => {
+      const result = removeCanonicalRelation(projectRef.current, id);
+      if (!result.ok) {
+        return { ok: false, code: result.error.code, message: result.error.message };
+      }
+      commitProject(result.project);
+      queueAutosave(result.project);
+      return { ok: true, value: result.value, changed: true };
+    },
+    [commitProject, queueAutosave],
+  );
+
   const createFieldGroup = useCallback(
     (input: unknown): FieldGroupSessionMutationResult => {
       const result = createCanonicalFieldGroup(projectRef.current, input);
@@ -527,6 +575,9 @@ export function ProjectSessionProvider({
       createTaxonomy,
       updateTaxonomy,
       removeTaxonomy,
+      createRelation,
+      updateRelation,
+      removeRelation,
       createFieldGroup,
       updateFieldGroup,
       removeFieldGroup,
@@ -546,6 +597,7 @@ export function ProjectSessionProvider({
       createContentRecord,
       createContentType,
       createFieldGroup,
+      createRelation,
       createTaxonomy,
       executeDocumentCommand,
       project,
@@ -553,6 +605,7 @@ export function ProjectSessionProvider({
       removeContentRecord,
       removeContentType,
       removeFieldGroup,
+      removeRelation,
       removeTaxonomy,
       saveState,
       setActiveBreakpointId,
@@ -563,6 +616,7 @@ export function ProjectSessionProvider({
       updateContentRecord,
       updateContentType,
       updateFieldGroup,
+      updateRelation,
       updateTaxonomy,
       zoom,
     ],
