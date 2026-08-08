@@ -1,5 +1,10 @@
-import type { DragEvent, KeyboardEvent, MouseEvent } from 'react';
-import { inspectDocumentTree, type CanonicalDocument, type DocumentNode } from '../../../core/project';
+import type { CSSProperties, DragEvent, KeyboardEvent, MouseEvent } from 'react';
+import {
+  inspectDocumentTree,
+  readNodeGeometry,
+  type CanonicalDocument,
+  type DocumentNode,
+} from '../../../core/project';
 
 const NODE_MIME = 'application/x-electrocms-node-id';
 type MoveNodeHandler = (nodeId: string, parentId: string, index: number) => boolean;
@@ -7,6 +12,7 @@ type SelectNodeHandler = (nodeId: string, additive: boolean) => void;
 
 export interface CanvasRendererProps {
   document: CanonicalDocument;
+  breakpointId: string;
   viewportWidth: number;
   zoom: number;
   selectedNodeIds?: readonly string[];
@@ -16,6 +22,7 @@ export interface CanvasRendererProps {
 
 interface CanvasNodeViewProps {
   document: CanonicalDocument;
+  breakpointId: string;
   node: DocumentNode;
   depth: number;
   selectedNodeIds: ReadonlySet<string>;
@@ -62,6 +69,7 @@ function DropZone({ parentId, index, onMoveNode }: DropZoneProps) {
 
 function CanvasNodeView({
   document,
+  breakpointId,
   node,
   depth,
   selectedNodeIds,
@@ -79,6 +87,7 @@ function CanvasNodeView({
         <div className="canvas-child-entry" key={child.id}>
           <CanvasNodeView
             document={document}
+            breakpointId={breakpointId}
             node={child}
             depth={depth + 1}
             selectedNodeIds={selectedNodeIds}
@@ -112,6 +121,14 @@ function CanvasNodeView({
   }
 
   const selected = selectedNodeIds.has(node.id);
+  const geometry = readNodeGeometry(node, breakpointId);
+  const geometryStyle: CSSProperties = {
+    ...(geometry.x === 0 && geometry.y === 0
+      ? {}
+      : { transform: `translate(${geometry.x}px, ${geometry.y}px)` }),
+    ...(geometry.width === undefined ? {} : { width: `${geometry.width}px` }),
+    ...(geometry.height === undefined ? {} : { minHeight: `${geometry.height}px` }),
+  };
   const handleDragStart = (event: DragEvent<HTMLElement>) => {
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData(NODE_MIME, node.id);
@@ -132,12 +149,17 @@ function CanvasNodeView({
   return (
     <article
       className="canvas-node"
+      style={geometryStyle}
       data-canvas-node-id={node.id}
       data-canvas-node-type={node.type}
       data-depth={depth}
       data-selected={selected ? 'true' : 'false'}
       data-locked={node.locked ? 'true' : 'false'}
       data-hidden={node.hidden ? 'true' : 'false'}
+      data-geometry-x={geometry.x}
+      data-geometry-y={geometry.y}
+      data-geometry-width={geometry.width ?? ''}
+      data-geometry-height={geometry.height ?? ''}
       draggable={Boolean(onMoveNode) && !node.locked}
       onDragStart={onMoveNode ? handleDragStart : undefined}
       onKeyDown={onSelectNode ? handleKeyDown : undefined}
@@ -158,6 +180,7 @@ function CanvasNodeView({
 
 export function CanvasRenderer({
   document,
+  breakpointId,
   viewportWidth,
   zoom,
   selectedNodeIds = [],
@@ -180,7 +203,7 @@ export function CanvasRenderer({
   const canvasStyle = {
     '--canvas-document-width': `${viewportWidth}px`,
     '--canvas-zoom': String(scale),
-  } as React.CSSProperties;
+  } as CSSProperties;
   const selectedSet = new Set(selectedNodeIds);
 
   return (
@@ -189,6 +212,7 @@ export function CanvasRenderer({
       style={canvasStyle}
       data-testid="canvas-renderer"
       data-document-id={document.id}
+      data-breakpoint-id={breakpointId}
       data-viewport-width={viewportWidth}
       data-zoom={zoom}
       role={onSelectNode ? 'listbox' : undefined}
@@ -198,6 +222,7 @@ export function CanvasRenderer({
       <div className="canvas-scaled-document">
         <CanvasNodeView
           document={document}
+          breakpointId={breakpointId}
           node={rootNode}
           depth={0}
           selectedNodeIds={selectedSet}
