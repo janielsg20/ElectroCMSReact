@@ -166,13 +166,23 @@ export class FieldTypeRegistry {
     return latest;
   }
 
-  listLatest(options: { availability?: FieldTypeDefinition['availability'] } = {}): FieldTypeDefinition[] {
+  listLatest(
+    options: {
+      availability?: FieldTypeDefinition['availability'];
+      category?: FieldTypeDefinition['metadata']['category'] | 'advanced';
+    } = {},
+  ): FieldTypeDefinition[] {
     return [...this.versionsByType.keys()]
       .sort((left, right) => left.localeCompare(right))
       .map((type) => this.resolve(type))
       .filter((definition) =>
         options.availability ? definition.availability === options.availability : true,
-      );
+      )
+      .filter((definition) => {
+        if (!options.category) return true;
+        if (options.category === 'advanced') return definition.metadata.keywords?.includes('advanced') ?? false;
+        return definition.metadata.category === options.category;
+      });
   }
 
   validateConfig(type: string, config: unknown, version?: number): FieldTypeValidationResult {
