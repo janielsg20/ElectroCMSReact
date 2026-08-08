@@ -5,6 +5,8 @@ import {
   type CanonicalDocument,
   type DocumentNode,
 } from '../../../core/project';
+import type { EditorWidgetRegistry } from '../../widgets/editor-widget-registry';
+import { useEditorWidgetRegistry } from '../../widgets/editor-widget-registry-context';
 
 const NODE_MIME = 'application/x-electrocms-node-id';
 type MoveNodeHandler = (nodeId: string, parentId: string, index: number) => boolean;
@@ -26,6 +28,7 @@ interface CanvasNodeViewProps {
   node: DocumentNode;
   depth: number;
   selectedNodeIds: ReadonlySet<string>;
+  widgetRegistry: EditorWidgetRegistry;
   onMoveNode: MoveNodeHandler | undefined;
   onSelectNode: SelectNodeHandler | undefined;
 }
@@ -73,6 +76,7 @@ function CanvasNodeView({
   node,
   depth,
   selectedNodeIds,
+  widgetRegistry,
   onMoveNode,
   onSelectNode,
 }: CanvasNodeViewProps) {
@@ -91,6 +95,7 @@ function CanvasNodeView({
             node={child}
             depth={depth + 1}
             selectedNodeIds={selectedNodeIds}
+            widgetRegistry={widgetRegistry}
             onMoveNode={onMoveNode}
             onSelectNode={onSelectNode}
           />
@@ -145,6 +150,9 @@ function CanvasNodeView({
     event.stopPropagation();
     onSelectNode(node.id, event.ctrlKey || event.metaKey);
   };
+  const childContent =
+    children.length > 0 || onMoveNode ? renderChildren() : <div className="canvas-node-leaf" aria-hidden="true" />;
+  const Preview = widgetRegistry.resolvePreview(node.type, node.version);
 
   return (
     <article
@@ -160,6 +168,7 @@ function CanvasNodeView({
       data-geometry-y={geometry.y}
       data-geometry-width={geometry.width ?? ''}
       data-geometry-height={geometry.height ?? ''}
+      data-widget-registered={Preview ? 'true' : 'false'}
       draggable={Boolean(onMoveNode) && !node.locked}
       onDragStart={onMoveNode ? handleDragStart : undefined}
       onKeyDown={onSelectNode ? handleKeyDown : undefined}
@@ -172,7 +181,13 @@ function CanvasNodeView({
         <code>{node.type}</code>
       </header>
       <div className="canvas-node-content">
-        {children.length > 0 || onMoveNode ? renderChildren() : <div className="canvas-node-leaf" aria-hidden="true" />}
+        {Preview ? (
+          <Preview node={node} breakpointId={breakpointId} selected={selected}>
+            {childContent}
+          </Preview>
+        ) : (
+          childContent
+        )}
       </div>
     </article>
   );
@@ -187,6 +202,7 @@ export function CanvasRenderer({
   onMoveNode,
   onSelectNode,
 }: CanvasRendererProps) {
+  const widgetRegistry = useEditorWidgetRegistry();
   const inspection = inspectDocumentTree(document);
   const rootNode = document.nodes[document.rootNodeId];
 
@@ -226,6 +242,7 @@ export function CanvasRenderer({
           node={rootNode}
           depth={0}
           selectedNodeIds={selectedSet}
+          widgetRegistry={widgetRegistry}
           onMoveNode={onMoveNode}
           onSelectNode={onSelectNode}
         />
