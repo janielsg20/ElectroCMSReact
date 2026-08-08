@@ -1,68 +1,67 @@
 # KNOWN_ISSUES.md
 
 ## Blocking
-Ninguno conocido al cierre funcional de MF-041. GitHub Actions run #901 es completamente verde.
+- **MF-042 gate blocked by GitHub Actions runner initialization.** Runs #986, #990, #994, #1000 and #1002 complete as `failure` with both jobs containing zero executed steps and no downloadable logs. These are not valid code-test results and must not be used to mark MF-042 PASS or FAIL.
+- MF-043 remains blocked until a real MF-042 gate executes verify, lint, TypeScript, unit, coverage, Playwright and build successfully.
 
 ## Environment
-- El sandbox actual no resuelve `registry.npmjs.org`; no es un defecto de ElectroCMS.
-- GitHub Actions continúa siendo el entorno oficial de `npm ci`, tests y build.
+- El sandbox local de esta sesión no resuelve `registry.npmjs.org` ni `github.com`; no puede sustituir el gate mediante `npm ci` local.
+- GitHub Actions sigue siendo el entorno oficial de instalación/test/build cuando sus runners están disponibles.
+- La conexión actual de Vercel expone documentación de Sandbox, pero no una acción de ejecución de Sandbox. No convertir CI en deployment.
 - Vercel auto-deploy está desactivado con `git.deploymentEnabled=false`; desplegar solo bajo petición explícita.
 
 ## Known scope boundaries
 - Widgets dynamic/commerce/form/filter de F04 son contratos `modeled`; su comportamiento real se habilita únicamente en su microfase dedicada F05/F06.
 - MF-037 implementa CPT model + editor.
 - MF-038 implementa Taxonomy model + editor, incluyendo asociaciones a CPTs y referencias a field groups/archive templates existentes.
-- MF-039 implementa el `FieldTypeRegistry` y los contratos de tipos de campo.
-- MF-040 implementa `FieldGroupDefinition`/`CustomFieldDefinition`, CRUD canónico, editor de grupos/campos y persistencia en `CanonicalProject.fieldGroups`.
-- MF-041 implementa `ContentRecordDefinition`, CRUD canónico, estados, búsqueda/filtros, edición Backend y validación/persistencia de valores custom en `CanonicalProject.records`.
-- Los 27 tipos mínimos del prompt están registrados; 20 están disponibles para schema/records básicos y 7 avanzados permanecen `modeled`.
-- `relation`, `user`, `taxonomy`, `repeater`, `group`, `calculated` y `conditional` no deben tratarse como runtime completo solo por estar registrados.
-- MF-040/041 rechazan instancias runtime de tipos `modeled`; MF-042 implementará Advanced Fields y MF-043 implementará Relations.
-- `conditions[]` y `roleVisibility[]` forman parte del schema portable, pero su runtime/editor avanzado todavía no está activo.
-- MF-038 NO implementa CRUD de taxonomy terms/term records. El alcance actual modela la definición de la taxonomía, no sus entradas de contenido.
-- MF-038 NO crea archive templates; `archiveTemplateId` solo referencia un documento existente de `kind=archive`.
-- MF-041 NO implementa Media Library. Cuando un CPT soporta featured image, Records UI lo indica honestamente en vez de simular un picker inexistente.
-- MF-041 NO implementa relaciones, repeaters, calculated/conditional runtime ni taxonomy/user references; pertenecen MF-042/MF-043.
-- Backend sigue siendo un workspace de autoría incremental: Content Types, Taxonomies, Field Groups y Records son reales, pero el backend generado/publicable final pertenece a fases posteriores.
-- Preview/Export siguen siendo shells dedicados hasta sus fases de renderer/export.
-- La biblioteca local de themes resuelve definiciones instaladas; el bundling final dentro de exporters pertenece a fases de export/publish.
-- El clipboard de MF-024 sigue siendo transitorio a la sesión del editor; integración con System Clipboard no fue requisito de F03/F04/F05 actual.
+- MF-039 implementa `FieldTypeRegistry` y contratos versionados de tipos de campo.
+- MF-040 implementa `FieldGroupDefinition`/`CustomFieldDefinition`, CRUD canónico y editor Field Library → Ordered Schema → Inspector.
+- MF-041 implementa `ContentRecordDefinition`, CRUD, estados, filtros, Backend editor y persistencia de custom values.
+- MF-042 activa únicamente `core/repeater`, `core/group`, `core/calculated` y `core/conditional` como v2 `available`.
+- `core/relation`, `core/user` y `core/taxonomy` siguen `modeled` hasta MF-043; no deben aparecer como runtime funcional antes de esa microfase.
+- MF-042 integra Advanced Fields dentro de **Field Groups + Records**. No mantener una pestaña/editor paralelo `AdvancedFieldEditor` para la misma fuente canónica.
+- `conditions[]` y `roleVisibility[]` generales siguen siendo schema portable; MF-042 implementa el tipo Conditional concreto, no un motor global de permisos/visibilidad de backend.
+- MF-038 no implementa taxonomy-term records.
+- MF-041/MF-042 no implementan Media Library; featured image/media refs no deben simular un picker inexistente.
+- Preview/Export siguen siendo shells dedicados hasta sus fases correspondientes.
 
 ## Builder design boundary
-- El editor principal debe conservar patrón de visual builder profesional: Insert/Elements Library izquierda + canvas central dominante + inspector derecho.
-- La comparación con Elementor describe el modelo mental de interacción, no autoriza copiar código, assets, branding, textos ni composición propietaria.
-- En pantallas pequeñas, library/inspector pueden pasar a drawers/sheets, pero no desaparecer como funciones.
-- Backend CRUD que no necesita canvas puede usar master-detail denso; Records usa este patrón porque su tarea primaria es buscar/listar/editar contenido, no composición espacial.
+- Editor visual principal: Insert/Elements Library izquierda + canvas central dominante + inspector derecho.
+- El modelo mental puede resultar familiar a builders como Elementor, pero no copiar código, assets, branding, textos ni composición propietaria.
+- En pantallas pequeñas, library/inspector pueden convertirse en drawers/sheets sin perder funcionalidad.
+- Backend data CRUD puede usar master-detail denso; Records no debe convertirse en un canvas artificial.
+
+## MF-042 advanced-field boundaries
+- Repeater/Group/Conditional referencian `FieldGroupDefinition` por ID; no duplican schemas dentro de records.
+- Direct/indirect Field Group cycles se rechazan.
+- Profundidad máxima de referencias avanzadas: 8 niveles.
+- Repeater aplica `minItems/maxItems` y hard cap runtime de 100 items.
+- Calculated usa un parser aritmético propio y nunca `eval`/Function/dynamic code.
+- Calculated solo puede referenciar siblings Number/Currency; no se permiten cadenas Calculated→Calculated dependientes del orden del schema.
+- Conditional se normaliza después de los cálculos y persiste `null` cuando la condición es falsa.
+- Config defaults del registry pueden contener referencias vacías durante la edición; la validación contextual del Field Group exige referencias reales antes de guardar.
+- `AdvancedRecordFieldControl` renderiza Group nested, Repeater rows, Calculated read-only y Conditional reactivo; el core sigue siendo React-free.
 
 ## Field type / field group / record boundaries
-- `FieldTypeDefinition` contiene callbacks runtime de validación/default/migración; esos callbacks nunca deben serializarse dentro de `CanonicalProject`.
-- `configSchema` y `defaultConfig` sí deben ser JSON-portable y se clonan defensivamente al resolver una definición.
-- `availability=available` permite schema/record values básicos; no implica que advanced behavior, render/export o media binding estén terminados.
-- `availability=modeled` significa que el contrato existe para modelos futuros, pero su comportamiento se reserva para MF-042/MF-043.
-- `FieldGroupDefinition`, `CustomFieldDefinition` y `ContentRecordDefinition` son datos portables; no contienen callbacks ni componentes React.
-- Field IDs/names deben ser únicos dentro del grupo; field order se conserva directamente en `fields[]`.
-- Config/default/value validation se delega al registry. No añadir validadores de tipo duplicados al model/UI de Field Groups o Records.
-- Record statuses actuales: draft, published, archived.
-- Record slug debe ser único dentro de su CPT; record ID y `createdAt` son inmutables.
-- El editor de settings derivado de `configSchema` cubre los descriptors actuales mínimos; schemas JSON más ricos pueden requerir renderers dedicados sin romper el contrato core.
+- `FieldTypeDefinition` contiene callbacks runtime; nunca se serializan dentro de `CanonicalProject`.
+- `configSchema`/`defaultConfig` sí son JSON-portable y se clonan defensivamente.
+- `FieldGroupDefinition`, `CustomFieldDefinition` y `ContentRecordDefinition` son datos portables sin componentes React/callbacks.
+- Field IDs/names son únicos dentro del grupo; el orden canónico vive directamente en `fields[]`.
+- Config/default/value validation se delega al registry + validadores contextuales de referencias; no duplicar reglas persistentes en UI.
+- Record statuses: draft, published, archived.
+- Record slug es único dentro del CPT; ID y `createdAt` son inmutables.
 
 ## Referential integrity
-- Un CPT no puede eliminarse mientras existan records que lo referencien.
-- Un CPT tampoco puede eliminarse mientras una taxonomy conserve su ID en `contentTypeIds`.
-- Una taxonomy no puede guardar content type IDs desconocidos.
-- Una taxonomy no puede guardar field group IDs desconocidos.
-- Una taxonomy solo puede guardar como archive template un documento existente de `kind=archive`.
-- Un field group no puede eliminarse mientras una taxonomy conserve su ID en `fieldGroupIds`.
-- Desde MF-041, un field group tampoco puede eliminarse mientras un content record conserve su ID en `fieldGroupIds`; la API pública de content core enruta removal por `removeFieldGroupWithRecordIntegrity`.
-- La eliminación de taxonomy terms y la migración de relations todavía no existen; no inventar cascadas destructivas antes de sus microfases.
+- CPT no puede eliminarse mientras records o taxonomías lo referencien.
+- Taxonomías rechazan CPT/field-group/archive refs desconocidas.
+- Field Group no puede eliminarse mientras taxonomy, record u otro advanced field lo referencie.
+- No inventar cascadas destructivas para relaciones/terms antes de sus microfases.
 
 ## Persistence testing note
-- Durante MF-037, el E2E de project themes expuso que observar `Saved locally` y recargar inmediatamente puede no ser una barrera suficientemente fuerte para una aserción de almacenamiento durable.
-- Los tests relevantes sondean directamente `electrocms/projects` en IndexedDB antes de reload.
-- MF-038 aplica la regla a Taxonomies, MF-040 a Field Groups y MF-041 a Records.
-- Para futuros CRUD F05, mantener una aserción durable equivalente cuando el resultado dependa de que la escritura haya llegado realmente al store.
+- Un texto `Saved locally` no es suficiente como barrera durable antes de reload.
+- E2E de Taxonomies, Field Groups, Records y MF-042 sondean `electrocms/projects` en IndexedDB cuando la afirmación depende de persistencia real.
 
 ## Non-blocking maintenance
-- `eslint` reporta warnings `react-refresh/only-export-components` en módulos registry-driven de widgets porque mezclan definiciones/factories exportadas con previews React internos. No son errores ni rompen el build; separar previews TSX de contratos/registries queda como refactor de higiene futura.
-- El warning React de `GridPreview` propagando props internas al DOM quedó corregido durante el cierre F04.
-- GitHub hosted runners muestran advertencias de transición del runtime interno Node usado por algunas versiones de `actions/*`; Node 22 configurado para ElectroCMS sigue funcionando correctamente.
+- Existen warnings `react-refresh/only-export-components` históricos en módulos registry-driven de widgets. No son errores de MF-042; refactor de higiene futuro.
+- El warning React de `GridPreview` quedó corregido en F04.
+- GitHub hosted runners también muestran warnings de transición de runtime interno de algunas `actions/*`; Node 22 del proyecto permanece válido.
