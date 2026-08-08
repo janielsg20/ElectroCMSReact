@@ -9,9 +9,9 @@ MF-037 — CPT model + editor is DONE. Functional run #730 PASS; documentation c
 
 MF-038 — Taxonomy model + editor is DONE. Functional run #766 PASS; documentation closure run #776 PASS.
 
-MF-039 — Field type registry is functionally DONE. GitHub Actions run #786 is fully green across verify, lint, TypeScript, unit, coverage, Playwright E2E and production build. Documentation closure must pass one final HEAD gate before MF-040 begins.
+MF-039 — Field type registry is DONE. Functional run #786 PASS; documentation closure run #800 PASS.
 
-Next microphase: MF-040 — Custom field groups. Do not start until the MF-039 documentation HEAD is green.
+Next microphase: MF-040 — Custom field groups.
 
 ## Durable F05 facts through MF-039
 - Dynamic content uses existing `CanonicalProject` collections; do not create a second persistence model.
@@ -54,8 +54,8 @@ Next microphase: MF-040 — Custom field groups. Do not start until the MF-039 d
 
 ## Resume protocol
 1. Read `AI_ENTRYPOINT.md`, `RULES.md`, `MEMORY.md`, `TRACKING.md`, then this handoff.
-2. Confirm the latest documentation HEAD after MF-039 is completely green.
-3. Only then mark MF-040 active and recover its exact Custom Field Groups contract from the F05/master specification.
+2. Confirm MF-039 closure evidence remains green: functional #786 and documentation #800.
+3. Mark MF-040 active and recover its exact Custom Field Groups contract from the F05/master specification before editing code.
 4. Reuse `FieldTypeRegistry`; do not introduce hardcoded field-type switches in the group editor/model.
 5. Persist field/group instances only as versioned portable JSON inside `CanonicalProject.fieldGroups`; never persist registry callbacks or React components.
 6. Define stable field IDs/names, ordering, type references + versions, common settings (default, placeholder, description, required, visibility/conditions as scope allows) and type-specific config validated through the registry.
@@ -68,7 +68,7 @@ Next microphase: MF-040 — Custom field groups. Do not start until the MF-039 d
 ## Phase sequence
 - MF-037 — CPT model + editor — DONE — run #730; docs #740
 - MF-038 — Taxonomy model + editor — DONE — run #766; docs #776
-- MF-039 — Field type registry — DONE functional — run #786; docs HEAD gate pending
+- MF-039 — Field type registry — DONE — run #786; docs #800
 - MF-040 — Custom field groups — NEXT
 - MF-041 — Records CRUD — BLOCKED
 - MF-042 — Advanced fields — BLOCKED
