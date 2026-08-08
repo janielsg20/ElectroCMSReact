@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent, type CSSProperties } from 'react';
+import { useState, type ChangeEvent, type CSSProperties } from 'react';
 import { isJsonObject } from '../../core/domain';
 import type { JsonObject } from '../../core/domain';
 import type { ProjectThemeScope } from '../../core/themes';
@@ -39,17 +39,11 @@ export function ProjectThemeControls({ scope }: ProjectThemeControlsProps) {
   const registry = useProjectThemeRegistry();
   const packageLibrary = useProjectThemePackageLibrary();
   const [packageStatus, setPackageStatus] = useState<PackageStatus | null>(null);
-  const [pendingThemeId, setPendingThemeId] = useState<string | null>(null);
   const themeId = scope === 'frontend' ? session.project.frontendThemeId : session.project.backendThemeId;
   const themes = registry.list(scope);
   const theme = registry.get(themeId, scope) ?? themes[0] ?? null;
   const fieldLabel = scope === 'frontend' ? 'Frontend theme' : 'Backend theme';
   const imported = theme ? packageLibrary.importedThemeIds.includes(theme.id) : false;
-
-  useEffect(() => {
-    if (!pendingThemeId || !registry.has(pendingThemeId, scope)) return;
-    if (session.setProjectTheme(scope, pendingThemeId)) setPendingThemeId(null);
-  }, [pendingThemeId, registry, scope, session]);
 
   const previewStyle = theme
     ? ({
@@ -107,10 +101,9 @@ export function ProjectThemeControls({ scope }: ProjectThemeControlsProps) {
       setPackageStatus({ tone: 'error', message: result.message });
       return;
     }
-    setPendingThemeId(result.themeId);
     setPackageStatus({
       tone: 'success',
-      message: `Created editable ${result.themeId} at version ${result.version}.`,
+      message: `Created editable ${result.themeId} at version ${result.version}. Select it from the list to edit.`,
     });
   };
 
