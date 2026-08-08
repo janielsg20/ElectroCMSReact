@@ -3,6 +3,7 @@ import type { CanonicalProject } from '../core/project';
 import { AppHeader } from './components/AppHeader';
 import { WorkspaceNavigation } from './components/WorkspaceNavigation';
 import { WorkspaceSurface } from './components/WorkspaceSurface';
+import type { EditorProjectPersistence } from './project/editor-project-persistence';
 import { ProjectSessionProvider } from './project/project-session';
 import { useWorkspaceRoute } from './routing/use-workspace-route';
 import type { WorkspaceId } from './routing/workspaces';
@@ -14,6 +15,7 @@ import { useWorkspacePreferences } from './workspace/workspace-preferences-store
 
 export interface AppProps {
   initialProject?: CanonicalProject;
+  projectPersistence?: EditorProjectPersistence | null;
   preferencesRepository?: WorkspacePreferencesRepository;
 }
 
@@ -81,11 +83,14 @@ function EditorApplicationShell() {
   );
 }
 
-export function App({ initialProject, preferencesRepository }: AppProps) {
+export function App({ initialProject, projectPersistence, preferencesRepository }: AppProps) {
   const preferencesProviderProps = preferencesRepository
     ? { repository: preferencesRepository }
     : {};
-  const projectProviderProps = initialProject ? { initialProject } : {};
+  const projectProviderProps = {
+    ...(initialProject ? { initialProject } : {}),
+    ...(projectPersistence === undefined ? {} : { persistence: projectPersistence }),
+  };
 
   return (
     <WorkspacePreferencesProvider {...preferencesProviderProps}>
