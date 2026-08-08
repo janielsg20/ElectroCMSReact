@@ -1,6 +1,6 @@
 # ElectroCMS Production Studio
 
-This document defines the permanent application shell that replaces the previous legacy workspace chrome and the temporary Final Product Demo mode.
+This document defines the permanent ElectroCMS application shell. The temporary Final Product Demo and the previous Studio visual layer have been removed.
 
 ## Status
 
@@ -16,43 +16,52 @@ The permanent shell contains:
 4. Builder Insert Library — generated from the real widget registry.
 5. Real EditorCanvas — canonical canvas, selection, move, insert, history and snapping.
 6. Real WidgetInspector — generated from widget schemas.
-7. Permanent module surfaces — future modules stay visible in the real product shell while their runtime implementations are delivered.
+7. Permanent module surfaces — every product area has a stable place in the shell and receives its runtime implementation as development progresses.
 
 ## Progressive activation
 
-A small red dot means the underlying capability is not fully production-ready yet.
-
-Marker legend:
-- no red dot — the surface is connected to its current production implementation;
-- red dot — the surface, action or widget remains partial/modelled/planned and must not be presented as complete;
-- disabled + red dot — the control is reserved in the permanent UI but has no safe runtime action yet.
+Implementation status is not encoded as decorative dots, warning badges or temporary demo language in the product chrome.
 
 Rules:
-- never hide a planned product module merely because implementation is pending;
-- never report a red-dot capability as complete;
-- remove the dot only when the relevant implementation has a valid quality gate;
-- implemented controls must use the canonical project/session APIs rather than parallel demo state;
-- production surfaces may contain disabled/reserved controls until their application/domain contracts exist.
+- product modules remain visible in their final navigation location;
+- unavailable actions may be disabled until their application/domain contracts exist;
+- implemented controls use canonical project/session APIs rather than parallel UI-only state;
+- enabling a feature must not require redesigning or relocating its navigation surface;
+- development completion remains documented in TRACKING/MEMORY and validated by quality gates, not exposed as visual noise in the editor.
 
 ## Current connected surfaces
 
-- Builder: real EditorCanvas, real widget registry insertion, real WidgetInspector, real project history.
+- Builder: real EditorCanvas, real widget registry insertion, real WidgetInspector and real project history.
 - Themes: real frontend/backend ProjectThemeControls.
 - Header: real document, breakpoint, zoom, undo/redo, theme preferences and local save state.
+- Workspace navigation: real routing, persistence, layout preferences and responsive drawer behavior.
 
-## Current reserved surfaces
+## Visual system
 
-Pages, Content, Queries, Forms, Filters, Media, Roles, Blueprints, full Preview renderer, Backend Builder runtime and Export targets remain permanently visible and carry red-dot implementation markers until their phases are complete.
+The production shell uses Tailwind CSS v4 through the official Vite plugin.
+
+Primary direction:
+- deep navy application rail;
+- cobalt blue primary action and selection color;
+- neutral slate working surfaces;
+- compact professional typography;
+- low-noise borders and restrained elevation;
+- SVG iconography throughout;
+- no decorative status markers for unfinished development.
+
+The direction intentionally resembles mature professional authoring tools rather than a marketing dashboard: strong hierarchy, dense controls, stable spatial zones and a canvas-first workflow.
 
 ## UI/UX rules
 
-The shell follows the ElectroCMS MASTER design system and public UI/UX Pro Max guidance:
+The shell follows the ElectroCMS MASTER design system, the public UI/UX Pro Max skill and the React/shadcn/Tailwind guidance used during implementation:
 - Minimal/Swiss clarity for an enterprise authoring tool;
 - high-density information architecture;
+- Tailwind utilities and design tokens for the product chrome;
 - SVG icons instead of emoji icons;
 - visible hover, active and focus-visible states;
 - WCAG-conscious contrast;
-- touch targets expand on small screens;
+- touch targets and navigation adapt for small screens;
 - responsive layouts considered at 375px, 768px, 1024px and 1440px;
 - prefers-reduced-motion is respected;
-- canvas remains the dominant flexible workspace on desktop.
+- canvas remains the dominant flexible workspace on desktop;
+- no DOM state is allowed to replace the canonical editor model.
