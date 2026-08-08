@@ -1,0 +1,118 @@
+.electrocms-app[data-theme="dark"] {
+  --studio-bg: #151815;
+  --studio-panel: #1c201c;
+  --studio-surface: #222722;
+  --studio-surface-muted: #292e28;
+  --studio-surface-hover: #30362f;
+  --studio-rail: #101310;
+  --studio-rail-hover: #20251f;
+  --studio-rail-active: #2f3829;
+  --studio-text: #f0f2ed;
+  --studio-text-muted: #abb1a7;
+  --studio-text-faint: #7d8579;
+  --studio-border: #343a33;
+  --studio-border-strong: #454c43;
+  --studio-accent: #a1b46b;
+  --studio-accent-soft: #303b28;
+  --studio-shadow: 0 12px 32px rgb(0 0 0 / 28%);
+}
+
+.electrocms-app[data-theme="dark"] .app-header {
+  background: rgb(28 32 28 / 97%);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 3%);
+}
+
+.electrocms-app[data-theme="dark"] .compact-field select,
+.electrocms-app[data-theme="dark"] .segmented-control,
+.electrocms-app[data-theme="dark"] .toolbar-button,
+.electrocms-app[data-theme="dark"] .local-badge,
+.electrocms-app[data-theme="dark"] .studio-module-bar,
+.electrocms-app[data-theme="dark"] .studio-library,
+.electrocms-app[data-theme="dark"] .studio-panel-title,
+.electrocms-app[data-theme="dark"] .studio-search-field,
+.electrocms-app[data-theme="dark"] .studio-context-bar,
+.electrocms-app[data-theme="dark"] .studio-surface-header,
+.electrocms-app[data-theme="dark"] .studio-feature-card,
+.electrocms-app[data-theme="dark"] .studio-readiness-panel,
+.electrocms-app[data-theme="dark"] .studio-export-grid article,
+.electrocms-app[data-theme="dark"] .studio-theme-surface .project-theme-controls,
+.electrocms-app[data-theme="dark"] .studio-preview-layout .project-theme-controls,
+.electrocms-app[data-theme="dark"] .studio-backend-layout .project-theme-controls {
+  color: var(--studio-text);
+  background: var(--studio-surface);
+  border-color: var(--studio-border);
+}
+
+.electrocms-app[data-theme="dark"] .studio-module-bar,
+.electrocms-app[data-theme="dark"] .studio-panel-title,
+.electrocms-app[data-theme="dark"] .studio-context-bar,
+.electrocms-app[data-theme="dark"] .studio-surface-header {
+  background: var(--studio-panel);
+}
+
+.electrocms-app[data-theme="dark"] .studio-widget-tile,
+.electrocms-app[data-theme="dark"] .studio-category-tabs button,
+.electrocms-app[data-theme="dark"] .studio-module-actions button,
+.electrocms-app[data-theme="dark"] .studio-context-actions button,
+.electrocms-app[data-theme="dark"] .studio-secondary-button {
+  color: var(--studio-text-muted);
+  background: var(--studio-surface);
+  border-color: var(--studio-border);
+}
+
+.electrocms-app[data-theme="dark"] .studio-editor-region .editor-canvas-layers {
+  background-color: #181b18;
+  background-image: radial-gradient(#3c433a .65px, transparent .65px);
+}
+
+.electrocms-app[data-theme="dark"] .studio-editor-region .canvas-command-bar,
+.electrocms-app[data-theme="dark"] .studio-editor-region .editor-canvas > div:last-child {
+  background: var(--studio-panel);
+  border-color: var(--studio-border);
+}
+
+.electrocms-app[data-theme="dark"] .studio-browser-frame,
+.electrocms-app[data-theme="dark"] .studio-admin-mock,
+.electrocms-app[data-theme="dark"] .studio-admin-table,
+.electrocms-app[data-theme="dark"] .studio-admin-metrics article {
+  border-color: var(--studio-border);
+  background: var(--studio-surface);
+}
+
+.electrocms-app[data-theme="dark"] .studio-preview-placeholder {
+  background: linear-gradient(#222722, #1b1f1b);
+}
+
+/* Every visible control that is not wired yet carries the same small red implementation marker. */
+.studio-module-actions button,
+.studio-context-actions button {
+  position: relative;
+}
+
+.studio-module-actions button::after,
+.studio-context-actions button::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+  background: var(--studio-danger);
+  box-shadow: 0 0 0 1px rgb(217 45 32 / 14%);
+}
+
+.header-incomplete-action {
+  position: relative;
+}
+
+.header-incomplete-action .studio-pending-dot {
+  margin-left: 1px;
+}
+
+@media (max-width: 720px) {
+  .studio-module-actions button::after,
+  .studio-context-actions button::after {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+  }
+}
