@@ -1,6 +1,6 @@
 import { useMemo, useState, type FocusEvent } from 'react';
 import type { JsonObject, JsonValue } from '../../../core/domain';
-import type { DocumentNode } from '../../../core/project';
+import type { BreakpointDefinition, DocumentNode } from '../../../core/project';
 import {
   formatInspectorFieldValue,
   normalizeInspectorSchema,
@@ -19,9 +19,11 @@ import './widget-inspector.css';
 export interface WidgetInspectorProps {
   node: DocumentNode | null;
   breakpointId?: string;
+  breakpoints?: readonly BreakpointDefinition[];
   onSetProps?: (nodeId: string, patch: JsonObject) => CanvasPropEditResult;
   onSetStyle?: (nodeId: string, key: string, value: JsonValue) => CanvasStyleEditResult;
   onUnsetStyle?: (nodeId: string, key: string) => CanvasStyleEditResult;
+  onInheritStyle?: (nodeId: string, key: string, fromBreakpointId: string) => CanvasStyleEditResult;
 }
 
 interface InspectorFieldControlProps {
@@ -45,12 +47,7 @@ function InspectorFieldControl({ node, field, issue, onCommit }: InspectorFieldC
     return (
       <label className="widget-inspector-field widget-inspector-field--boolean" htmlFor={controlId}>
         <span>{field.label}</span>
-        <input
-          id={controlId}
-          type="checkbox"
-          checked={value === true}
-          onChange={(event) => onCommit(field, event.target.checked)}
-        />
+        <input id={controlId} type="checkbox" checked={value === true} onChange={(event) => onCommit(field, event.target.checked)} />
         {commonDescription}
         {error}
       </label>
@@ -61,14 +58,8 @@ function InspectorFieldControl({ node, field, issue, onCommit }: InspectorFieldC
     return (
       <label className="widget-inspector-field" htmlFor={controlId}>
         <span>{field.label}</span>
-        <select
-          id={controlId}
-          value={typeof value === 'string' ? value : ''}
-          onChange={(event) => onCommit(field, event.target.value)}
-        >
-          {(field.options ?? []).map((option) => (
-            <option key={option.value} value={option.value}>{option.label}</option>
-          ))}
+        <select id={controlId} value={typeof value === 'string' ? value : ''} onChange={(event) => onCommit(field, event.target.value)}>
+          {(field.options ?? []).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
         {commonDescription}
         {error}
@@ -76,22 +67,13 @@ function InspectorFieldControl({ node, field, issue, onCommit }: InspectorFieldC
     );
   }
 
-  const commitBlur = (event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    onCommit(field, event.currentTarget.value);
-  };
+  const commitBlur = (event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => onCommit(field, event.currentTarget.value);
 
   if (field.kind === 'json') {
     return (
       <label className="widget-inspector-field" htmlFor={controlId}>
         <span>{field.label}</span>
-        <textarea
-          key={`${node.id}-${field.key}-${JSON.stringify(value)}`}
-          id={controlId}
-          rows={4}
-          defaultValue={formatInspectorFieldValue(field, value)}
-          placeholder={field.placeholder}
-          onBlur={commitBlur}
-        />
+        <textarea key={`${node.id}-${field.key}-${JSON.stringify(value)}`} id={controlId} rows={4} defaultValue={formatInspectorFieldValue(field, value)} placeholder={field.placeholder} onBlur={commitBlur} />
         {commonDescription}
         {error}
       </label>
@@ -121,35 +103,23 @@ function InspectorFieldControl({ node, field, issue, onCommit }: InspectorFieldC
 export function WidgetInspector({
   node,
   breakpointId = 'desktop',
+  breakpoints = [],
   onSetProps,
   onSetStyle,
   onUnsetStyle,
+  onInheritStyle,
 }: WidgetInspectorProps) {
   const registry = useEditorWidgetRegistry();
   const [issues, setIssues] = useState<Readonly<Record<string, string>>>({});
-  const definition = node && registry.has(node.type, node.version)
-    ? registry.core.resolve(node.type, node.version)
-    : null;
-  const schema = useMemo(
-    () => definition && node ? normalizeInspectorSchema(definition.inspectorSchema, node.props) : { sections: [] },
-    [definition, node],
-  );
+  const definition = node && registry.has(node.type, node.version) ? registry.core.resolve(node.type, node.version) : null;
+  const schema = useMemo(() => definition && node ? normalizeInspectorSchema(definition.inspectorSchema, node.props) : { sections: [] }, [definition, node]);
 
   if (!node) {
-    return (
-      <aside className="widget-inspector" aria-label="Widget inspector" data-state="empty">
-        <div className="widget-inspector-empty">Select one widget to inspect its properties.</div>
-      </aside>
-    );
+    return <aside className="widget-inspector" aria-label="Widget inspector" data-state="empty"><div className="widget-inspector-empty">Select one widget to inspect its properties.</div></aside>;
   }
 
   if (!definition) {
-    return (
-      <aside className="widget-inspector" aria-label="Widget inspector" data-state="unregistered">
-        <header><strong>{node.name ?? node.type}</strong><code>{node.type}</code></header>
-        <div className="widget-inspector-empty">No registered inspector schema is available.</div>
-      </aside>
-    );
+    return <aside className="widget-inspector" aria-label="Widget inspector" data-state="unregistered"><header><strong>{node.name ?? node.type}</strong><code>{node.type}</code></header><div className="widget-inspector-empty">No registered inspector schema is available.</div></aside>;
   }
 
   const commit = (field: InspectorFieldSchema, rawValue: string | boolean) => {
@@ -167,27 +137,17 @@ export function WidgetInspector({
       });
       return;
     }
-    const matchingIssue = editResult.issues.find((candidate: WidgetPropValidationIssue) =>
-      candidate.path === field.key || candidate.path.endsWith(`.${field.key}`),
-    ) ?? editResult.issues[0];
-    setIssues((current) => ({
-      ...current,
-      [field.key]: matchingIssue?.message ?? 'The value could not be applied.',
-    }));
+    const matchingIssue = editResult.issues.find((candidate: WidgetPropValidationIssue) => candidate.path === field.key || candidate.path.endsWith(`.${field.key}`)) ?? editResult.issues[0];
+    setIssues((current) => ({ ...current, [field.key]: matchingIssue?.message ?? 'The value could not be applied.' }));
   };
 
   return (
     <aside className="widget-inspector" aria-label="Widget inspector" data-state="ready">
       <header className="widget-inspector-header">
-        <div>
-          <span className="widget-inspector-eyebrow">{definition.metadata.category}</span>
-          <strong>{node.name ?? definition.metadata.name}</strong>
-        </div>
+        <div><span className="widget-inspector-eyebrow">{definition.metadata.category}</span><strong>{node.name ?? definition.metadata.name}</strong></div>
         <code>{definition.type}@{definition.version}</code>
       </header>
-      <div className="widget-inspector-capability" data-status={definition.capabilities.local}>
-        Local: {definition.capabilities.local}
-      </div>
+      <div className="widget-inspector-capability" data-status={definition.capabilities.local}>Local: {definition.capabilities.local}</div>
       {schema.sections.length > 0 ? (
         <div className="widget-inspector-sections">
           {schema.sections.map((section) => (
@@ -195,27 +155,19 @@ export function WidgetInspector({
               <legend>{section.label}</legend>
               {section.fields.map((field) => {
                 const fieldIssue = issues[field.key];
-                return (
-                  <InspectorFieldControl
-                    key={field.key}
-                    node={node}
-                    field={field}
-                    {...(fieldIssue === undefined ? {} : { issue: fieldIssue })}
-                    onCommit={commit}
-                  />
-                );
+                return <InspectorFieldControl key={field.key} node={node} field={field} {...(fieldIssue === undefined ? {} : { issue: fieldIssue })} onCommit={commit} />;
               })}
             </fieldset>
           ))}
         </div>
-      ) : (
-        <div className="widget-inspector-empty">This widget has no editable properties in its inspector schema.</div>
-      )}
+      ) : <div className="widget-inspector-empty">This widget has no editable properties in its inspector schema.</div>}
       <WidgetStyleInspector
         node={node}
         breakpointId={breakpointId}
+        breakpoints={breakpoints}
         {...(onSetStyle ? { onSetStyle } : {})}
         {...(onUnsetStyle ? { onUnsetStyle } : {})}
+        {...(onInheritStyle ? { onInheritStyle } : {})}
       />
     </aside>
   );
