@@ -286,7 +286,14 @@ export function EditorCanvas({
       <div onClick={stopToolbarPropagation}>
         <WidgetInspector
           node={selectedNodes.length === 1 ? primaryNode : null}
-          {...(actions ? { onSetProps: actions.setProps } : {})}
+          breakpointId={breakpointId}
+          {...(actions
+            ? {
+                onSetProps: actions.setProps,
+                onSetStyle: actions.setStyle,
+                onUnsetStyle: actions.unsetStyle,
+              }
+            : {})}
         />
       </div>
     </section>
