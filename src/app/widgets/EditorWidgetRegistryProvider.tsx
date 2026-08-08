@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { EditorWidgetRegistryContext } from './editor-widget-registry-context';
-import { emptyEditorWidgetRegistry, type EditorWidgetRegistry } from './editor-widget-registry';
+import { defaultEditorWidgetRegistry } from './core-structural-widgets';
+import type { EditorWidgetRegistry } from './editor-widget-registry';
 
 export interface EditorWidgetRegistryProviderProps {
   children: ReactNode;
@@ -9,7 +10,7 @@ export interface EditorWidgetRegistryProviderProps {
 
 export function EditorWidgetRegistryProvider({
   children,
-  registry = emptyEditorWidgetRegistry,
+  registry = defaultEditorWidgetRegistry,
 }: EditorWidgetRegistryProviderProps) {
   return (
     <EditorWidgetRegistryContext.Provider value={registry}>
