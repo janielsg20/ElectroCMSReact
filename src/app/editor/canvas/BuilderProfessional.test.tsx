@@ -37,7 +37,7 @@ describe('professional Builder layers', () => {
     await user.clear(search);
     await user.click(within(layers).getByRole('button', { name: 'Container 1' }));
     await user.click(within(layers).getByRole('button', { name: 'Rename Container 1' }));
-    const renameInput = within(layers).getByLabelText('Rename Container 1');
+    const renameInput = within(layers).getByRole('textbox', { name: 'Layer name for Container 1' });
     await user.clear(renameInput);
     await user.type(renameInput, 'Primary container{Enter}');
     expect(within(layers).getByRole('button', { name: 'Primary container' })).toBeInTheDocument();
