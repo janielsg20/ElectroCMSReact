@@ -212,10 +212,7 @@
 - MF-038 Taxonomy definition/reference integrity/CRUD unit tests.
 - MF-038 Backend multi-CPT taxonomy authoring, hierarchy/flat transition, durable IndexedDB persistence and delete E2E.
 - CPT regression verifies taxonomy association blocks destructive CPT delete.
-- MF-039 registry completeness for all 27 minimum field types.
-- MF-039 per-type config/value validation for text, number, select and map.
-- MF-039 external `plugin/rating` registration/default/validation plus versioned config migration.
-- MF-039 defensive clone and invalid-definition/duplicate regression coverage.
+- MF-039 FieldTypeRegistry built-in completeness/config/value tests, plugin `plugin/rating`, defensive clone and migration coverage.
 - MF-040 field-group validation, CRUD, reorder, duplicate field id/name, modeled-type rejection and taxonomy delete-guard unit tests.
 - MF-040 Backend field-library → ordered schema → inspector authoring E2E with direct IndexedDB persistence checks across reload/update/delete.
 - MF-041 record model/default/required/value validation, CRUD, identity/slug/filter unit coverage.
@@ -241,4 +238,4 @@
 - MF-038 Taxonomy model + editor: run #766 PASS; documentation closure #776 PASS.
 - MF-039 Field type registry: run #786 PASS; documentation closure #800 PASS.
 - MF-040 Custom field groups: functional run #834 PASS; documentation closure #850 PASS.
-- MF-041 Records CRUD: functional run #901 PASS; documentation closure pending.
+- MF-041 Records CRUD: functional run #901 PASS; documentation closure #915 PASS.
