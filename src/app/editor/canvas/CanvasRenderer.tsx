@@ -152,7 +152,13 @@ function CanvasNodeView({
   };
   const childContent =
     children.length > 0 || onMoveNode ? renderChildren() : <div className="canvas-node-leaf" aria-hidden="true" />;
-  const Preview = widgetRegistry.resolvePreview(node.type, node.version);
+  const previewRegistered = widgetRegistry.hasPreview(node.type, node.version);
+  const previewContent = widgetRegistry.renderPreview(node.type, node.version, {
+    node,
+    breakpointId,
+    selected,
+    children: childContent,
+  });
 
   return (
     <article
@@ -168,7 +174,7 @@ function CanvasNodeView({
       data-geometry-y={geometry.y}
       data-geometry-width={geometry.width ?? ''}
       data-geometry-height={geometry.height ?? ''}
-      data-widget-registered={Preview ? 'true' : 'false'}
+      data-widget-registered={previewRegistered ? 'true' : 'false'}
       draggable={Boolean(onMoveNode) && !node.locked}
       onDragStart={onMoveNode ? handleDragStart : undefined}
       onKeyDown={onSelectNode ? handleKeyDown : undefined}
@@ -180,15 +186,7 @@ function CanvasNodeView({
         <span>{nodeLabel(node)}</span>
         <code>{node.type}</code>
       </header>
-      <div className="canvas-node-content">
-        {Preview ? (
-          <Preview node={node} breakpointId={breakpointId} selected={selected}>
-            {childContent}
-          </Preview>
-        ) : (
-          childContent
-        )}
-      </div>
+      <div className="canvas-node-content">{previewContent ?? childContent}</div>
     </article>
   );
 }
