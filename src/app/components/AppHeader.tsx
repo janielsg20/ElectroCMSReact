@@ -19,7 +19,7 @@ const saveLabels = {
 } as const;
 
 const selectClass = 'ec-control h-8 min-w-0 px-2.5 text-[11px] font-semibold';
-const iconButtonClass = 'ec-control ec-focus-ring group inline-grid size-8 shrink-0 place-items-center text-[var(--color-ec-text-muted)] hover:text-[var(--color-ec-text)]';
+const iconButtonClass = 'ec-control ec-focus-ring group inline-grid size-8 shrink-0 place-items-center text-[var(--color-ec-text-muted)] hover:text-[var(--color-ec-text)] max-[720px]:size-11';
 const segmentButtonClass = 'ec-focus-ring group grid size-7 place-items-center rounded-[var(--ec-radius-sm)] text-[var(--color-ec-text-muted)] transition-colors hover:bg-[var(--color-ec-surface-muted)] hover:text-[var(--color-ec-text)] disabled:cursor-not-allowed disabled:opacity-30';
 
 export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, onNavigate }: AppHeaderProps) {
