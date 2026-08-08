@@ -186,7 +186,7 @@ export function EditorCanvas({
       }}
     >
       {actions ? (
-        <div className="canvas-command-bar canvas-command-bar-v2" aria-label="Canvas commands" onClick={stopToolbarPropagation}>
+        <div role="toolbar" className="canvas-command-bar canvas-command-bar-v2" aria-label="Canvas commands" onClick={stopToolbarPropagation}>
           <div className="canvas-command-cluster canvas-command-cluster--insert" aria-label="Insert commands">
             <label className="canvas-insert-control">
               <span className="canvas-command-label">Quick add</span>
