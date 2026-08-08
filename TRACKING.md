@@ -1,13 +1,13 @@
 # TRACKING.md — Estado de ejecución
 
 ## Estado global
-- Estado: CLOSING
-- Fase completada: F03 — Canvas, nodos, DnD e historial
-- Fase actual: F04 — Widgets, inspector, responsive y themes
-- Microfase actual: MF-036 — DONE; cierre documental/CI de fase en curso
-- Último quality gate funcional completo: GitHub Actions run #688 PASS
+- Estado: IN_PROGRESS
+- Fase completada: F04 — Widgets, inspector, responsive y themes
+- Fase actual: F05 — Contenido dinámico
+- Microfase actual: MF-038 — Taxonomy model + editor
+- Último quality gate funcional completo: GitHub Actions run #730 PASS
 - Repositorio oficial: `janielsg20/ElectroCMSReact`
-- PR de fase: #5 `agent/f04-widgets-inspector-themes -> main`
+- PR de fase: #6 `agent/f05-dynamic-content -> main` (draft)
 - Preview deployment: MANUAL ONLY. `vercel.json` usa `git.deploymentEnabled: false`; no desplegar por push/PR.
 
 ## F00
@@ -65,7 +65,19 @@
 | MF-033 | DONE | Breakpoint engine, cadena wider/narrower, herencia desde breakpoint superior y E2E; run #529 PASS |
 | MF-034 | DONE | 10 presets de editor separados de proyecto + DnD con hit areas estables/no rerender durante gesto; run #568 PASS |
 | MF-035 | DONE | Themes frontend/backend separados, 15 built-ins, duplicación editable local, versionado automático y autosave/reload; run #662 PASS |
-| MF-036 | DONE | Paquetes versionados, export/import selectivo, demo data opt-in, merge no destructivo, biblioteca local y round-trip; run #688 PASS |
+| MF-036 | DONE | Paquetes versionados, export/import selectivo, demo data opt-in, merge no destructivo, biblioteca local y round-trip; run #688 PASS; cierre F04 #712 PASS |
+
+## F05
+| Microfase | Estado | Evidencia |
+|---|---|---|
+| MF-037 | DONE | `ContentTypeDefinition` v1, CRUD canónico, unique id/slug, delete guard por records, editor master-detail Backend, autosave/reload/delete E2E; run #730 PASS |
+| MF-038 | IN_PROGRESS | Taxonomy model + editor; no avanzar hasta gate completo verde |
+| MF-039 | BLOCKED | Field type registry |
+| MF-040 | BLOCKED | Custom field groups |
+| MF-041 | BLOCKED | Records CRUD |
+| MF-042 | BLOCKED | Advanced fields |
+| MF-043 | BLOCKED | Relations |
+| MF-044 | BLOCKED | Dynamic bindings |
 
 ## Design system del editor
 - Fuente de verdad: `design-system/electrocms-editor/MASTER.md`.
@@ -73,40 +85,35 @@
 - Referencias externas seleccionadas: `ui-ux-pro-max`, `design-system` y `ui-styling` de `nextlevelbuilder/ui-ux-pro-max-skill`.
 - Arquetipo: productivity tool + design-system tooling + data-dense SaaS.
 - Base visual: Minimal/Flat + Data-Dense + Accessible, con micro-interacciones funcionales.
-- El editor debe sentirse como un no-code builder profesional: header global, canvas dominante, navegación/paleta lateral y inspector contextual.
-- El DnD usa hit areas estables y cambios de pintura transitorios; no re-renderizar React en medio de un gesto nativo.
+- El editor debe sentirse como un no-code builder profesional: header global, canvas dominante, navegación/paleta lateral e inspector/context panels.
+- Los editores de modelos dinámicos en Backend usan master-detail denso, validación inline y no dependen de modales para tareas rutinarias.
 - No forzar migración a Tailwind/shadcn; adaptar las reglas al React/CSS actual salvo que una fase futura justifique explícitamente esa migración.
 
-## Sistema de themes F04
-- Editor theme mode (`light`/`dark`/`auto`) y editor theme preset viven en workspace preferences, nunca en el proyecto exportado.
-- `frontendThemeId` y `backendThemeId` viven en `CanonicalProject` y se guardan por autosave.
-- `ProjectThemeRegistry` es framework-neutral y valida scope, id, versión y tokens JSON portables.
-- Built-ins actuales: 8 frontend + 7 backend; son inmutables.
-- `Duplicate to edit` crea copies locales collision-safe; cada edición incrementa la versión.
-- Los themes importados/duplicados viven en `electrocms:project-theme-packages:v1`, separados de `CanonicalProject`; el proyecto referencia solo su ID activo.
-- Formato exportable: `kind=electrocms-theme-package`, `schemaVersion=1`, máximo 256 KB.
-- Export/import puede incluir recursos seleccionados del proyecto.
-- Demo data está desactivada por defecto.
-- Importar es un proceso de validar → revisar → aplicar; elegir el archivo no muta el proyecto.
-- Merge de recursos es no destructivo: los IDs existentes se preservan y se reportan como conflictos saltados.
-- Usuarios, credenciales y binarios de media no forman parte del paquete F04.
+## Contenido dinámico F05
+- `CanonicalProject.contentTypes` sigue siendo la única fuente persistente de CPTs; no existe store paralelo.
+- `ContentTypeDefinition.version = 1` y se serializa como JSON portable dentro de `contentTypes`.
+- IDs son kebab-case e inmutables después de crear; slugs son únicos y editables.
+- Delete de CPT se bloquea si `project.records` contiene referencias por `contentTypeId` o `contentType`.
+- `ProjectSession` ejecuta mutations core sobre `projectRef.current` y encola autosave.
+- UI Backend de CPT es master-detail responsive: listado compacto + configuración contextual, soportes, flags Public/Hierarchical y delete de dos pasos.
+- Tests de persistencia que dependen de IndexedDB deben comprobar el estado durable real antes de reload; un texto `Saved locally` no sustituye esa verificación.
 
 ## Invariantes consolidadas
 - El DOM nunca es fuente de verdad; el canvas es una proyección de `CanonicalDocument`.
 - Los widgets se resuelven por `type@version` mediante registries explícitos.
 - El editor core no contiene branching por cada tipo de widget.
 - Factories producen `DocumentNode` canónicos y las props se validan antes de aceptar el nodo.
-- Inserción de widgets estructurales usa el registry; Container y Group ya no dependen de factories locales paralelas.
-- Widgets dinámicos/commerce/form/filter de F04 permanecen `modeled` hasta que F05/F06 implementen comportamiento real.
+- Widgets dinámicos/commerce/form/filter de F04 permanecen `modeled` hasta que su microfase F05/F06 implemente comportamiento real.
 - Inspector UI es transitorio; solo los patches de props validados entran al modelo mediante comandos reversibles.
-- Selección, clipboard UI, guides y estado de interacción son transitorios y no entran al proyecto.
 - Undo/Redo usa comandos canónicos reversibles por documento.
 - Geometría usa `ResponsiveStyleSet` por breakpoint.
 - Autosave reutiliza repositorios F01 y no reemplaza contenido nuevo con callbacks stale.
+- Mutaciones de proyecto compartidas leen `projectRef.current` para evitar closures stale entre workspaces/acciones rápidas.
 - Editor theme/preset vive en workspace preferences; frontend/backend theme IDs viven en `CanonicalProject`.
 - Imported theme library es local al editor; solo IDs seleccionados entran al proyecto.
 - Theme resource merge nunca sobrescribe IDs existentes.
+- Content model CRUD muta exclusivamente las colecciones canónicas existentes (`contentTypes`, luego taxonomies/fieldGroups/records según su MF), nunca clones de dominio paralelos.
 - Los deployments de preview son manuales y solo se ejecutan bajo petición explícita del usuario.
 
 ## Regla de salida
-F04 solo puede marcarse como fase completada/mergeada cuando el cierre documental y cualquier higiene final vuelvan a pasar el gate completo. No avanzar a F05 con ningún gate rojo.
+Cada microfase F05 debe actualizar tracking/memory/handoff y pasar `verify:repo`, lint, TypeScript, unit, coverage, Playwright E2E y build antes de avanzar. No iniciar MF-039 mientras MF-038 tenga un gate rojo.
