@@ -7,6 +7,7 @@ import {
 } from '../../../core/project';
 import type { EditorWidgetRegistry } from '../../widgets/editor-widget-registry';
 import { useEditorWidgetRegistry } from '../../widgets/editor-widget-registry-context';
+import { resolveCanvasNodeStyle } from './canvas-node-style';
 
 const NODE_MIME = 'application/x-electrocms-node-id';
 type MoveNodeHandler = (nodeId: string, parentId: string, index: number) => boolean;
@@ -127,7 +128,9 @@ function CanvasNodeView({
 
   const selected = selectedNodeIds.has(node.id);
   const geometry = readNodeGeometry(node, breakpointId);
-  const geometryStyle: CSSProperties = {
+  const visualStyle = resolveCanvasNodeStyle(node, breakpointId);
+  const nodeStyle: CSSProperties = {
+    ...visualStyle,
     ...(geometry.x === 0 && geometry.y === 0
       ? {}
       : { transform: `translate(${geometry.x}px, ${geometry.y}px)` }),
@@ -163,7 +166,7 @@ function CanvasNodeView({
   return (
     <article
       className="canvas-node"
-      style={geometryStyle}
+      style={nodeStyle}
       data-canvas-node-id={node.id}
       data-canvas-node-type={node.type}
       data-depth={depth}
