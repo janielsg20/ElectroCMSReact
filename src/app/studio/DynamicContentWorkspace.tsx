@@ -33,7 +33,12 @@ const resources: readonly ResourceDefinition[] = [
 ];
 
 function asDisplayName(id: string, value: JsonObject): string {
-  const candidates: JsonValue[] = [value.name, value.label, value.title, value.slug];
+  const candidates: JsonValue[] = [
+    value.name ?? null,
+    value.label ?? null,
+    value.title ?? null,
+    value.slug ?? null,
+  ];
   const found = candidates.find((candidate) => typeof candidate === 'string' && candidate.trim().length > 0);
   return typeof found === 'string' ? found : id;
 }
@@ -73,7 +78,7 @@ export function DynamicContentWorkspace({ initialResource = 'content-types' }: D
     return session.project.queries;
   }, [resource, session.project]);
 
-  const definition = resources.find((candidate) => candidate.id === resource) ?? resources[0];
+  const definition = resources.find((candidate) => candidate.id === resource) ?? resources[0]!;
   const entries = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     return Object.entries(source)
@@ -82,7 +87,10 @@ export function DynamicContentWorkspace({ initialResource = 'content-types' }: D
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [query, source]);
 
-  const selected = selectedId && source[selectedId] ? { id: selectedId, value: source[selectedId], name: asDisplayName(selectedId, source[selectedId]) } : entries[0] ?? null;
+  const selectedValue = selectedId ? source[selectedId] : undefined;
+  const selected = selectedId && selectedValue
+    ? { id: selectedId, value: selectedValue, name: asDisplayName(selectedId, selectedValue) }
+    : entries[0] ?? null;
 
   return (
     <section className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-ec-app)]" aria-label="Dynamic Content Studio">
