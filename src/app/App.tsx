@@ -47,6 +47,7 @@ function EditorApplicationShell() {
   const { preferences, setLastWorkspace } = useWorkspacePreferences();
   const resolvedTheme = useResolvedEditorTheme(preferences.editorThemeMode);
   const activeWorkspace: WorkspaceId = route.workspaceId ?? preferences.lastWorkspace;
+  const activeEditorModule = route.editorModuleId ?? 'builder';
   const compactLayout = useCompactStudioLayout();
   const [navigationOpen, setNavigationOpen] = useState(false);
 
@@ -87,10 +88,12 @@ function EditorApplicationShell() {
       />
       <ProductionStudio
         workspaceId={activeWorkspace}
+        editorModuleId={activeEditorModule}
         compactLayout={compactLayout}
         navigationOpen={compactLayout && navigationOpen}
         onCloseNavigation={() => setNavigationOpen(false)}
         onNavigate={navigate}
+        onNavigateEditorModule={route.navigateEditorModule}
       />
     </div>
   );
