@@ -1,0 +1,127 @@
+.electrocms-app[data-editor-preset="high-density"] {
+  --preset-radius: 5px;
+  --preset-panel-gap: 6px;
+  --preset-control-height: 28px;
+  --preset-panel-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+}
+
+.electrocms-app[data-editor-preset="bento-grid"] {
+  --preset-radius: 12px;
+  --preset-panel-gap: 8px;
+  --preset-control-height: 30px;
+  --preset-panel-shadow: 0 12px 34px rgb(0 0 0 / 0.14);
+}
+
+.electrocms-app[data-editor-preset="minimal-clean"] {
+  --preset-radius: 7px;
+  --preset-panel-gap: 10px;
+  --preset-control-height: 30px;
+  --preset-panel-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="material-expressive"] {
+  --preset-radius: 16px;
+  --preset-panel-gap: 8px;
+  --preset-control-height: 34px;
+  --preset-panel-shadow: 0 12px 28px rgb(0 0 0 / 0.16);
+}
+
+.electrocms-app[data-editor-preset="saas-dashboard"] {
+  --preset-radius: 8px;
+  --preset-panel-gap: 6px;
+  --preset-control-height: 28px;
+  --preset-panel-shadow: 0 9px 25px rgb(0 0 0 / 0.13);
+}
+
+.electrocms-app[data-editor-preset="enterprise-corporate"] {
+  --preset-radius: 3px;
+  --preset-panel-gap: 5px;
+  --preset-control-height: 28px;
+  --preset-panel-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+}
+
+.electrocms-app[data-editor-preset="glassmorphism"] {
+  --preset-radius: 14px;
+  --preset-panel-gap: 8px;
+  --preset-control-height: 30px;
+  --preset-panel-shadow: 0 18px 42px rgb(0 0 0 / 0.18);
+}
+
+.electrocms-app[data-editor-preset="sophisticated-dark"] {
+  --preset-radius: 8px;
+  --preset-panel-gap: 7px;
+  --preset-control-height: 29px;
+  --preset-panel-shadow: 0 18px 36px rgb(0 0 0 / 0.28);
+}
+
+.electrocms-app[data-editor-preset="monochrome-pro"] {
+  --preset-radius: 4px;
+  --preset-panel-gap: 6px;
+  --preset-control-height: 28px;
+  --preset-panel-shadow: 0 8px 20px rgb(0 0 0 / 0.14);
+}
+
+.electrocms-app[data-editor-preset="developer-console"] {
+  --preset-radius: 3px;
+  --preset-panel-gap: 4px;
+  --preset-control-height: 27px;
+  --preset-panel-shadow: 0 8px 24px rgb(0 0 0 / 0.22);
+}
+
+.electrocms-app[data-editor-preset] .app-header,
+.electrocms-app[data-editor-preset] .workspace-navigation,
+.electrocms-app[data-editor-preset] .widget-inspector,
+.electrocms-app[data-editor-preset] .stage-document,
+.electrocms-app[data-editor-preset] .canvas-command-bar {
+  border-radius: var(--preset-radius);
+  box-shadow: var(--preset-panel-shadow);
+}
+
+.electrocms-app[data-editor-preset] button,
+.electrocms-app[data-editor-preset] select,
+.electrocms-app[data-editor-preset] input:not([type="checkbox"]) {
+  min-height: var(--preset-control-height);
+}
+
+.electrocms-app[data-editor-preset="bento-grid"] .workspace-surface,
+.electrocms-app[data-editor-preset="bento-grid"] .editor-canvas,
+.electrocms-app[data-editor-preset="saas-dashboard"] .workspace-surface {
+  gap: var(--preset-panel-gap);
+}
+
+.electrocms-app[data-editor-preset="minimal-clean"] .stage-document,
+.electrocms-app[data-editor-preset="minimal-clean"] .widget-inspector,
+.electrocms-app[data-editor-preset="minimal-clean"] .canvas-command-bar {
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="glassmorphism"] .app-header,
+.electrocms-app[data-editor-preset="glassmorphism"] .workspace-navigation,
+.electrocms-app[data-editor-preset="glassmorphism"] .widget-inspector {
+  background: color-mix(in srgb, var(--surface-raised) 78%, transparent);
+  backdrop-filter: blur(18px) saturate(1.15);
+}
+
+.electrocms-app[data-editor-preset="sophisticated-dark"][data-theme="light"] {
+  --surface: #15171c;
+  --surface-raised: #1b1e25;
+  --surface-subtle: #20242c;
+  --text: #d8dde7;
+  --text-strong: #f7f8fb;
+  --text-muted: #9ea6b5;
+  --text-faint: #70798a;
+  --border: #323744;
+  --border-subtle: #272c36;
+  --border-strong: #454c5b;
+}
+
+.electrocms-app[data-editor-preset="monochrome-pro"] {
+  filter: saturate(0.12);
+}
+
+.electrocms-app[data-editor-preset="developer-console"] .project-name,
+.electrocms-app[data-editor-preset="developer-console"] .surface-eyebrow,
+.electrocms-app[data-editor-preset="developer-console"] code,
+.electrocms-app[data-editor-preset="developer-console"] .widget-inspector {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
