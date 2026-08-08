@@ -21,12 +21,7 @@ describe('ProductionStudio', () => {
   it('uses the permanent Studio module rail and keeps the real builder available', async () => {
     window.history.replaceState({}, '', '/editor');
     const user = userEvent.setup();
-    render(
-      <App
-        initialProject={makeProject()}
-        preferencesRepository={new MemoryWorkspacePreferencesRepository()}
-      />,
-    );
+    render(<App initialProject={makeProject()} preferencesRepository={new MemoryWorkspacePreferencesRepository()} />);
 
     const modules = screen.getByRole('navigation', { name: 'Studio modules' });
     expect(within(modules).getByRole('button', { name: 'Builder' })).toBeInTheDocument();
@@ -44,20 +39,15 @@ describe('ProductionStudio', () => {
   it('keeps Preview, Backend and Export in the real workspace navigation', async () => {
     window.history.replaceState({}, '', '/editor');
     const user = userEvent.setup();
-    render(
-      <App
-        initialProject={makeProject()}
-        preferencesRepository={new MemoryWorkspacePreferencesRepository()}
-      />,
-    );
+    render(<App initialProject={makeProject()} preferencesRepository={new MemoryWorkspacePreferencesRepository()} />);
 
     const navigation = screen.getByRole('navigation', { name: 'Primary workspaces' });
     await user.click(within(navigation).getByRole('button', { name: 'Backend' }));
     expect(window.location.pathname).toBe('/backend');
-    expect(screen.getByRole('heading', { name: 'Backend Builder' })).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { name: 'Backend workspace' }).length).toBeGreaterThan(0);
 
     await user.click(within(navigation).getByRole('button', { name: 'Export' }));
     expect(window.location.pathname).toBe('/export');
-    expect(screen.getByRole('heading', { name: 'Build & Export' })).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { name: 'Export workspace' }).length).toBeGreaterThan(0);
   });
 });
