@@ -1,24 +1,37 @@
 # UI-07 Status
 
-Status: **IN_PROGRESS**
+Status: **DONE pending final documented-HEAD gate and merge**
 
 Scope: Themes / Blueprints / Settings.
 
-Implemented so far:
+Implemented:
 - Created `GlobalSystemsWorkspace` as the consolidated project-wide systems surface.
-- Themes tab preserves the existing real `ProjectThemeControls` for frontend and backend themes, including package duplication, token editing and import/export behavior already implemented.
-- Blueprints tab introduces the final professional catalog structure without claiming an application engine; Apply remains disabled until a validated blueprint contract exists.
-- Project tab reads canonical project metadata, document/breakpoint counts and active project theme ids.
-- Storage tab reads existing ProjectSession save state and canonical history metadata; persistence remains owned by the existing ProjectSession/persistence adapter.
-- Editor tab uses existing workspace preference setters for editor theme mode, density and editor preset.
-- No parallel settings, theme, blueprint or persistence state has been introduced.
+- Integrated the Studio into the permanent Themes, Blueprints and Settings module navigation.
+- Themes opens the real frontend/backend `ProjectThemeControls`, preserving package duplication, token editing and import/export behavior already implemented.
+- Blueprints exposes the professional project-starter catalog without claiming a runtime that does not exist; every Apply action remains disabled until a validated canonical blueprint application contract exists.
+- Settings opens canonical Project metadata by default and provides Storage and Editor preference views through the same Studio.
+- Project reads canonical project name/id/schema, document and breakpoint counts, and active frontend/backend theme ids.
+- Storage reads the real ProjectSession save state and canonical history metadata; persistence remains owned by ProjectSession and its persistence adapter.
+- Editor uses the existing workspace preference setters for theme mode, density and editor preset.
+- The editor “System” option correctly persists the canonical `auto` value rather than inventing a `system` preference value.
+- Added unit coverage for Themes, Blueprints and Settings navigation, canonical project data, disabled blueprint application and real editor preference mutations.
+- No parallel settings, theme, blueprint or persistence state was introduced.
 
-Still required before DONE:
-- Integrate Global Systems Studio into Themes / Blueprints / Settings module navigation.
-- Add tests for real Theme controls and workspace preference mutations through the new consolidated surface.
-- Responsive/density review.
-- Full quality gate and regression fixes.
-- Durable memory update and final documented-HEAD gate.
-- Merge only after green gate.
+Validation history:
+- Quality Gate #1171 stopped at TypeScript because UI initially used `system` while the canonical `EditorThemeMode` contract is `light | dark | auto`.
+- Corrected the UI to display “System” while persisting `auto`.
+- Corrected implementation validation: Quality Gate #1172 PASS.
+  - verify:repo ✅
+  - lint ✅
+  - TypeScript ✅
+  - unit ✅
+  - coverage ✅
+  - production build ✅
+  - Playwright ✅
 
-Do not advance to UI-08 until UI-07 is green and merged.
+Still required before merge:
+- Update durable UI redesign memory.
+- Run the full final quality gate on the exact documented HEAD.
+- Merge only after that gate is green.
+
+Next after merge: **UI-08 — Preview / Publish / Final Polish**.
