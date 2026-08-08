@@ -144,3 +144,28 @@
 **Decision:** custom-field type behavior is described by `FieldTypeDefinition` contracts and resolved through `FieldTypeRegistry` by `type@version`. Definitions own portable config/value validation, default-value factories, feature capability states and one-step config migrations. React components and project field instances are not stored in the registry.
 
 **Why:** the master contract requires new field types to be addable through registries/adapters. Keeping the registry React-free lets Custom Field Groups, Records, exporters and plugins share one field-type contract without type switches or UI coupling. Advanced types can be registered honestly as `modeled` until MF-042/MF-043 activate their runtime behavior.
+
+## ADR-030 — Custom field groups persist only in CanonicalProject
+**Decision:** `FieldGroupDefinition` and `CustomFieldDefinition` are versioned portable JSON stored exclusively in `CanonicalProject.fieldGroups`.
+
+**Why:** one canonical source of truth preserves local-first persistence, exportability and deterministic validation. Registry callbacks, React components and duplicated field-type definitions must never enter project data.
+
+## ADR-031 — Field-group instances resolve behavior through FieldTypeRegistry
+**Decision:** each custom field persists `type + typeVersion`; type-specific config/default validation is delegated to `FieldTypeRegistry`. MF-040 refuses instances of registry definitions whose availability is `modeled`.
+
+**Why:** Custom Field Groups, Records and future exporters need one extensible field contract. Hardcoded per-type switches in group CRUD would duplicate validation and break plugin extensibility.
+
+## ADR-032 — Custom field order is canonical array order
+**Decision:** `FieldGroupDefinition.fields[]` is the persisted field order and reorder operations update that array directly.
+
+**Why:** a separate ordering store would create a second source of truth and complicate records/export/migrations.
+
+## ADR-033 — Field-group deletion protects known references
+**Decision:** a field group cannot be deleted while any taxonomy references its ID through `fieldGroupIds`.
+
+**Why:** content-model edits must not silently orphan references. Future known references should receive explicit guards rather than implicit destructive cascades.
+
+## ADR-034 — Visual editor uses an Insert Library + canvas + inspector anatomy
+**Decision:** the primary ElectroCMS visual editor follows the interaction anatomy of professional page builders: top command bar, left **Insert / Elements Library**, dominant central canvas and right contextual inspector. The library is a first-class insertion surface with search/categories, recognizable icon+label discovery, click-to-insert and drag-to-canvas when supported; it may evolve into Elements/Layers/Templates modes.
+
+**Why:** this supports fast no-code authoring and makes element discovery/insertion spatially predictable. Tools such as Elementor are an interaction-model reference only: ElectroCMS keeps original identity, terminology, assets, architecture, code and visual composition. Backend list/edit tasks may use dense master-detail layouts, but the visual editor must not become a generic dashboard of cards.
