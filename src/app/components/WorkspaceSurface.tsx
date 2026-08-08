@@ -41,6 +41,7 @@ export function WorkspaceSurface({ workspaceId }: WorkspaceSurfaceProps) {
         <EditorCanvas
           document={document}
           breakpointId={session.activeBreakpointId}
+          breakpoints={session.project.breakpoints}
           viewportWidth={breakpoint.width}
           zoom={session.zoom}
           actions={canvasActions}
@@ -61,26 +62,12 @@ export function WorkspaceSurface({ workspaceId }: WorkspaceSurfaceProps) {
               <p className="stage-kicker">Active project context</p>
               <h2>{session.project.name}</h2>
               <dl className="stage-facts">
-                <div>
-                  <dt>Document</dt>
-                  <dd>{document?.name ?? 'None'}</dd>
-                </div>
-                <div>
-                  <dt>Viewport</dt>
-                  <dd>{breakpoint ? `${breakpoint.width}px` : '—'}</dd>
-                </div>
-                <div>
-                  <dt>Zoom</dt>
-                  <dd>{session.zoom}%</dd>
-                </div>
-                <div>
-                  <dt>Storage</dt>
-                  <dd>Local-first</dd>
-                </div>
+                <div><dt>Document</dt><dd>{document?.name ?? 'None'}</dd></div>
+                <div><dt>Viewport</dt><dd>{breakpoint ? `${breakpoint.width}px` : '—'}</dd></div>
+                <div><dt>Zoom</dt><dd>{session.zoom}%</dd></div>
+                <div><dt>Storage</dt><dd>Local-first</dd></div>
               </dl>
-              <p className="stage-boundary-note">
-                This workspace remains a shell until its dedicated renderer is implemented.
-              </p>
+              <p className="stage-boundary-note">This workspace remains a shell until its dedicated renderer is implemented.</p>
             </div>
           </article>
         </section>
