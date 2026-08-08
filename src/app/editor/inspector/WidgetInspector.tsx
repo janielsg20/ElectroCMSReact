@@ -177,13 +177,18 @@ export function WidgetInspector({
             {schema.sections.length > 0 ? (
               <div className="widget-inspector-sections">
                 {schema.sections.map((section) => (
-                  <fieldset key={section.id} className="widget-inspector-section">
-                    <legend>{section.label}</legend>
-                    {section.fields.map((field) => {
-                      const fieldIssue = issues[field.key];
-                      return <InspectorFieldControl key={field.key} node={node} field={field} {...(fieldIssue === undefined ? {} : { issue: fieldIssue })} onCommit={commit} />;
-                    })}
-                  </fieldset>
+                  <details key={`${node.id}-${section.id}`} className="widget-inspector-section widget-inspector-disclosure" open={undefined}>
+                    <summary>
+                      <span>{section.label}</span>
+                      <span className="widget-inspector-disclosure-icon" aria-hidden="true">⌄</span>
+                    </summary>
+                    <div className="widget-inspector-section-fields">
+                      {section.fields.map((field) => {
+                        const fieldIssue = issues[field.key];
+                        return <InspectorFieldControl key={field.key} node={node} field={field} {...(fieldIssue === undefined ? {} : { issue: fieldIssue })} onCommit={commit} />;
+                      })}
+                    </div>
+                  </details>
                 ))}
               </div>
             ) : <div className="widget-inspector-empty">This element has no editable content properties.</div>}
