@@ -1,0 +1,31 @@
+.widget-style-row {
+  display: grid;
+  gap: 4px;
+}
+
+.widget-style-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.widget-style-actions button {
+  min-height: 22px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-muted);
+  background: var(--surface-subtle);
+  font-size: 8.5px;
+  cursor: pointer;
+}
+
+.widget-style-actions button:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  color: var(--text-strong);
+}
+
+.widget-style-actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
