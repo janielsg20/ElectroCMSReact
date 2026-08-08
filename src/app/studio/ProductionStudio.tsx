@@ -89,10 +89,11 @@ function StudioRail({ compactLayout, workspaceId, activeModule, settingsOpen, on
   onClose(): void;
 }) {
   const { preferences, setNavigationPosition, setNavigationWidth, setNavigationCollapsed, setNavigationDisplayMode, moveWorkspace, setDensity, reset } = useWorkspacePreferences();
-  const collapsed = !compactLayout && preferences.navigationCollapsed;
+  const forcedDesktopRail = !compactLayout;
+  const collapsed = forcedDesktopRail || preferences.navigationCollapsed;
   const displayMode = collapsed ? 'icons' : preferences.navigationDisplayMode;
-  const showLabels = displayMode !== 'icons';
-  const showIcons = displayMode !== 'labels';
+  const showLabels = compactLayout && displayMode !== 'icons';
+  const showIcons = true;
   const railButtonClass = 'ec-focus-ring group relative flex h-9 w-full items-center gap-2 rounded-[var(--ec-radius-md)] px-2 text-left text-[11px] font-medium text-white/55 transition-colors hover:bg-white/[.06] hover:text-white data-[active=true]:bg-[var(--color-ec-accent-soft)] data-[active=true]:text-[var(--color-ec-accent)]';
 
   const handleResizeStart = (event: PointerEvent<HTMLDivElement>) => {
@@ -128,33 +129,34 @@ function StudioRail({ compactLayout, workspaceId, activeModule, settingsOpen, on
       data-collapsed={collapsed ? 'true' : 'false'}
       data-display-mode={displayMode}
       data-navigation-width={preferences.navigationWidth}
+      data-reference-rail={forcedDesktopRail ? 'true' : 'false'}
       style={!compactLayout && !collapsed ? { width: preferences.navigationWidth } : undefined}
     >
-      <div className="mb-2 flex h-10 items-center justify-between gap-2 px-1">
+      <div className="mb-2 flex h-10 items-center justify-center gap-2 px-1">
         <div className="flex min-w-0 items-center gap-2">
-          <div className="grid size-8 shrink-0 place-items-center rounded-[var(--ec-radius-md)] bg-[var(--color-ec-chrome-raised)] text-[var(--color-ec-accent)] ring-1 ring-white/[.07]"><Icon name="bolt" size={16} /></div>
+          <div className="studio-rail-brand grid size-8 shrink-0 place-items-center rounded-[var(--ec-radius-md)] bg-[var(--color-ec-chrome-raised)] text-[var(--color-ec-accent)] ring-1 ring-white/[.07]"><Icon name="bolt" size={16} /></div>
           {showLabels ? <div className="min-w-0"><strong className="block truncate text-[12px] font-semibold tracking-[-.01em] text-white">ElectroCMS</strong><span className="block text-[8px] font-semibold uppercase tracking-[.18em] text-white/35">Workspace</span></div> : null}
         </div>
-        <button className="ec-focus-ring grid size-8 shrink-0 place-items-center rounded-[var(--ec-radius-md)] text-white/35 transition-colors hover:bg-white/[.06] hover:text-white" type="button" aria-label={compactLayout ? 'Close navigation' : collapsed ? 'Expand navigation' : 'Collapse navigation'} onClick={compactLayout ? onClose : () => setNavigationCollapsed(!collapsed)}><Icon name={compactLayout ? 'close' : collapsed ? 'expand' : 'collapse'} size={15} /></button>
+        {compactLayout ? <button className="ec-focus-ring grid size-8 shrink-0 place-items-center rounded-[var(--ec-radius-md)] text-white/35 transition-colors hover:bg-white/[.06] hover:text-white" type="button" aria-label="Close navigation" onClick={onClose}><Icon name="close" size={15} /></button> : null}
       </div>
 
       <nav className="space-y-1" aria-label="Primary workspaces">
         {preferences.workspaceOrder.map((workspaceIdFromOrder) => {
           const workspace = primaryWorkspaces.find((item) => item.id === workspaceIdFromOrder);
           if (!workspace) return null;
-          return <button key={workspace.id} type="button" className={railButtonClass} data-active={workspaceId === workspace.id ? 'true' : 'false'} aria-label={workspace.label} title={workspace.label} onClick={() => { onNavigate(workspace.id); if (compactLayout) onClose(); }}>{workspaceId === workspace.id ? <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-[var(--color-ec-accent)]" aria-hidden="true" /> : null}{showIcons ? <span className="grid size-6 shrink-0 place-items-center"><Icon name={workspace.icon} size={15} /></span> : null}{showLabels ? <span className="min-w-0 flex-1 truncate">{workspace.label}</span> : null}</button>;
+          return <button key={workspace.id} type="button" className={railButtonClass} data-active={workspaceId === workspace.id ? 'true' : 'false'} aria-label={workspace.label} title={workspace.label} onClick={() => { onNavigate(workspace.id); if (compactLayout) onClose(); }}>{workspaceId === workspace.id ? <span className="studio-rail-active-mark absolute inset-y-2 left-0 w-0.5 rounded-full bg-[var(--color-ec-accent)]" aria-hidden="true" /> : null}{showIcons ? <span className="studio-rail-icon grid size-6 shrink-0 place-items-center"><Icon name={workspace.icon} size={15} /></span> : null}{showLabels ? <span className="min-w-0 flex-1 truncate">{workspace.label}</span> : null}</button>;
         })}
       </nav>
 
       <div className="my-2 h-px bg-white/[.06]" />
       {showLabels ? <span className="mb-1 px-2 text-[8px] font-semibold uppercase tracking-[.18em] text-white/25">Create</span> : null}
       <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-0.5 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,.12)_transparent]" aria-label="Studio modules">
-        {modules.map((module) => <button key={module.id} type="button" className={railButtonClass} data-active={workspaceId === 'editor' && activeModule === module.id ? 'true' : 'false'} aria-label={module.label} title={module.label} onClick={() => { onSelectModule(module.id); if (compactLayout) onClose(); }}>{workspaceId === 'editor' && activeModule === module.id ? <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-[var(--color-ec-accent)]" aria-hidden="true" /> : null}{showIcons ? <span className="grid size-6 shrink-0 place-items-center"><Icon name={module.icon} size={15} /></span> : null}{showLabels ? <span className="min-w-0 flex-1 truncate">{module.label}</span> : null}</button>)}
+        {modules.map((module) => <button key={module.id} type="button" className={railButtonClass} data-active={workspaceId === 'editor' && activeModule === module.id ? 'true' : 'false'} aria-label={module.label} title={module.label} onClick={() => { onSelectModule(module.id); if (compactLayout) onClose(); }}>{workspaceId === 'editor' && activeModule === module.id ? <span className="studio-rail-active-mark absolute inset-y-2 left-0 w-0.5 rounded-full bg-[var(--color-ec-accent)]" aria-hidden="true" /> : null}{showIcons ? <span className="studio-rail-icon grid size-6 shrink-0 place-items-center"><Icon name={module.icon} size={15} /></span> : null}{showLabels ? <span className="min-w-0 flex-1 truncate">{module.label}</span> : null}</button>)}
       </nav>
 
       <details className="group/settings relative mt-2 border-t border-white/[.06] pt-2" open={settingsOpen} onToggle={(event) => onSettingsOpenChange(event.currentTarget.open)}>
-        <summary className="ec-focus-ring flex h-9 cursor-pointer list-none items-center gap-2 rounded-[var(--ec-radius-md)] px-2 text-[10px] font-medium text-white/40 transition-colors hover:bg-white/[.06] hover:text-white [&::-webkit-details-marker]:hidden"><span className="grid size-6 place-items-center"><Icon name="settings" size={14} /></span>{showLabels ? <span>Workspace settings</span> : <span className="sr-only">Workspace settings</span>}</summary>
-        <div className={`absolute bottom-0 z-50 w-[264px] rounded-[var(--ec-radius-lg)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] p-3 text-[var(--color-ec-text)] shadow-[var(--ec-shadow-float)] ${preferences.navigationPosition === 'right' ? 'right-full mr-2' : 'left-full ml-2'}`}>
+        <summary className="ec-focus-ring flex h-9 cursor-pointer list-none items-center justify-center gap-2 rounded-[var(--ec-radius-md)] px-2 text-[10px] font-medium text-white/40 transition-colors hover:bg-white/[.06] hover:text-white [&::-webkit-details-marker]:hidden"><span className="studio-rail-icon grid size-6 place-items-center"><Icon name="settings" size={14} /></span>{showLabels ? <span>Workspace settings</span> : <span className="sr-only">Workspace settings</span>}</summary>
+        <div className={`workspace-settings-popover absolute bottom-0 z-50 w-[264px] rounded-[var(--ec-radius-lg)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] p-3 text-[var(--color-ec-text)] shadow-[var(--ec-shadow-float)] ${preferences.navigationPosition === 'right' ? 'right-full mr-2' : 'left-full ml-2'}`}>
           <div className="mb-3"><strong className="text-[11px]">Layout preferences</strong><p className="mt-0.5 text-[9px] leading-4 text-[var(--color-ec-text-muted)]">Customize the editor chrome without changing project data.</p></div>
           <div className="grid grid-cols-2 gap-2">
             <label className="text-[9px] font-medium text-[var(--color-ec-text-muted)]"><span className="mb-1 block">Position</span><select className="ec-control h-8 w-full px-2 text-[10px]" aria-label="Navigation position" value={preferences.navigationPosition} onChange={(event) => setNavigationPosition(event.target.value as 'left' | 'right')}><option value="left">Left</option><option value="right">Right</option></select></label>
@@ -173,6 +175,8 @@ function StudioRail({ compactLayout, workspaceId, activeModule, settingsOpen, on
 
 function WidgetLibrary({ onInsert }: { onInsert(definition: WidgetDefinition): void }) {
   const registry = useEditorWidgetRegistry();
+  const session = useProjectSession();
+  const [panelTab, setPanelTab] = useState<'pages' | 'components'>('pages');
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const definitions = useMemo(() => registry.core.listLatest(), [registry]);
@@ -181,13 +185,61 @@ function WidgetLibrary({ onInsert }: { onInsert(definition: WidgetDefinition): v
     const query = search.trim().toLowerCase();
     return (activeCategory === 'all' || definition.metadata.category === activeCategory) && (!query || `${definition.metadata.name} ${definition.metadata.description} ${definition.type}`.toLowerCase().includes(query));
   });
+  const activeDocument = session.project.documents[session.activeDocumentId];
+
+  const renderTreeNode = (nodeId: string, depth = 0): ReactNode => {
+    const node = activeDocument?.nodes[nodeId];
+    if (!node) return null;
+    return (
+      <li key={nodeId} role="treeitem" aria-level={depth + 1} className="builder-tree-item">
+        <div className="builder-tree-row" style={{ paddingLeft: `${Math.min(depth, 7) * 14 + 8}px` }}>
+          <Icon name={node.children.length > 0 ? 'layers' : 'blocks'} size={12} />
+          <span className="min-w-0 flex-1 truncate">{node.name}</span>
+          <small>{node.type.split('/').pop()}</small>
+        </div>
+        {node.children.length > 0 ? <ul role="group">{node.children.map((childId) => renderTreeNode(childId, depth + 1))}</ul> : null}
+      </li>
+    );
+  };
 
   return (
-    <aside className="studio-library flex min-h-0 w-[264px] shrink-0 flex-col border-r border-[var(--color-ec-border)] bg-[var(--color-ec-surface)]" aria-label="Insert library">
-      <div className="flex h-12 items-center justify-between border-b border-[var(--color-ec-border)] px-3"><div><span className="block text-[8px] font-semibold uppercase tracking-[.18em] text-[var(--color-ec-text-muted)]">Library</span><strong className="text-[11px] font-semibold text-[var(--color-ec-text)]">Elements</strong></div><span className="grid size-7 place-items-center rounded-[var(--ec-radius-md)] bg-[var(--color-ec-accent-soft)] text-[var(--color-ec-accent)]"><Icon name="blocks" size={14} /></span></div>
-      <div className="p-2.5"><label className="ec-control flex h-9 items-center gap-2 px-2.5 text-[var(--color-ec-text-muted)] focus-within:border-[var(--color-ec-accent)] focus-within:shadow-[var(--ec-focus-ring)]"><Icon name="search" size={13} /><input className="min-w-0 flex-1 bg-transparent text-[10px] text-[var(--color-ec-text)] outline-none placeholder:text-[var(--color-ec-text-muted)]" aria-label="Search elements" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search elements" /></label></div>
-      <div className="flex gap-1 overflow-x-auto border-b border-[var(--color-ec-border)] px-2.5 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Element categories"><button className="ec-focus-ring h-7 shrink-0 rounded-[var(--ec-radius-sm)] px-2 text-[9px] font-semibold text-[var(--color-ec-text-muted)] hover:bg-[var(--color-ec-surface-muted)] data-[active=true]:bg-[var(--color-ec-accent-soft)] data-[active=true]:text-[var(--color-ec-accent)]" type="button" data-active={activeCategory === 'all'} onClick={() => setActiveCategory('all')}>All</button>{categories.map((category) => <button className="ec-focus-ring h-7 shrink-0 rounded-[var(--ec-radius-sm)] px-2 text-[9px] font-semibold text-[var(--color-ec-text-muted)] hover:bg-[var(--color-ec-surface-muted)] data-[active=true]:bg-[var(--color-ec-accent-soft)] data-[active=true]:text-[var(--color-ec-accent)]" key={category} type="button" data-active={activeCategory === category} onClick={() => setActiveCategory(category)}>{categoryLabels[category] ?? category}</button>)}</div>
-      <div className="min-h-0 flex-1 overflow-y-auto p-2.5 [scrollbar-width:thin]">{categories.map((category) => { const group = visible.filter((definition) => definition.metadata.category === category); if (group.length === 0) return null; return <section className="mb-4" key={category}><div className="mb-1.5 flex items-center justify-between px-0.5 text-[8px] font-semibold uppercase tracking-[.14em] text-[var(--color-ec-text-muted)]"><span className="flex items-center gap-1.5"><Icon name={categoryIcons[category] ?? 'blocks'} size={11} />{categoryLabels[category] ?? category}</span><small className="font-medium tabular-nums">{group.length}</small></div><div className="grid grid-cols-2 gap-1.5">{group.map((definition) => <button key={`${definition.type}@${definition.version}`} type="button" className="ec-focus-ring group flex min-h-16 flex-col items-start justify-between rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] p-2 text-left transition-[border-color,background-color,transform] hover:-translate-y-px hover:border-[var(--color-ec-accent)] hover:bg-[var(--color-ec-surface-subtle)]" aria-label={`Add ${definition.metadata.name} from element library`} title={`${definition.metadata.name} — ${definition.metadata.description}`} onClick={() => onInsert(definition)}><span className="grid size-7 place-items-center rounded-[var(--ec-radius-sm)] bg-[var(--color-ec-surface-muted)] text-[var(--color-ec-text-muted)] transition-colors group-hover:bg-[var(--color-ec-accent-soft)] group-hover:text-[var(--color-ec-accent)]"><Icon name={categoryIcons[definition.metadata.category] ?? 'blocks'} size={13} /></span><span className="mt-2 line-clamp-1 text-[9px] font-semibold text-[var(--color-ec-text)]">{definition.metadata.name}</span></button>)}</div></section>; })}{visible.length === 0 ? <div className="grid min-h-36 place-items-center rounded-[var(--ec-radius-lg)] border border-dashed border-[var(--color-ec-border)] bg-[var(--color-ec-surface-subtle)] p-5 text-center"><div><span className="mx-auto mb-2 grid size-9 place-items-center rounded-full bg-[var(--color-ec-surface)] text-[var(--color-ec-text-muted)] shadow-sm"><Icon name="search" size={16} /></span><strong className="block text-[10px] text-[var(--color-ec-text)]">No elements found</strong><span className="mt-1 block text-[9px] text-[var(--color-ec-text-muted)]">Try another search or category.</span></div></div> : null}</div>
+    <aside className="studio-library builder-context-panel flex min-h-0 w-[264px] shrink-0 flex-col border-r border-[var(--color-ec-border)] bg-[var(--color-ec-surface)]" aria-label="Builder navigator">
+      <div className="builder-context-tabs grid grid-cols-2 border-b border-[var(--color-ec-border)] p-2" role="tablist" aria-label="Builder navigator views">
+        <button className="ec-focus-ring" type="button" role="tab" aria-selected={panelTab === 'pages'} data-active={panelTab === 'pages' ? 'true' : 'false'} onClick={() => setPanelTab('pages')}><Icon name="pages" size={12} />Pages</button>
+        <button className="ec-focus-ring" type="button" role="tab" aria-selected={panelTab === 'components'} data-active={panelTab === 'components' ? 'true' : 'false'} onClick={() => setPanelTab('components')}><Icon name="blocks" size={12} />Components</button>
+      </div>
+
+      {panelTab === 'pages' ? (
+        <div className="builder-pages-panel min-h-0 flex-1 overflow-y-auto [scrollbar-width:thin]">
+          <section className="builder-pages-section">
+            <header><strong>Pages</strong><span>{session.project.documentOrder.length}</span></header>
+            <div className="builder-page-list">
+              {session.project.documentOrder.map((documentId) => {
+                const document = session.project.documents[documentId];
+                if (!document) return null;
+                return (
+                  <button key={document.id} type="button" className="builder-page-row ec-focus-ring" data-active={document.id === session.activeDocumentId ? 'true' : 'false'} onClick={() => session.setActiveDocumentId(document.id)}>
+                    <Icon name={document.kind === 'page' ? 'pages' : 'layers'} size={13} />
+                    <span className="min-w-0 flex-1 truncate">{document.name}</span>
+                    <span className="builder-page-more" aria-hidden="true">•••</span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="builder-pages-section builder-tree-section">
+            <header><strong>Widget Tree</strong><span>{activeDocument ? Object.keys(activeDocument.nodes).length : 0}</span></header>
+            {activeDocument ? <ul className="builder-widget-tree" role="tree" aria-label="Current document widget tree">{renderTreeNode(activeDocument.rootNodeId)}</ul> : <p className="builder-context-empty">No active document.</p>}
+          </section>
+        </div>
+      ) : (
+        <div className="builder-components-panel flex min-h-0 flex-1 flex-col">
+          <div className="p-2.5"><label className="ec-control flex h-9 items-center gap-2 px-2.5 text-[var(--color-ec-text-muted)] focus-within:border-[var(--color-ec-accent)] focus-within:shadow-[var(--ec-focus-ring)]"><Icon name="search" size={13} /><input className="min-w-0 flex-1 bg-transparent text-[10px] text-[var(--color-ec-text)] outline-none placeholder:text-[var(--color-ec-text-muted)]" aria-label="Search elements" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search components" /></label></div>
+          <div className="flex gap-1 overflow-x-auto border-b border-[var(--color-ec-border)] px-2.5 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Element categories"><button className="ec-focus-ring h-7 shrink-0 rounded-[var(--ec-radius-sm)] px-2 text-[9px] font-semibold text-[var(--color-ec-text-muted)] hover:bg-[var(--color-ec-surface-muted)] data-[active=true]:bg-[var(--color-ec-accent-soft)] data-[active=true]:text-[var(--color-ec-accent)]" type="button" data-active={activeCategory === 'all'} onClick={() => setActiveCategory('all')}>All</button>{categories.map((category) => <button className="ec-focus-ring h-7 shrink-0 rounded-[var(--ec-radius-sm)] px-2 text-[9px] font-semibold text-[var(--color-ec-text-muted)] hover:bg-[var(--color-ec-surface-muted)] data-[active=true]:bg-[var(--color-ec-accent-soft)] data-[active=true]:text-[var(--color-ec-accent)]" key={category} type="button" data-active={activeCategory === category} onClick={() => setActiveCategory(category)}>{categoryLabels[category] ?? category}</button>)}</div>
+          <div className="min-h-0 flex-1 overflow-y-auto p-2.5 [scrollbar-width:thin]">{categories.map((category) => { const group = visible.filter((definition) => definition.metadata.category === category); if (group.length === 0) return null; return <section className="mb-4" key={category}><div className="mb-1.5 flex items-center justify-between px-0.5 text-[8px] font-semibold uppercase tracking-[.14em] text-[var(--color-ec-text-muted)]"><span className="flex items-center gap-1.5"><Icon name={categoryIcons[category] ?? 'blocks'} size={11} />{categoryLabels[category] ?? category}</span><small className="font-medium tabular-nums">{group.length}</small></div><div className="grid grid-cols-2 gap-1.5">{group.map((definition) => <button key={`${definition.type}@${definition.version}`} type="button" className="ec-focus-ring group flex min-h-16 flex-col items-start justify-between rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] p-2 text-left transition-[border-color,background-color,transform] hover:-translate-y-px hover:border-[var(--color-ec-accent)] hover:bg-[var(--color-ec-surface-subtle)]" aria-label={`Add ${definition.metadata.name} from element library`} title={`${definition.metadata.name} — ${definition.metadata.description}`} onClick={() => onInsert(definition)}><span className="grid size-7 place-items-center rounded-[var(--ec-radius-sm)] bg-[var(--color-ec-surface-muted)] text-[var(--color-ec-text-muted)] transition-colors group-hover:bg-[var(--color-ec-accent-soft)] group-hover:text-[var(--color-ec-accent)]"><Icon name={categoryIcons[definition.metadata.category] ?? 'blocks'} size={13} /></span><span className="mt-2 line-clamp-1 text-[9px] font-semibold text-[var(--color-ec-text)]">{definition.metadata.name}</span></button>)}</div></section>; })}{visible.length === 0 ? <div className="grid min-h-36 place-items-center rounded-[var(--ec-radius-lg)] border border-dashed border-[var(--color-ec-border)] bg-[var(--color-ec-surface-subtle)] p-5 text-center"><div><span className="mx-auto mb-2 grid size-9 place-items-center rounded-full bg-[var(--color-ec-surface)] text-[var(--color-ec-text-muted)] shadow-sm"><Icon name="search" size={16} /></span><strong className="block text-[10px] text-[var(--color-ec-text)]">No components found</strong><span className="mt-1 block text-[9px] text-[var(--color-ec-text-muted)]">Try another search or category.</span></div></div> : null}</div>
+        </div>
+      )}
     </aside>
   );
 }
@@ -198,7 +250,7 @@ function BuilderWorkspace() {
   const document = session.project.documents[session.activeDocumentId];
   const breakpoint = session.project.breakpoints.find((candidate) => candidate.id === session.activeBreakpointId);
   if (!document || !breakpoint) return <div className="grid min-h-0 flex-1 place-items-center bg-[var(--color-ec-app)] p-6"><div className="max-w-sm text-center"><Icon name="editor" size={19} /><strong className="mt-3 block text-[12px] font-semibold text-[var(--color-ec-text)]">No active document</strong><p className="mt-1 text-[10px] leading-5 text-[var(--color-ec-text-muted)]">Create or select a document to start building.</p></div></div>;
-  return <div className="studio-builder-workspace flex min-h-0 flex-1 overflow-hidden"><WidgetLibrary onInsert={(definition) => actions.insertWidget(definition.type)} /><div className="studio-editor-region flex min-w-0 flex-1 flex-col bg-[var(--color-ec-app)]"><div className="flex h-10 shrink-0 items-center border-b border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] px-3"><div className="flex min-w-0 items-center gap-1.5 text-[9px] text-[var(--color-ec-text-muted)]"><span className="truncate">{document.name}</span><span>/</span><strong className="font-semibold text-[var(--color-ec-text)]">Canvas</strong></div></div><EditorCanvas document={document} breakpointId={session.activeBreakpointId} breakpoints={session.project.breakpoints} viewportWidth={breakpoint.width} zoom={session.zoom} actions={actions} /></div></div>;
+  return <div className="studio-builder-workspace reference-builder-workspace flex min-h-0 flex-1 overflow-hidden"><WidgetLibrary onInsert={(definition) => actions.insertWidget(definition.type)} /><div className="studio-editor-region flex min-w-0 flex-1 flex-col bg-[var(--color-ec-app)]"><div className="builder-document-bar flex h-10 shrink-0 items-center justify-between border-b border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] px-3"><div className="flex min-w-0 items-center gap-1.5 text-[9px] text-[var(--color-ec-text-muted)]"><span className="truncate">{document.name}</span><span>/</span><strong className="font-semibold text-[var(--color-ec-text)]">Canvas</strong></div><span className="builder-viewport-summary">{breakpoint.label} · {breakpoint.width}px</span></div><EditorCanvas document={document} breakpointId={session.activeBreakpointId} breakpoints={session.project.breakpoints} viewportWidth={breakpoint.width} zoom={session.zoom} actions={actions} /></div></div>;
 }
 
 function EditorModuleWorkspace({ module, onOpenBuilder }: { module: EditorModuleId; onOpenBuilder(): void }) {
@@ -220,7 +272,7 @@ export function ProductionStudio({ workspaceId, editorModuleId, compactLayout, n
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const activeDefinition = modules.find((module) => module.id === editorModuleId) ?? modules[0];
-  const collapsed = !compactLayout && preferences.navigationCollapsed;
+  const collapsed = !compactLayout || preferences.navigationCollapsed;
   const selectModule = (moduleId: EditorModuleId) => onNavigateEditorModule(moduleId);
 
   let content: ReactNode;
@@ -236,12 +288,12 @@ export function ProductionStudio({ workspaceId, editorModuleId, compactLayout, n
     <main className="production-studio flex min-h-0 flex-1 overflow-hidden bg-[var(--color-ec-app)] text-[var(--color-ec-text)]" id="workspace-main" tabIndex={-1} data-workspace={workspaceId} data-editor-module={editorModuleId} data-compact={compactLayout ? 'true' : 'false'} data-navigation-position={preferences.navigationPosition} data-navigation-collapsed={collapsed ? 'true' : 'false'}>
       <h1 className="sr-only">{workspaceLabel} workspace</h1>
       {!compactLayout && preferences.navigationPosition === 'left' ? rail : null}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex h-10 shrink-0 items-center justify-between gap-3 border-b border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] px-3"><div className="flex min-w-0 items-center gap-2"><span className="text-[8px] font-semibold uppercase tracking-[.18em] text-[var(--color-ec-text-muted)]">{workspaceId === 'editor' ? 'Studio' : 'Workspace'}</span><span className="h-3 w-px bg-[var(--color-ec-border)]" /><strong className="truncate text-[10px] font-semibold text-[var(--color-ec-text)]">{workspaceId === 'editor' ? activeDefinition?.label ?? 'Builder' : workspaceLabel}</strong></div><button type="button" className={`${quietButton} hidden md:inline-flex`} aria-label="Open command palette" title="Command palette · Ctrl/⌘ K" onClick={() => setCommandOpen(true)}><Icon name="command" size={12} />Commands</button></div>
+      <div className="production-studio-main flex min-w-0 flex-1 flex-col">
+        <div className="studio-context-bar flex h-10 shrink-0 items-center justify-between gap-3 border-b border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] px-3"><div className="flex min-w-0 items-center gap-2"><span className="text-[8px] font-semibold uppercase tracking-[.18em] text-[var(--color-ec-text-muted)]">{workspaceId === 'editor' ? 'Studio' : 'Workspace'}</span><span className="h-3 w-px bg-[var(--color-ec-border)]" /><strong className="truncate text-[10px] font-semibold text-[var(--color-ec-text)]">{workspaceId === 'editor' ? activeDefinition?.label ?? 'Builder' : workspaceLabel}</strong></div><button type="button" className={`${quietButton} hidden md:inline-flex`} aria-label="Open command palette" title="Command palette · Ctrl/⌘ K" onClick={() => setCommandOpen(true)}><Icon name="command" size={12} />Commands</button></div>
         <div className="flex min-h-0 flex-1">{content}</div>
       </div>
       {!compactLayout && preferences.navigationPosition === 'right' ? rail : null}
-      {compactLayout && navigationOpen ? <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px]" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) onCloseNavigation(); }}><div className="h-full w-[min(86vw,260px)] shadow-2xl" role="dialog" aria-modal="true" aria-label="Workspace navigation">{rail}</div></div> : null}
+      {compactLayout && navigationOpen ? <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px]" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) onCloseNavigation(); }}><div className="h-full w-[min(86vw,280px)] shadow-2xl" role="dialog" aria-modal="true" aria-label="Workspace navigation">{rail}</div></div> : null}
       <StudioCommandPalette open={commandOpen} onOpenChange={setCommandOpen} onNavigate={onNavigate} onSelectModule={selectModule} />
     </main>
   );
