@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   createContentType as createCanonicalContentType,
+  createTaxonomy as createCanonicalTaxonomy,
   removeContentType as removeCanonicalContentType,
+  removeTaxonomy as removeCanonicalTaxonomy,
   updateContentType as updateCanonicalContentType,
+  updateTaxonomy as updateCanonicalTaxonomy,
 } from '../../core/content';
 import {
   createCanonicalProject,
@@ -35,6 +38,7 @@ import {
   type ProjectSaveState,
   type ProjectSessionState,
   type ProjectThemeResourceApplyResult,
+  type TaxonomySessionMutationResult,
 } from './project-session-context';
 
 function createDefaultSessionProject(): CanonicalProject {
@@ -305,6 +309,50 @@ export function ProjectSessionProvider({
     [commitProject, queueAutosave],
   );
 
+  const createTaxonomy = useCallback(
+    (input: unknown): TaxonomySessionMutationResult => {
+      const result = createCanonicalTaxonomy(projectRef.current, input);
+      if (!result.ok) {
+        return { ok: false, code: result.error.code, message: result.error.message };
+      }
+      commitProject(result.project);
+      queueAutosave(result.project);
+      return { ok: true, value: result.value, changed: true };
+    },
+    [commitProject, queueAutosave],
+  );
+
+  const updateTaxonomy = useCallback(
+    (id: string, input: unknown): TaxonomySessionMutationResult => {
+      const result = updateCanonicalTaxonomy(projectRef.current, id, input);
+      if (!result.ok) {
+        return { ok: false, code: result.error.code, message: result.error.message };
+      }
+      const before = projectRef.current.taxonomies[id];
+      const after = result.project.taxonomies[id];
+      const changed = JSON.stringify(before) !== JSON.stringify(after);
+      if (changed) {
+        commitProject(result.project);
+        queueAutosave(result.project);
+      }
+      return { ok: true, value: result.value, changed };
+    },
+    [commitProject, queueAutosave],
+  );
+
+  const removeTaxonomy = useCallback(
+    (id: string): TaxonomySessionMutationResult => {
+      const result = removeCanonicalTaxonomy(projectRef.current, id);
+      if (!result.ok) {
+        return { ok: false, code: result.error.code, message: result.error.message };
+      }
+      commitProject(result.project);
+      queueAutosave(result.project);
+      return { ok: true, value: result.value, changed: true };
+    },
+    [commitProject, queueAutosave],
+  );
+
   const executeDocumentCommand = useCallback(
     (command: DocumentCommand): boolean => {
       const currentProject = projectRef.current;
@@ -380,6 +428,9 @@ export function ProjectSessionProvider({
       createContentType,
       updateContentType,
       removeContentType,
+      createTaxonomy,
+      updateTaxonomy,
+      removeTaxonomy,
       executeDocumentCommand,
       undo,
       redo,
@@ -391,10 +442,12 @@ export function ProjectSessionProvider({
       canRedo,
       canUndo,
       createContentType,
+      createTaxonomy,
       executeDocumentCommand,
       project,
       redo,
       removeContentType,
+      removeTaxonomy,
       saveState,
       setActiveBreakpointId,
       setActiveDocumentId,
@@ -402,6 +455,7 @@ export function ProjectSessionProvider({
       setZoom,
       undo,
       updateContentType,
+      updateTaxonomy,
       zoom,
     ],
   );
