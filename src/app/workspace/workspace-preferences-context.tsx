@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import type { WorkspaceId } from '../routing/workspaces';
-import type { EditorThemePresetId } from './editor-theme-presets';
 import {
   BrowserWorkspacePreferencesRepository,
   type WorkspacePreferencesRepository,
@@ -8,10 +7,7 @@ import {
 import {
   clampNavigationWidth,
   createDefaultWorkspacePreferences,
-  type EditorThemeMode,
-  type NavigationDisplayMode,
   type NavigationPosition,
-  type WorkspaceDensity,
   type WorkspacePreferences,
 } from './workspace-preferences';
 import { WorkspacePreferencesContext, type WorkspacePreferencesState } from './workspace-preferences-store';
@@ -54,10 +50,6 @@ export function WorkspacePreferencesProvider({
     (navigationCollapsed: boolean) => commit((current) => ({ ...current, navigationCollapsed })),
     [commit],
   );
-  const setNavigationDisplayMode = useCallback(
-    (navigationDisplayMode: NavigationDisplayMode) => commit((current) => ({ ...current, navigationDisplayMode })),
-    [commit],
-  );
   const moveWorkspace = useCallback(
     (workspaceId: WorkspaceId, direction: -1 | 1) => {
       commit((current) => {
@@ -73,10 +65,10 @@ export function WorkspacePreferencesProvider({
     },
     [commit],
   );
-  const setDensity = useCallback((density: WorkspaceDensity) => commit((current) => ({ ...current, density })), [commit]);
-  const setLastWorkspace = useCallback((lastWorkspace: WorkspaceId) => commit((current) => ({ ...current, lastWorkspace })), [commit]);
-  const setEditorThemeMode = useCallback((editorThemeMode: EditorThemeMode) => commit((current) => ({ ...current, editorThemeMode })), [commit]);
-  const setEditorThemePresetId = useCallback((editorThemePresetId: EditorThemePresetId) => commit((current) => ({ ...current, editorThemePresetId })), [commit]);
+  const setLastWorkspace = useCallback(
+    (lastWorkspace: WorkspaceId) => commit((current) => ({ ...current, lastWorkspace })),
+    [commit],
+  );
   const reset = useCallback(() => {
     const defaults = createDefaultWorkspacePreferences();
     repository.save(defaults);
@@ -89,24 +81,16 @@ export function WorkspacePreferencesProvider({
       setNavigationPosition,
       setNavigationWidth,
       setNavigationCollapsed,
-      setNavigationDisplayMode,
       moveWorkspace,
-      setDensity,
       setLastWorkspace,
-      setEditorThemeMode,
-      setEditorThemePresetId,
       reset,
     }),
     [
       moveWorkspace,
       preferences,
       reset,
-      setDensity,
-      setEditorThemeMode,
-      setEditorThemePresetId,
       setLastWorkspace,
       setNavigationCollapsed,
-      setNavigationDisplayMode,
       setNavigationPosition,
       setNavigationWidth,
     ],
