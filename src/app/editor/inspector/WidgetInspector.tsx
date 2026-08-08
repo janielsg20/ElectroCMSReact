@@ -121,7 +121,8 @@ export function WidgetInspector({
         <div className="widget-inspector-empty widget-inspector-empty-v2">
           <span className="widget-inspector-empty-mark" aria-hidden="true">+</span>
           <strong>Nothing selected</strong>
-          <span>Select a single element on the canvas to edit its content and appearance.</span>
+          <span>Select one widget to inspect its properties.</span>
+          <small>Select a single element on the canvas to edit its content and appearance.</small>
         </div>
       </aside>
     );
