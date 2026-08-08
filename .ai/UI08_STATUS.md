@@ -1,6 +1,6 @@
 # UI-08 Status
 
-Status: **DONE pending final documented-HEAD gate and merge**
+Status: **DONE — MERGED**
 
 Scope: Preview / Publish / Final Polish.
 
@@ -30,6 +30,7 @@ Validation history:
 - Quality Gate #1178 passed lint/TypeScript and stopped at Unit because the test queried two legitimate Export controls ambiguously. The test was scoped to the header CTA without changing product behavior.
 - Corrected implementation validation: Quality Gate #1179 PASS.
 - Final accessibility/E2E audit validation: Quality Gate #1181 PASS.
+- Final documented-HEAD validation: Quality Gate #1183 PASS.
   - verify:repo ✅
   - lint ✅
   - TypeScript ✅
@@ -38,9 +39,8 @@ Validation history:
   - production build ✅
   - Playwright ✅
 
-Still required before merge:
-- Update durable UI redesign memory to completed state.
-- Run one full quality gate on the exact documented HEAD.
-- Merge PR #22 only if that gate is green.
+Merge:
+- PR #22 merged into `main`.
+- Squash merge SHA: `95d0dc79206af1aa623b2ac37e47599391b2d9d7`.
 
-After merge: **UI/UX redesign phases UI-01 through UI-08 are complete.**
+Result: **UI/UX redesign phases UI-01 through UI-08 are complete. There is no UI-09.**
