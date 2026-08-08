@@ -1,10 +1,5 @@
 /* UI-02 finishing overrides kept separate from canonical canvas styles. */
 
-/* The real Layers control now lives in EditorCanvas and is wired to canonical selection. */
-.studio-builder-workspace .studio-editor-region > div:first-child > div:last-child {
-  display: none !important;
-}
-
 /* Readable high-density Builder typography. */
 .editor-canvas-v2 .canvas-command-label,
 .editor-canvas-v2 .canvas-insert-control,
