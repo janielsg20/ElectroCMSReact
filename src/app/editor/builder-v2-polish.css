@@ -52,3 +52,11 @@
     height: 152px;
   }
 }
+
+@media (max-width: 620px) {
+  /* Keep selection commands reachable on touch devices; the command bar is
+   * horizontally scrollable, so hiding the whole cluster is unnecessary. */
+  .editor-canvas-v2 .canvas-command-cluster--selection {
+    display: flex;
+  }
+}
