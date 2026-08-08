@@ -32,11 +32,16 @@ export function EditorCanvas({
   const clearSelection = selection.clearSelection;
   const [clipboard, setClipboard] = useState<DocumentClipboardPayload | null>(null);
   const [guides, setGuides] = useState<readonly SnapGuide[]>([]);
-  const structuralWidgets = useMemo(
+  const insertableWidgets = useMemo(
     () =>
       widgetRegistry.core
         .listLatest()
-        .filter((definition) => definition.metadata.category === 'structural'),
+        .filter((definition) => ['structural', 'basic', 'content'].includes(definition.metadata.category))
+        .sort((left, right) => {
+          const categoryOrder = ['structural', 'basic', 'content'];
+          const categoryDelta = categoryOrder.indexOf(left.metadata.category) - categoryOrder.indexOf(right.metadata.category);
+          return categoryDelta || left.metadata.name.localeCompare(right.metadata.name);
+        }),
     [widgetRegistry],
   );
   const [insertWidgetType, setInsertWidgetType] = useState('core/section');
@@ -161,9 +166,9 @@ export function EditorCanvas({
               value={insertWidgetType}
               onChange={(event) => setInsertWidgetType(event.target.value)}
             >
-              {structuralWidgets.map((definition) => (
+              {insertableWidgets.map((definition) => (
                 <option key={definition.type} value={definition.type}>
-                  {definition.metadata.name}
+                  {definition.metadata.category} · {definition.metadata.name}
                 </option>
               ))}
             </select>
@@ -251,38 +256,10 @@ export function EditorCanvas({
                   onChange={(event) => numericGeometryChange('height', event.target.value)}
                 />
               </label>
-              <button
-                type="button"
-                aria-label="Nudge left"
-                disabled={!canEditGeometry}
-                onClick={() => applyGeometry({ x: primaryGeometry.x - 8 })}
-              >
-                ←
-              </button>
-              <button
-                type="button"
-                aria-label="Nudge right"
-                disabled={!canEditGeometry}
-                onClick={() => applyGeometry({ x: primaryGeometry.x + 8 })}
-              >
-                →
-              </button>
-              <button
-                type="button"
-                aria-label="Nudge up"
-                disabled={!canEditGeometry}
-                onClick={() => applyGeometry({ y: primaryGeometry.y - 8 })}
-              >
-                ↑
-              </button>
-              <button
-                type="button"
-                aria-label="Nudge down"
-                disabled={!canEditGeometry}
-                onClick={() => applyGeometry({ y: primaryGeometry.y + 8 })}
-              >
-                ↓
-              </button>
+              <button type="button" aria-label="Nudge left" disabled={!canEditGeometry} onClick={() => applyGeometry({ x: primaryGeometry.x - 8 })}>←</button>
+              <button type="button" aria-label="Nudge right" disabled={!canEditGeometry} onClick={() => applyGeometry({ x: primaryGeometry.x + 8 })}>→</button>
+              <button type="button" aria-label="Nudge up" disabled={!canEditGeometry} onClick={() => applyGeometry({ y: primaryGeometry.y - 8 })}>↑</button>
+              <button type="button" aria-label="Nudge down" disabled={!canEditGeometry} onClick={() => applyGeometry({ y: primaryGeometry.y + 8 })}>↓</button>
             </div>
           ) : null}
         </div>
