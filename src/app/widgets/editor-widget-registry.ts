@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from 'react';
+import { createElement, type ComponentType, type ReactNode } from 'react';
 import type { DocumentNode } from '../../core/project';
 import { WidgetRegistry, type WidgetDefinition, type WidgetNodeFactoryContext } from '../../core/widgets';
 
@@ -40,13 +40,18 @@ export class EditorWidgetRegistry {
     return this.core.has(type, version);
   }
 
+  hasPreview(type: string, version: number): boolean {
+    return this.core.has(type, version) && this.previews.has(previewKey(type, version));
+  }
+
   createNode(type: string, context: WidgetNodeFactoryContext, version?: number): DocumentNode {
     return this.core.createNode(type, context, version);
   }
 
-  resolvePreview(type: string, version: number): WidgetPreviewComponent | null {
+  renderPreview(type: string, version: number, props: WidgetPreviewProps): ReactNode | null {
     if (!this.core.has(type, version)) return null;
-    return this.previews.get(previewKey(type, version)) ?? null;
+    const Preview = this.previews.get(previewKey(type, version));
+    return Preview ? createElement(Preview, props) : null;
   }
 }
 
