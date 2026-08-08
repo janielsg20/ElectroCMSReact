@@ -15,19 +15,24 @@ Completar widgets, inspector, responsive y themes mediante slices pequeñas y ve
 - MF-032 — Style engine — DONE — run #505 PASS
 - MF-033 — Breakpoint engine — DONE — run #529 PASS
 - MF-034 — Editor theme presets — DONE — run #568 PASS
-- MF-035 — Frontend/backend theme system — DONE — run #600 PASS
-- MF-036 — Theme packages import/export — DONE — run #622 PASS
+- MF-035 — Frontend/backend theme system — DONE — run #662 PASS
+- MF-036 — Theme packages import/export — DONE — run #688 PASS
 
 ## Resultados durables
 - Widget registry framework-neutral por `type@version` + binding React separado.
-- 45 built-in widget contracts en F04: 10 structural, 16 basic/content y 19 dynamic/commerce/form/filter `modeled`.
+- 45 built-in widget contracts: 10 structural, 16 basic/content y 19 dynamic/commerce/form/filter `modeled`.
 - Inspector generado desde schema con validación y Undo/Redo real.
 - Style engine y breakpoint inheritance sobre `ResponsiveStyleSet`, sin almacenamiento paralelo.
-- DnD no-code reforzado con hit areas estables y feedback transitorio sin rerender durante gesto nativo.
+- DnD no-code con hit areas estables y feedback transitorio sin rerender React durante gesto nativo.
 - 10 presets visuales del editor separados del proyecto.
 - `ProjectThemeRegistry` con 8 themes frontend + 7 backend.
+- Built-ins inmutables; duplicación local editable y versionado automático.
 - Frontend/backend theme selection independiente y autosave real.
-- Theme package schema v1, 256 KB, portable JSON validation, local import library y export.
+- Theme package schema v1, 256 KB, portable JSON validation y biblioteca local.
+- Export/import selectivo por Pages/Templates, Content Models, Query Tools, Roles/Backend y Demo Data.
+- Demo Data opt-in y desactivada por defecto.
+- Import en dos pasos: validate/review → apply.
+- Merge no destructivo: IDs existentes se preservan y reportan, nunca se sobrescriben.
 - Editor design system persistido en `design-system/electrocms-editor/`.
 - Auto-deploy Vercel desactivado; deployment solo manual.
 
@@ -36,10 +41,7 @@ Antes de modificar UI del editor, leer:
 1. `design-system/electrocms-editor/MASTER.md`
 2. `design-system/electrocms-editor/pages/editor.md` cuando se trabaje en el workspace visual.
 
-El estándar adapta principios relevantes del repo público `nextlevelbuilder/ui-ux-pro-max-skill`, especialmente:
-- `ui-ux-pro-max`
-- `design-system`
-- `ui-styling`
+El estándar adapta principios relevantes del repo público `nextlevelbuilder/ui-ux-pro-max-skill`, especialmente `ui-ux-pro-max`, `design-system` y `ui-styling`.
 
 No se debe forzar una migración a Tailwind/shadcn solo porque esas referencias lo mencionan. ElectroCMS conserva su arquitectura React/CSS salvo decisión explícita posterior.
 
@@ -50,7 +52,10 @@ No se debe forzar una migración a Tailwind/shadcn solo porque esas referencias 
 - Inspector escribe commands canónicos validados.
 - Responsive styles permanecen en `DocumentNode.styles`.
 - Editor theme/preset no modifica frontend/backend project themes.
+- Project themes built-in no se editan directamente; se duplican antes de editar/versionar.
 - Imported theme definitions no se duplican dentro de `CanonicalProject`.
+- Elegir un package file nunca muta el proyecto; requiere revisión y apply explícito.
+- Merge de package resources nunca sobrescribe IDs existentes.
 - Preview/Backend/Export siguen siendo shells hasta sus fases dedicadas.
 - Widgets dynamic/forms/filters no se presentan como engines funcionales todavía.
 
