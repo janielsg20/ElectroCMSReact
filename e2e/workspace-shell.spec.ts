@@ -57,7 +57,7 @@ test('tablet keeps every primary function available through the compact workspac
   await expect(drawer).toBeVisible();
   await drawer.getByRole('button', { name: 'Backend' }).click();
   await expect(page).toHaveURL(/\/backend$/);
-  await expect(page.getByRole('heading', { name: 'Backend workspace', level: 2 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Backend Builder', level: 2 })).toBeVisible();
 
   const hasHorizontalOverflow = await page.evaluate(() =>
     document.documentElement.scrollWidth > document.documentElement.clientWidth,

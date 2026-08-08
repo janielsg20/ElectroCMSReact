@@ -63,6 +63,26 @@ function makeWorkflowProject() {
   };
 }
 
+function makeBackendProject() {
+  const project = makeWorkflowProject();
+  return {
+    ...project,
+    roles: {
+      manager: { name: 'Manager', capabilities: ['view', 'edit', 'publish'] },
+    },
+    users: {
+      user_1: { name: 'Alex Morgan', email: 'alex@example.test', role: 'manager' },
+    },
+    backend: {
+      navigation: ['dashboard', 'content'],
+      defaultDashboard: 'operations',
+    },
+    dashboards: {
+      operations: { name: 'Operations', widgets: ['revenue', 'inventory'] },
+    },
+  };
+}
+
 describe('ProductionStudio', () => {
   it('uses the permanent Studio module rail and keeps the real builder available', async () => {
     window.history.replaceState({}, '', '/editor');
@@ -156,6 +176,42 @@ describe('ProductionStudio', () => {
     expect(within(filterStudio).getByRole('main', { name: 'Workflow canvas' })).toHaveTextContent('featured_products');
   });
 
+  it('uses canonical backend dashboards roles and users in the Backend Builder', async () => {
+    window.history.replaceState({}, '', '/editor');
+    const user = userEvent.setup();
+    render(<App initialProject={makeBackendProject()} preferencesRepository={new MemoryWorkspacePreferencesRepository()} />);
+
+    const navigation = screen.getByRole('navigation', { name: 'Primary workspaces' });
+    await user.click(within(navigation).getByRole('button', { name: 'Backend' }));
+
+    const backendStudio = screen.getByRole('region', { name: 'Backend and roles studio' });
+    expect(within(backendStudio).getByRole('heading', { name: 'Backend Builder' })).toBeInTheDocument();
+    expect(within(backendStudio).getByText('defaultDashboard')).toBeInTheDocument();
+    expect(within(backendStudio).getByRole('tab', { name: 'Dashboards' })).toBeInTheDocument();
+    expect(within(backendStudio).getByRole('tab', { name: 'Roles' })).toBeInTheDocument();
+    expect(within(backendStudio).getByRole('tab', { name: 'Users' })).toBeInTheDocument();
+
+    await user.click(within(backendStudio).getByRole('tab', { name: 'Roles' }));
+    expect(within(backendStudio).getByRole('button', { name: /Manager/i })).toBeInTheDocument();
+    expect(within(backendStudio).getByRole('complementary', { name: 'Backend resource details' })).toHaveTextContent('capabilities');
+
+    await user.click(within(backendStudio).getByRole('tab', { name: 'Users' }));
+    expect(within(backendStudio).getByRole('button', { name: /Alex Morgan/i })).toBeInTheDocument();
+  });
+
+  it('opens the canonical Roles studio from the editor module rail', async () => {
+    window.history.replaceState({}, '', '/editor');
+    const user = userEvent.setup();
+    render(<App initialProject={makeBackendProject()} preferencesRepository={new MemoryWorkspacePreferencesRepository()} />);
+
+    const modules = screen.getByRole('navigation', { name: 'Studio modules' });
+    await user.click(within(modules).getByRole('button', { name: 'Roles' }));
+
+    const studio = screen.getByRole('region', { name: 'Backend and roles studio' });
+    expect(within(studio).getByRole('tab', { name: 'Roles' })).toHaveAttribute('aria-selected', 'true');
+    expect(within(studio).getByRole('button', { name: /Manager/i })).toBeInTheDocument();
+  });
+
   it('keeps Preview, Backend and Export in the real workspace navigation', async () => {
     window.history.replaceState({}, '', '/editor');
     const user = userEvent.setup();
@@ -164,7 +220,7 @@ describe('ProductionStudio', () => {
     const navigation = screen.getByRole('navigation', { name: 'Primary workspaces' });
     await user.click(within(navigation).getByRole('button', { name: 'Backend' }));
     expect(window.location.pathname).toBe('/backend');
-    expect(screen.getAllByRole('heading', { name: 'Backend workspace' }).length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: 'Backend Builder' })).toBeInTheDocument();
 
     await user.click(within(navigation).getByRole('button', { name: 'Export' }));
     expect(window.location.pathname).toBe('/export');
