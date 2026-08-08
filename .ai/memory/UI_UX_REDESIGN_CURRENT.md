@@ -6,9 +6,9 @@
 - This redesign is presentation-only. Functional phases/tracking remain independent.
 
 ## Current UI phase
-**UI-02 — Builder Workspace — DONE pending final documented-HEAD gate and merge**
+**UI-03 — Pages / Templates / Assets — DONE pending final documented-HEAD gate and merge**
 
-Next after merge: **UI-03 — Pages / Templates / Assets**.
+Next after merge: **UI-04** as defined in `.ai/UI_UX_REDESIGN_PHASES.md`.
 
 ## Durable decisions
 - Tailwind CSS v4 is the official visual styling foundation for the ElectroCMS application chrome.
@@ -19,6 +19,7 @@ Next after merge: **UI-03 — Pages / Templates / Assets**.
 - Identity foundation: Graphite + Porcelain/Warm Neutral + Teal primary accent + restrained Violet secondary accent.
 - Migrated surfaces use semantic tokens instead of hard-coded product colors.
 - Canvas remains the dominant editor surface.
+- UI must not bypass canonical project/document APIs just to make a control appear functional.
 
 ## UI-01 completed
 - Added semantic V2 UI foundation and durable redesign documentation.
@@ -39,13 +40,17 @@ Next after merge: **UI-03 — Pages / Templates / Assets**.
 - Redundant non-functional UI-01 Builder buttons are no longer visible.
 - Added unit coverage for Layers -> canonical selection -> Content/Style inspector flow.
 - Existing style-engine and breakpoint-engine E2E tests were updated only for the intentional UX step of opening Style; their functional assertions remain unchanged.
-- Implementation validation: Quality Gate #1146 PASS — verify:repo, lint, TypeScript, 105/105 unit, coverage, build and 21/21 Playwright E2E.
+- Final validation: Quality Gate #1148 PASS; merged into `main` as `149276347a6d9a5c53d547aa1aace100ed18fcc4`.
 
-## UI-03 target
-Redesign Pages / Templates / Assets as professional production-management surfaces while preserving canonical document/template/media contracts:
-1. page/document navigator and hierarchy;
-2. template organization and reusable parts;
-3. asset/media browsing patterns;
-4. search/filter/sort and dense list/grid modes;
-5. responsive management views;
-6. full gate before UI-04.
+## UI-03 completed
+- Replaced generic Pages and Media feature cards with `PagesAssetsWorkspace`.
+- Pages derive from canonical documents where `kind === 'page'`.
+- Templates derive from canonical `template`, `header`, `footer`, `single`, `archive` and `404` document kinds.
+- Assets derive directly from `CanonicalProject.media`.
+- Added dense table/grid views, search, canonical counts, node counts, active-document highlighting and responsive empty states.
+- Opening a canonical page/template uses the existing `setActiveDocumentId` and returns to the real Builder.
+- Pages and Media module navigation now point to the canonical resource manager.
+- No parallel document/media catalog exists.
+- ProjectSession currently has no validated project-level command for adding/removing documents or media; therefore UI-03 intentionally keeps `New` disabled rather than mutating `project.documents`, `documentOrder` or `media` directly.
+- Initial implementation validation: Quality Gate #1150 PASS.
+- Final documented-HEAD gate is required before merge and UI-04.
