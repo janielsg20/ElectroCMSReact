@@ -115,6 +115,7 @@ function validateConditional(value: JsonValue): FieldTypeValidationResult {
 
 function advancedDefinition(input: {
   type: 'core/repeater' | 'core/group' | 'core/calculated' | 'core/conditional';
+  category: FieldTypeDefinition['metadata']['category'];
   label: string;
   icon: string;
   description: string;
@@ -131,7 +132,7 @@ function advancedDefinition(input: {
     version: 2,
     metadata: {
       label: input.label,
-      category: 'advanced',
+      category: input.category,
       icon: input.icon,
       description: input.description,
       keywords: ['advanced', 'mf-042'],
@@ -152,6 +153,7 @@ export function createMf042AdvancedFieldTypeDefinitions(): FieldTypeDefinition[]
   return [
     advancedDefinition({
       type: 'core/repeater',
+      category: 'structure',
       label: 'Repeater',
       icon: 'list-plus',
       description: 'Repeat rows using another reusable Field Group as the item schema.',
@@ -165,6 +167,7 @@ export function createMf042AdvancedFieldTypeDefinitions(): FieldTypeDefinition[]
     }),
     advancedDefinition({
       type: 'core/group',
+      category: 'structure',
       label: 'Group',
       icon: 'folder-tree',
       description: 'Embed one reusable Field Group as a nested object.',
@@ -174,10 +177,11 @@ export function createMf042AdvancedFieldTypeDefinitions(): FieldTypeDefinition[]
       validateConfig: validateGroupConfig,
       validateValue: validateObject,
       createDefaultValue: () => ({}),
-      featureOverrides: { repetition: 'supported', conditions: 'supported' },
+      featureOverrides: { conditions: 'supported' },
     }),
     advancedDefinition({
       type: 'core/calculated',
+      category: 'computed',
       label: 'Calculated',
       icon: 'calculator',
       description: 'Read-only numeric value derived from sibling numeric fields with a safe expression.',
@@ -187,10 +191,11 @@ export function createMf042AdvancedFieldTypeDefinitions(): FieldTypeDefinition[]
       validateConfig: validateCalculatedConfig,
       validateValue: validateCalculated,
       createDefaultValue: () => 0,
-      featureOverrides: { computed: 'supported', defaultValue: 'unsupported', conditions: 'supported' },
+      featureOverrides: { defaultValue: 'unsupported', conditions: 'supported' },
     }),
     advancedDefinition({
       type: 'core/conditional',
+      category: 'computed',
       label: 'Conditional',
       icon: 'workflow',
       description: 'Conditionally expose a nested reusable Field Group based on a sibling field value.',
@@ -205,14 +210,14 @@ export function createMf042AdvancedFieldTypeDefinitions(): FieldTypeDefinition[]
       validateConfig: validateConditionalConfig,
       validateValue: validateConditional,
       createDefaultValue: () => null,
-      featureOverrides: { conditions: 'supported', repetition: 'supported' },
+      featureOverrides: { conditions: 'supported' },
     }),
   ];
 }
 
 export function createContentFieldTypeRegistry(): FieldTypeRegistry {
   const registry = new FieldTypeRegistry();
-  registry.registerMany(createBuiltinFieldTypeDefinitions());
-  registry.registerMany(createMf042AdvancedFieldTypeDefinitions());
+  for (const definition of createBuiltinFieldTypeDefinitions()) registry.register(definition);
+  for (const definition of createMf042AdvancedFieldTypeDefinitions()) registry.register(definition);
   return registry;
 }
