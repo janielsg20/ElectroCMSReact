@@ -7,6 +7,7 @@ import {
   type DocumentNode,
 } from '../../../core/project';
 import type { CanvasStyleEditResult } from '../canvas/use-canvas-document-actions';
+import './widget-style-inspector.css';
 
 interface StyleField {
   key: string;
@@ -49,9 +50,7 @@ export function WidgetStyleInspector({
   onInheritStyle,
 }: WidgetStyleInspectorProps) {
   const [issues, setIssues] = useState<Readonly<Record<string, string>>>({});
-  const widerBreakpoint = breakpoints.length > 0
-    ? getNearestWiderBreakpoint(breakpoints, breakpointId)
-    : null;
+  const widerBreakpoint = breakpoints.length > 0 ? getNearestWiderBreakpoint(breakpoints, breakpointId) : null;
 
   const commit = (field: StyleField, rawValue: string) => {
     if (!onSetStyle) return;
@@ -163,14 +162,7 @@ export function WidgetStyleInspector({
                   Inherit
                 </button>
               ) : null}
-              <button
-                type="button"
-                aria-label={`Unset ${field.label}`}
-                disabled={!onUnsetStyle}
-                onClick={() => unset(field)}
-              >
-                Unset
-              </button>
+              <button type="button" aria-label={`Unset ${field.label}`} disabled={!onUnsetStyle} onClick={() => unset(field)}>Unset</button>
             </div>
           </div>
         );
