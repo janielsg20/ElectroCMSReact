@@ -55,7 +55,7 @@
 ## F04 code map — editor design/themes
 - `src/app/workspace/editor-theme-presets.ts`: editor-only preset catalog.
 - `src/app/workspace/editor-theme-presets.css`: preset token overrides for ElectroCMS chrome.
-- `design-system/electrocms-editor/MASTER.md`: editor design/interaction source of truth.
+- `design-system/electrocms-editor/MASTER.md`: editor design/interaction source of truth; now explicitly defines Insert/Elements Library + canvas + inspector builder anatomy.
 - `design-system/electrocms-editor/pages/editor.md`: no-code editor workspace-specific override.
 - `src/core/themes/theme-system.ts`: framework-neutral project theme definition/registry/portable-token validation.
 - `src/core/themes/builtin-project-themes.ts`: 8 frontend + 7 backend definitions.
@@ -83,7 +83,7 @@
 - `src/core/content/taxonomy.ts`: `TaxonomyDefinition` v1, validation, list/create/update/remove, unique slug, multi-CPT references, field-group refs and archive-template refs.
 - `src/core/content/taxonomy.test.ts`: hierarchy/flat validation, required unique CPT targets, CRUD, duplicate id/slug, reference integrity, valid archive/field-group refs and immutable id.
 - `src/core/content/content-type.ts`: CPT deletion additionally blocked while any taxonomy targets that CPT.
-- `src/app/content/DynamicContentManager.tsx`: accessible Content Types / Taxonomies tab shell for Backend authoring.
+- `src/app/content/DynamicContentManager.tsx`: accessible Dynamic Content tab shell for Backend authoring.
 - `src/app/content/dynamic-content-manager.css`: dense responsive tab shell using semantic tokens.
 - `src/app/content/TaxonomyEditor.tsx`: no-code master-detail taxonomy editor with hierarchy, multi-CPT associations, archive template and existing field-group associations.
 - `src/app/content/taxonomy-editor.css`: responsive taxonomy editor styling with visible focus and 44px mobile touch targets.
@@ -97,7 +97,19 @@
 - `src/core/content/field-type-registry.ts`: namespaced `type@version` registration/resolution, defensive cloning, config/value validation, default-value creation and sequential config migration.
 - `src/core/content/builtin-field-types.ts`: 27 master-prompt field contracts; 20 `available`, 7 advanced `modeled`.
 - `src/core/content/field-type-registry.test.ts`: built-in completeness, config/value validation, malformed/duplicate registration, external `plugin/rating`, defensive clone and migration coverage.
-- `src/core/content/index.ts`: public exports for CPT, taxonomy and field type systems.
+- `src/core/content/index.ts`: public exports for CPT, taxonomy, field type and field group systems.
+
+### MF-040 Custom field groups
+- `src/core/content/field-group.ts`: `FieldGroupDefinition`/`CustomFieldDefinition` v1, portable validation/serialization, create/update/remove/list, registry-backed config/value validation, immutable group id and taxonomy reference delete guard.
+- `src/core/content/field-group.test.ts`: defaults, valid/invalid registry config, duplicate field id/name, modeled-type rejection, CRUD/reorder/immutability and referential deletion safety.
+- `src/app/content/FieldGroupEditor.tsx`: Backend custom-field builder with searchable field library, ordered schema and contextual inspector.
+- `src/app/content/field-group-editor.css`: dense responsive three-zone builder, mobile expansion, focus states and reduced-motion support.
+- `src/app/content/DynamicContentManager.tsx`: adds accessible Field Groups tab alongside Content Types and Taxonomies.
+- `src/app/content/dynamic-content-manager.css`: integrates third tab and responsive horizontal tab behavior.
+- `src/app/project/project-session-context.ts`: typed field-group mutation surface.
+- `src/app/project/project-session.tsx`: field-group create/update/remove over `projectRef.current` with existing autosave/recovery.
+- `e2e/field-groups.spec.ts`: create → add/config fields → reorder → durable IndexedDB → reload → edit → save → delete → durable removal.
+- `design-system/electrocms-editor/MASTER.md`: builder rule strengthened to make left Insert/Elements Library a first-class authoring surface similar in mental model to professional builders such as Elementor, while keeping ElectroCMS original.
 
 ## Critical invariants
 - Never mutate payloads during validation/migration.
@@ -132,14 +144,19 @@
 - Demo records are opt-in, never imported by default.
 - Resource merge never overwrites existing IDs/keys.
 - Dynamic content CRUD uses existing canonical collections (`contentTypes`, `taxonomies`, `fieldGroups`, `records`, `relations`), never parallel stores.
-- CPT IDs and taxonomy IDs are immutable after creation.
+- CPT IDs, taxonomy IDs and field-group IDs are immutable after creation.
 - CPT deletion is blocked while records or taxonomies reference it.
 - Every taxonomy must target at least one existing unique CPT.
-- Taxonomy field-group references must already exist; MF-038 does not create field groups early.
+- Taxonomy field-group references must already exist.
 - Taxonomy archive template references must resolve to an existing `CanonicalDocument` whose `kind` is `archive`.
 - Field types are runtime registry contracts, never persisted callbacks/component instances.
 - Field type IDs are namespaced (`namespace/name`) and definitions resolve by version.
 - Advanced field contracts stay `modeled` until MF-042/MF-043; do not infer runtime completeness from registration.
+- Field-group instances persist portable data only: no registry callbacks, DOM, React components or duplicated field-type definitions.
+- Field IDs/names are unique per group and `fields[]` order is canonical.
+- Field config/default validation must remain delegated to `FieldTypeRegistry`; no distributed per-type switches.
+- Field-group deletion is blocked while a taxonomy references it.
+- Main visual authoring must preserve Insert/Elements Library + dominant canvas + right inspector; do not replace it with a generic dashboard-card pattern.
 - Vercel deployments are manual-only.
 - Do not use root overflow hiding as a substitute for responsive layout fixes.
 
@@ -186,6 +203,8 @@
 - MF-039 per-type config/value validation for text, number, select and map.
 - MF-039 external `plugin/rating` registration/default/validation plus versioned config migration.
 - MF-039 defensive clone and invalid-definition/duplicate regression coverage.
+- MF-040 field-group validation, CRUD, reorder, duplicate field id/name, modeled-type rejection and taxonomy delete-guard unit tests.
+- MF-040 Backend field-library → ordered schema → inspector authoring E2E with direct IndexedDB persistence checks across reload/update/delete.
 
 ## Functional evidence
 ### F04
@@ -205,4 +224,4 @@
 - MF-037 CPT model + editor: run #730 PASS; documentation closure #740 PASS.
 - MF-038 Taxonomy model + editor: run #766 PASS; documentation closure #776 PASS.
 - MF-039 Field type registry: run #786 PASS; documentation closure #800 PASS.
-- MF-040 Custom field groups: NEXT, not started.
+- MF-040 Custom field groups: functional run #834 PASS; documentation closure pending.
