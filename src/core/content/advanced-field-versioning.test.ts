@@ -28,8 +28,6 @@ describe('MF-042 advanced field version boundary', () => {
     expect(isMf042AdvancedField({
       ...current,
       typeVersion: 1,
-      config: {},
-      defaultValue: {},
     })).toBe(false);
   });
 });
