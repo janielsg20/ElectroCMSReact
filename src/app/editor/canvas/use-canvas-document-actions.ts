@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { createEntityId } from '../../../core/domain';
+import { createEntityId, type JsonObject } from '../../../core/domain';
 import {
   copyDocumentSubtrees,
   cutDocumentSubtrees,
@@ -12,11 +12,13 @@ import {
   setNodeGeometry,
   snapNodeGeometryPatch,
   ungroupDocumentNode,
+  updateDocumentNode,
   type CanonicalDocument,
   type DocumentClipboardPayload,
   type NodeGeometryPatch,
   type SnapGuide,
 } from '../../../core/project';
+import type { WidgetPropValidationIssue } from '../../../core/widgets';
 import { createDocumentCommand } from '../../project/document-command-history';
 import { useProjectSession } from '../../project/project-session-context';
 import { useEditorWidgetRegistry } from '../../widgets/editor-widget-registry-context';
@@ -24,6 +26,11 @@ import { useEditorWidgetRegistry } from '../../widgets/editor-widget-registry-co
 export interface CanvasGeometryEditResult {
   applied: boolean;
   guides: readonly SnapGuide[];
+}
+
+export interface CanvasPropEditResult {
+  applied: boolean;
+  issues: readonly WidgetPropValidationIssue[];
 }
 
 export interface CanvasDocumentActions {
@@ -41,6 +48,7 @@ export interface CanvasDocumentActions {
   ungroupNode(groupId: string): boolean;
   setLocked(nodeIds: readonly string[], locked: boolean): boolean;
   setHidden(nodeIds: readonly string[], hidden: boolean): boolean;
+  setProps(nodeId: string, patch: JsonObject): CanvasPropEditResult;
   setGeometry(nodeId: string, patch: NodeGeometryPatch, viewportWidth: number): CanvasGeometryEditResult;
 }
 
@@ -224,6 +232,39 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
     [execute, getActiveDocument],
   );
 
+  const setProps = useCallback(
+    (nodeId: string, patch: JsonObject): CanvasPropEditResult => {
+      const document = getActiveDocument();
+      const currentNode = document?.nodes[nodeId];
+      if (!document || !currentNode || !widgetRegistry.has(currentNode.type, currentNode.version)) {
+        return {
+          applied: false,
+          issues: [{ code: 'WIDGET_NOT_REGISTERED', path: '$', message: 'The selected widget is not registered.' }],
+        };
+      }
+      try {
+        const candidate = {
+          ...currentNode,
+          props: { ...currentNode.props, ...structuredClone(patch) },
+        };
+        const validation = widgetRegistry.core.validateNode(candidate);
+        if (!validation.valid) return { applied: false, issues: validation.issues };
+        const definition = widgetRegistry.core.resolve(currentNode.type, currentNode.version);
+        const nextDocument = updateDocumentNode(document, nodeId, () => candidate);
+        return {
+          applied: execute(`Update ${definition.metadata.name} properties`, document, nextDocument),
+          issues: [],
+        };
+      } catch (error) {
+        return {
+          applied: false,
+          issues: [{ code: 'PROP_EDIT_FAILED', path: '$', message: error instanceof Error ? error.message : 'Property update failed.' }],
+        };
+      }
+    },
+    [execute, getActiveDocument, widgetRegistry],
+  );
+
   const setGeometry = useCallback(
     (nodeId: string, patch: NodeGeometryPatch, viewportWidth: number): CanvasGeometryEditResult => {
       const document = getActiveDocument();
@@ -253,6 +294,7 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
     ungroupNode,
     setLocked,
     setHidden,
+    setProps,
     setGeometry,
   };
 }
