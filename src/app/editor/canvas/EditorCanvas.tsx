@@ -6,6 +6,7 @@ import {
   type NodeGeometryPatch,
   type SnapGuide,
 } from '../../../core/project';
+import { WidgetInspector } from '../inspector/WidgetInspector';
 import { useEditorWidgetRegistry } from '../../widgets/editor-widget-registry-context';
 import { CanvasOverlayLayer } from './CanvasOverlayLayer';
 import { CanvasRenderer } from './CanvasRenderer';
@@ -280,6 +281,12 @@ export function EditorCanvas({
           zoom={zoom}
           selectedNodeIds={selection.selectedNodeIds}
           guides={guides}
+        />
+      </div>
+      <div onClick={stopToolbarPropagation}>
+        <WidgetInspector
+          node={selectedNodes.length === 1 ? primaryNode : null}
+          {...(actions ? { onSetProps: actions.setProps } : {})}
         />
       </div>
     </section>
