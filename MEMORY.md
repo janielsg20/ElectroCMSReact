@@ -9,6 +9,7 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - Playwright para E2E en navegador real.
 - GitHub Actions como entorno oficial de instalación/test/build porque el sandbox de ChatGPT no alcanza el registry npm público.
 - `package-lock.json` versionado; CI usa `npm ci` y permisos `contents: read`.
+- Vercel conectado a GitHub para previews automáticos de ramas/PR y producción desde `main`.
 
 ## Arquitectura durable
 - Dependencias: Domain → Application → Infrastructure → Presentation.
@@ -22,7 +23,7 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - Proyecto inicial crea una página Home con nodo `core/root`.
 - Breakpoints iniciales: desktop, laptop, tablet landscape, tablet portrait, mobile large y mobile small.
 - Responsive distingue explícitamente `explicit`, `inherited` y `unset`.
-- Capacidades de fases futuras existen solo como mapas JSON portables hasta que sus módulos especializados sean implementados; no deben presentarse como funciones terminadas.
+- Capacidades de fases futuras existen solo como mapas JSON portables hasta que sus módulos especializados sean implementados.
 
 ## Persistencia
 - Web primary adapter: IndexedDB nativo.
@@ -44,13 +45,15 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - Incrementa `historyMetadata.revision` y `lastSavedAt`.
 - Guarda recovery snapshot antes del proyecto principal.
 - Recovery snapshots son limitados por configuración.
-- Estado transitorio del editor nunca se serializa en el proyecto.
+- F03 integra autosave al `ProjectSession`: commands/undo/redo encolan cambios y el header muestra `dirty/saving/saved/error` real.
+- `EditorProjectPersistence` elige al hidratar el candidato más fresco entre project store y recovery por revision + `updatedAt`.
+- Revisiones permanecen monotónicas incluso si un payload pendiente trae metadata stale.
+- Un callback de save fusiona metadata; nunca reemplaza contenido editor más nuevo.
 
 ## Editor shell F02
 - Routing interno usa History API + `useSyncExternalStore`, sin dependencia de router externa.
 - Rutas estables: `/editor`, `/preview`, `/backend`, `/export`.
 - `ProjectSessionProvider` vive por encima del outlet lógico; cambiar workspace no remonta proyecto, documento activo, breakpoint ni zoom.
-- Undo/Redo están visibles pero deshabilitados hasta que F03 implemente command history real.
 - El header superior está conectado al estado real de proyecto/documento/breakpoint/zoom y al routing Preview/Export.
 
 ## Workspace preferences
@@ -65,15 +68,37 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - Tablet/móvil usan drawer accesible; funciones principales permanecen disponibles.
 - En móvil, la segunda fila del header conserva controles mediante scroll horizontal local.
 - `contain: inline-size paint` impide que ese scroll interno cree overflow del documento raíz.
-- Playwright valida 820×1180 y 390×844 sin overflow raíz.
 
 ## Editor theme base
 - Modos `light`, `dark`, `auto` resuelven solo la apariencia de ElectroCMS.
 - Se mantienen independientes de `frontendThemeId` y `backendThemeId`.
 - La UI base usa tokens CSS y respeta `prefers-reduced-motion`.
 
+## Canvas y árbol F03
+- `CanonicalDocument.nodes + children` es la única fuente estructural persistente.
+- `parentId`, depth y traversals se derivan runtime; no se persisten.
+- Validator y tree engine rechazan missing/duplicate children, multiple parents, root-parent, cycles y orphans.
+- `CanvasRenderer` es una proyección recursiva; overlays y drop targets no son datos del proyecto.
+- DnD usa `{nodeId,parentId,index}` y operaciones puras; nunca reordena DOM como fuente de verdad.
+
+## Selección e historial F03
+- Selección simple/múltiple es estado transitorio y accesible por teclado.
+- `DocumentCommand` guarda before/after de `CanonicalDocument`, nunca snapshots DOM.
+- History es por documento; ejecutar un nuevo command limpia redo.
+- Undo/Redo del header y shortcuts están conectados al command engine real.
+- Copy/Cut/Paste, Group/Ungroup, Lock/Hide y geometry edits son reversibles.
+- Paste remapea IDs de todos los nodos copiados antes de insertar.
+
+## Geometría F03
+- X/Y/W/H usan `ResponsiveStyleSet` existente con keys `layout.x/y/width/height`.
+- No existe un modelo geométrico paralelo.
+- Ediciones se escriben explícitamente en el breakpoint activo.
+- Grid snapping por defecto: 8px; threshold: 4px.
+- Viewport edges/center tienen prioridad sobre grid si ambos están dentro del threshold.
+- Guides son transitorias y viven en overlay.
+
 ## Última fase cerrada funcionalmente
-F02 — Editor shell y workspace responsive. Evidencia funcional: GitHub Actions run #150 PASS. El commit documental de cierre debe volver a pasar CI antes del merge.
+F03 — Canvas, nodos, DnD e historial. Evidencia funcional: GitHub Actions run #368 PASS. El commit documental de cierre debe volver a pasar CI antes del merge.
 
 ## Siguiente trabajo
-F03 — Canvas, nodos, DnD e historial, comenzando en MF-019 — Document node tree engine. No introducir scope de F04 (widgets/inspector/themes avanzados) durante F03.
+F04 — Widgets, inspector, responsive y themes, comenzando en MF-027 después de integrar PR #4 a `main`. No iniciar F04 desde una rama F03 sin merge.
