@@ -59,11 +59,14 @@
 - `design-system/electrocms-editor/pages/editor.md`: no-code editor workspace-specific override.
 - `src/core/themes/theme-system.ts`: framework-neutral project theme definition/registry/portable-token validation.
 - `src/core/themes/builtin-project-themes.ts`: 8 frontend + 7 backend definitions.
-- `src/core/themes/theme-package.ts`: versioned import/export envelope and 256 KB boundary.
-- `src/app/themes/ProjectThemeRegistryProvider.tsx`: combines base + local imported themes and exposes package library.
+- `src/core/themes/theme-package.ts`: versioned package envelope, selected project resources and 256 KB boundary.
+- `src/core/themes/theme-package-merge.ts`: category-selective non-destructive merge with conflict report.
+- `src/app/themes/ProjectThemeRegistryProvider.tsx`: combines base + local imported themes, duplicate/version operations and package library.
 - `src/app/themes/project-theme-package-repository.ts`: local theme library persistence at `electrocms:project-theme-packages:v1`.
-- `src/app/themes/ProjectThemeControls.tsx`: compatible theme selection, token preview, package import/export.
-- `src/app/project/project-session.tsx`: `setProjectTheme` validates scope/id and queues autosave.
+- `src/app/themes/ProjectThemeControls.tsx`: project theme selection, token preview and duplicate-to-edit flow.
+- `src/app/themes/ProjectThemeTokenEditor.tsx`: versioned local theme editor.
+- `src/app/themes/ProjectThemePackageTransfer.tsx`: two-step selective export/import review UI.
+- `src/app/project/project-session.tsx`: theme selection and validated selective resource merge with autosave.
 
 ## Critical invariants
 - Never mutate payloads during validation/migration.
@@ -89,8 +92,12 @@
 - Native drag feedback must not cause a React rerender during the active gesture.
 - Editor mode/preset never alter `frontendThemeId`/`backendThemeId`.
 - Project themes are scope-validated and store only selected IDs in canonical project.
+- Built-in project themes are immutable; local copies are editable/versioned.
 - Imported theme definitions are editor-library data, not canonical-project payload duplication.
 - Imported tokens must be deep portable JSON; non-plain prototypes are rejected.
+- Package import must validate and review before mutating project state.
+- Demo records are opt-in, never imported by default.
+- Resource merge never overwrites existing IDs/keys.
 - Vercel deployments are manual-only.
 - Do not use root overflow hiding as a substitute for responsive layout fixes.
 
@@ -119,10 +126,12 @@
 - DnD regression coverage after stable-hit-area fix.
 - ProjectThemeRegistry scope/clone/portable-token validation tests.
 - Frontend/backend theme independence + autosave/reload E2E.
-- Theme package parse/version/size tests.
+- Built-in duplicate → local edit → automatic v2 → reload E2E.
+- Theme package parse/version/size/resource validation tests.
 - Local package repository corruption/dedup/clone tests.
-- Package import → install → select → reload → export E2E.
-- Package collision rejection E2E.
+- Selective resource merge tests: category filtering, demo opt-in and conflict preservation.
+- Package validate → review → selective apply → select → reload → export E2E.
+- Package collision preservation E2E.
 
 ## F04 functional evidence
 - MF-027: run #424 PASS.
@@ -133,5 +142,5 @@
 - MF-032: run #505 PASS.
 - MF-033: run #529 PASS.
 - MF-034: run #568 PASS.
-- MF-035: run #600 PASS.
-- MF-036: run #622 PASS.
+- MF-035 definitive original contract: run #662 PASS.
+- MF-036 definitive original contract: run #688 PASS.
