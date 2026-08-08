@@ -70,11 +70,13 @@ describe('GlobalSystemsWorkspace', () => {
     await user.click(within(studio).getByRole('tab', { name: 'Editor' }));
     await user.selectOptions(within(studio).getByLabelText('Global editor theme mode'), 'dark');
     await user.selectOptions(within(studio).getByLabelText('Global workspace density'), 'comfortable');
-    await user.selectOptions(within(studio).getByLabelText('Global editor preset'), 'developer-console');
+
+    expect(within(studio).getByLabelText('Unified editor visual system')).toHaveTextContent('Bento High Density');
+    expect(within(studio).queryByLabelText('Global editor preset')).not.toBeInTheDocument();
 
     const app = document.querySelector('.electrocms-app');
     expect(app).toHaveAttribute('data-theme-mode', 'dark');
     expect(app).toHaveAttribute('data-density', 'comfortable');
-    expect(app).toHaveAttribute('data-editor-preset', 'developer-console');
+    expect(app).toHaveAttribute('data-editor-preset', 'bento-high-density');
   });
 });
