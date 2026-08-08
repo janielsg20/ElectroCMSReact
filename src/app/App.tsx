@@ -7,6 +7,8 @@ import type { EditorProjectPersistence } from './project/editor-project-persiste
 import { ProjectSessionProvider } from './project/project-session';
 import { useWorkspaceRoute } from './routing/use-workspace-route';
 import type { WorkspaceId } from './routing/workspaces';
+import { EditorWidgetRegistryProvider } from './widgets/EditorWidgetRegistryProvider';
+import type { EditorWidgetRegistry } from './widgets/editor-widget-registry';
 import { useResolvedEditorTheme } from './workspace/editor-theme';
 import { useMediaQuery } from './workspace/use-media-query';
 import { WorkspacePreferencesProvider } from './workspace/workspace-preferences-context';
@@ -17,6 +19,7 @@ export interface AppProps {
   initialProject?: CanonicalProject;
   projectPersistence?: EditorProjectPersistence | null;
   preferencesRepository?: WorkspacePreferencesRepository;
+  widgetRegistry?: EditorWidgetRegistry;
 }
 
 function EditorApplicationShell() {
@@ -83,7 +86,12 @@ function EditorApplicationShell() {
   );
 }
 
-export function App({ initialProject, projectPersistence, preferencesRepository }: AppProps) {
+export function App({
+  initialProject,
+  projectPersistence,
+  preferencesRepository,
+  widgetRegistry,
+}: AppProps) {
   const preferencesProviderProps = preferencesRepository
     ? { repository: preferencesRepository }
     : {};
@@ -91,12 +99,15 @@ export function App({ initialProject, projectPersistence, preferencesRepository 
     ...(initialProject ? { initialProject } : {}),
     ...(projectPersistence === undefined ? {} : { persistence: projectPersistence }),
   };
+  const widgetProviderProps = widgetRegistry ? { registry: widgetRegistry } : {};
 
   return (
     <WorkspacePreferencesProvider {...preferencesProviderProps}>
-      <ProjectSessionProvider {...projectProviderProps}>
-        <EditorApplicationShell />
-      </ProjectSessionProvider>
+      <EditorWidgetRegistryProvider {...widgetProviderProps}>
+        <ProjectSessionProvider {...projectProviderProps}>
+          <EditorApplicationShell />
+        </ProjectSessionProvider>
+      </EditorWidgetRegistryProvider>
     </WorkspacePreferencesProvider>
   );
 }
