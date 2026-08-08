@@ -1,4 +1,5 @@
 import { useProjectSession } from '../project/project-session-context';
+import { useDocumentHistoryShortcuts } from '../project/use-document-history-shortcuts';
 import type { WorkspaceId } from '../routing/workspaces';
 import { useWorkspacePreferences } from '../workspace/workspace-preferences-store';
 import { Icon } from './Icon';
@@ -26,6 +27,7 @@ export function AppHeader({
   const session = useProjectSession();
   const { preferences, setEditorThemeMode } = useWorkspacePreferences();
   const activeDocument = session.project.documents[session.activeDocumentId];
+  useDocumentHistoryShortcuts(session.undo, session.redo);
 
   return (
     <header className="app-header" data-testid="app-header">
@@ -109,10 +111,22 @@ export function AppHeader({
         </div>
 
         <div className="segmented-control history-control" aria-label="Document history">
-          <button type="button" aria-label="Undo" disabled={!session.canUndo} title="Nothing to undo">
+          <button
+            type="button"
+            aria-label="Undo"
+            disabled={!session.canUndo}
+            title={session.canUndo ? 'Undo last document command' : 'Nothing to undo'}
+            onClick={session.undo}
+          >
             <Icon name="undo" size={14} />
           </button>
-          <button type="button" aria-label="Redo" disabled={!session.canRedo} title="Nothing to redo">
+          <button
+            type="button"
+            aria-label="Redo"
+            disabled={!session.canRedo}
+            title={session.canRedo ? 'Redo last document command' : 'Nothing to redo'}
+            onClick={session.redo}
+          >
             <Icon name="redo" size={14} />
           </button>
         </div>
