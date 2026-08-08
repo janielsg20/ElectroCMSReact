@@ -58,11 +58,7 @@ function replaceProjectDocument(
 function projectContentFingerprint(project: CanonicalProject): string {
   const clone = structuredClone(project);
   clone.metadata.updatedAt = '';
-  clone.historyMetadata = {
-    ...clone.historyMetadata,
-    revision: 0,
-    lastSavedAt: null,
-  };
+  clone.historyMetadata = { revision: 0 };
   return JSON.stringify(clone);
 }
 
@@ -80,7 +76,9 @@ function mergeSavedMetadata(
     historyMetadata: {
       ...current.historyMetadata,
       revision: Math.max(current.historyMetadata.revision, saved.historyMetadata.revision),
-      lastSavedAt: saved.historyMetadata.lastSavedAt,
+      ...(saved.historyMetadata.lastSavedAt === undefined
+        ? {}
+        : { lastSavedAt: saved.historyMetadata.lastSavedAt }),
     },
   };
 }
