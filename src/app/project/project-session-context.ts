@@ -1,5 +1,7 @@
 import { createContext, useContext } from 'react';
 import type {
+  ContentRecordDefinition,
+  ContentRecordMutationErrorCode,
   ContentTypeDefinition,
   ContentTypeMutationErrorCode,
   FieldGroupDefinition,
@@ -34,6 +36,10 @@ export type FieldGroupSessionMutationResult =
   | { ok: true; value: FieldGroupDefinition; changed: boolean }
   | { ok: false; code: FieldGroupMutationErrorCode; message: string };
 
+export type ContentRecordSessionMutationResult =
+  | { ok: true; value: ContentRecordDefinition; changed: boolean }
+  | { ok: false; code: ContentRecordMutationErrorCode; message: string };
+
 export interface ProjectSessionState {
   project: CanonicalProject;
   activeDocumentId: string;
@@ -59,6 +65,9 @@ export interface ProjectSessionState {
   createFieldGroup(input: unknown): FieldGroupSessionMutationResult;
   updateFieldGroup(id: string, input: unknown): FieldGroupSessionMutationResult;
   removeFieldGroup(id: string): FieldGroupSessionMutationResult;
+  createContentRecord(input: unknown): ContentRecordSessionMutationResult;
+  updateContentRecord(id: string, input: unknown): ContentRecordSessionMutationResult;
+  removeContentRecord(id: string): ContentRecordSessionMutationResult;
   executeDocumentCommand(command: DocumentCommand): boolean;
   undo(): boolean;
   redo(): boolean;
