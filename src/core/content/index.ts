@@ -40,7 +40,6 @@ export {
 export {
   CONTENT_RECORD_STATUSES,
   CONTENT_RECORD_VERSION,
-  normalizeContentRecordDefinition,
   serializeContentRecordDefinition,
   type ContentRecordDefinition,
   type ContentRecordListOptions,
