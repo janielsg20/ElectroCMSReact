@@ -47,10 +47,15 @@
 
 .canvas-drop-zone {
   position: relative;
-  min-height: 8px;
-  margin: -2px 0;
+  z-index: 2;
+  min-height: 10px;
+  margin: 0;
   border-radius: 4px;
   transition: min-height 90ms ease, background 90ms ease;
+}
+
+.canvas-document-root > .canvas-drop-zone {
+  min-height: 18px;
 }
 
 .canvas-drop-zone::after {
@@ -64,14 +69,9 @@
   transform: translateY(-50%);
 }
 
-.canvas-drop-zone:has(+ .canvas-node),
-.canvas-child-entry > .canvas-drop-zone {
-  margin-block: 0;
-}
-
 .canvas-drop-zone:hover,
 .canvas-drop-zone[data-drag-active="true"] {
-  min-height: 14px;
+  min-height: 18px;
   background: var(--accent-soft);
 }
 
