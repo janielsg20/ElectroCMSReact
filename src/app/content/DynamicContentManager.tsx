@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { ContentTypeEditor } from './ContentTypeEditor';
 import { FieldGroupEditor } from './FieldGroupEditor';
+import { RecordsEditor } from './RecordsEditor';
 import { TaxonomyEditor } from './TaxonomyEditor';
 import './dynamic-content-manager.css';
 
-type DynamicContentPanel = 'content-types' | 'taxonomies' | 'field-groups';
+type DynamicContentPanel = 'content-types' | 'taxonomies' | 'field-groups' | 'records';
 
 export function DynamicContentManager() {
   const [panel, setPanel] = useState<DynamicContentPanel>('content-types');
@@ -15,7 +16,7 @@ export function DynamicContentManager() {
         <div>
           <span className="dynamic-content-manager-eyebrow">Local-first data modeling</span>
           <h2>Dynamic Content</h2>
-          <p>Define content structure, classification and reusable custom fields from one authoring workspace.</p>
+          <p>Define content structure, classification, reusable custom fields and records from one authoring workspace.</p>
         </div>
         <div className="dynamic-content-manager-tabs" role="tablist" aria-label="Dynamic content sections">
           <button
@@ -48,6 +49,16 @@ export function DynamicContentManager() {
           >
             Field Groups
           </button>
+          <button
+            id="dynamic-content-tab-records"
+            type="button"
+            role="tab"
+            aria-selected={panel === 'records'}
+            aria-controls="dynamic-content-panel-records"
+            onClick={() => setPanel('records')}
+          >
+            Records
+          </button>
         </div>
       </header>
 
@@ -61,8 +72,10 @@ export function DynamicContentManager() {
           <ContentTypeEditor />
         ) : panel === 'taxonomies' ? (
           <TaxonomyEditor />
-        ) : (
+        ) : panel === 'field-groups' ? (
           <FieldGroupEditor />
+        ) : (
+          <RecordsEditor />
         )}
       </div>
     </section>
