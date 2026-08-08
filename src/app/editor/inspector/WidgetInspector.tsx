@@ -8,6 +8,7 @@ import {
   type InspectorFieldSchema,
   type WidgetPropValidationIssue,
 } from '../../../core/widgets';
+import { Icon } from '../../components/Icon';
 import { useEditorWidgetRegistry } from '../../widgets/editor-widget-registry-context';
 import type {
   CanvasPropEditResult,
@@ -112,6 +113,7 @@ export function WidgetInspector({
   const registry = useEditorWidgetRegistry();
   const [issues, setIssues] = useState<Readonly<Record<string, string>>>({});
   const [activeTab, setActiveTab] = useState<'content' | 'style'>('content');
+  const [collapsedSections, setCollapsedSections] = useState<ReadonlySet<string>>(() => new Set());
   const definition = node && registry.has(node.type, node.version) ? registry.core.resolve(node.type, node.version) : null;
   const schema = useMemo(() => definition && node ? normalizeInspectorSchema(definition.inspectorSchema, node.props) : { sections: [] }, [definition, node]);
 
@@ -156,6 +158,15 @@ export function WidgetInspector({
     setIssues((current) => ({ ...current, [field.key]: matchingIssue?.message ?? 'The value could not be applied.' }));
   };
 
+  const toggleSection = (sectionId: string) => {
+    setCollapsedSections((current) => {
+      const next = new Set(current);
+      if (next.has(sectionId)) next.delete(sectionId);
+      else next.add(sectionId);
+      return next;
+    });
+  };
+
   return (
     <aside className="widget-inspector widget-inspector-v2" aria-label="Widget inspector" data-state="ready">
       <header className="widget-inspector-header widget-inspector-header-v2">
@@ -176,15 +187,25 @@ export function WidgetInspector({
           <div role="tabpanel" aria-label="Content inspector">
             {schema.sections.length > 0 ? (
               <div className="widget-inspector-sections">
-                {schema.sections.map((section) => (
-                  <fieldset key={section.id} className="widget-inspector-section">
-                    <legend>{section.label}</legend>
-                    {section.fields.map((field) => {
-                      const fieldIssue = issues[field.key];
-                      return <InspectorFieldControl key={field.key} node={node} field={field} {...(fieldIssue === undefined ? {} : { issue: fieldIssue })} onCommit={commit} />;
-                    })}
-                  </fieldset>
-                ))}
+                {schema.sections.map((section) => {
+                  const collapsed = collapsedSections.has(section.id);
+                  return (
+                    <section key={`${node.id}-${section.id}`} className="widget-inspector-section widget-inspector-disclosure">
+                      <button type="button" className="widget-inspector-disclosure-trigger" aria-expanded={!collapsed} aria-controls={`inspector-section-${node.id}-${section.id}`} onClick={() => toggleSection(section.id)}>
+                        <span>{section.label}</span>
+                        <Icon name={collapsed ? 'expand' : 'arrow-down'} size={12} />
+                      </button>
+                      {!collapsed ? (
+                        <div id={`inspector-section-${node.id}-${section.id}`} className="widget-inspector-section-fields">
+                          {section.fields.map((field) => {
+                            const fieldIssue = issues[field.key];
+                            return <InspectorFieldControl key={field.key} node={node} field={field} {...(fieldIssue === undefined ? {} : { issue: fieldIssue })} onCommit={commit} />;
+                          })}
+                        </div>
+                      ) : null}
+                    </section>
+                  );
+                })}
               </div>
             ) : <div className="widget-inspector-empty">This element has no editable content properties.</div>}
           </div>
