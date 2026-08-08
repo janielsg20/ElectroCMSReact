@@ -95,3 +95,63 @@ test('document commands undo and redo through keyboard and header controls', asy
   await redoButton.click();
   await expect(nodes).toHaveCount(1);
 });
+
+test('clipboard copy paste cut uses fresh canonical ids and remains undoable', async ({ page }) => {
+  await page.goto('/editor');
+  const insertButton = page.getByRole('button', { name: 'Insert container' });
+  const containers = page.locator('[data-canvas-node-type="core/container"]');
+
+  await insertButton.click();
+  await expect(containers).toHaveCount(1);
+  const originalId = await containers.nth(0).getAttribute('data-canvas-node-id');
+  if (!originalId) throw new Error('Expected original container id.');
+
+  await containers.nth(0).locator('.canvas-node-label').click();
+  await page.getByRole('button', { name: 'Copy' }).click();
+  await page.getByRole('button', { name: /^Paste/ }).click();
+  await expect(containers).toHaveCount(2);
+  const pastedId = await containers.nth(1).getAttribute('data-canvas-node-id');
+  expect(pastedId).not.toBe(originalId);
+  await expect(containers.nth(1)).toContainText('Copy');
+
+  await page.getByRole('button', { name: 'Cut' }).click();
+  await expect(containers).toHaveCount(1);
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(containers).toHaveCount(2);
+});
+
+test('group ungroup lock and hide are canonical reversible editor commands', async ({ page }) => {
+  await page.goto('/editor');
+  const insertButton = page.getByRole('button', { name: 'Insert container' });
+  await insertButton.click();
+  await insertButton.click();
+
+  const containers = page.locator('[data-canvas-node-type="core/container"]');
+  await containers.nth(0).locator('.canvas-node-label').click();
+  await containers.nth(1).locator('.canvas-node-label').click({ modifiers: ['Control'] });
+  await page.getByRole('button', { name: 'Group' }).click();
+
+  const group = page.locator('[data-canvas-node-type="core/group"]');
+  await expect(group).toHaveCount(1);
+  await expect(group).toHaveAttribute('data-selected', 'true');
+  await expect(group.locator('[data-canvas-node-type="core/container"]')).toHaveCount(2);
+
+  await page.getByRole('button', { name: 'Lock' }).click();
+  await expect(group).toHaveAttribute('data-locked', 'true');
+  await expect(group).toHaveAttribute('draggable', 'false');
+  await page.getByRole('button', { name: 'Hide' }).click();
+  await expect(group).toHaveAttribute('data-hidden', 'true');
+  await expect(page.getByRole('button', { name: 'Show' })).toBeEnabled();
+
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(group).toHaveAttribute('data-hidden', 'false');
+  await page.getByRole('button', { name: 'Unlock' }).click();
+  await expect(group).toHaveAttribute('data-locked', 'false');
+
+  await page.getByRole('button', { name: 'Ungroup' }).click();
+  await expect(group).toHaveCount(0);
+  const rootChildren = page
+    .locator('[data-canvas-node-type="core/root"]')
+    .locator('[data-canvas-node-type="core/container"][data-depth="1"]');
+  await expect(rootChildren).toHaveCount(2);
+});
