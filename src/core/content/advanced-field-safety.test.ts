@@ -2,12 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { createCanonicalProject } from '../project';
 import {
   createContentFieldTypeRegistry,
+  createDefaultContentRecordDefinition,
   createDefaultContentTypeDefinition,
   createDefaultCustomFieldDefinition,
   createDefaultFieldGroupDefinition,
   createContentType,
   createFieldGroup,
   validateCalculationExpression,
+  validateContentRecordDefinition,
   type CustomFieldDefinition,
 } from './index';
 
@@ -39,6 +41,34 @@ describe('MF-042 advanced field safety', () => {
     expect(validateCalculationExpression('globalThis.alert(1)').ok).toBe(false);
     expect(validateCalculationExpression('quantity ** 2').ok).toBe(false);
     expect(validateCalculationExpression('quantity; unit_price').ok).toBe(false);
+  });
+
+  it('enforces advanced safety rules directly at the field type registry boundary', () => {
+    const registry = createContentFieldTypeRegistry();
+    expect(registry.validateConfig('core/repeater', {
+      fieldGroupId: 'child-fields',
+      minItems: 0,
+      maxItems: 101,
+    }, 2).valid).toBe(false);
+    expect(registry.validateConfig('core/calculated', {
+      expression: `${'1 + '.repeat(61)}1`,
+    }, 2).valid).toBe(false);
+    expect(registry.validateConfig('core/conditional', {
+      fieldGroupId: 'child-fields',
+      sourceField: 'status',
+      operator: 'equals',
+    }, 2).valid).toBe(false);
+    expect(registry.validateConfig('core/conditional', {
+      fieldGroupId: 'child-fields',
+      sourceField: 'quantity',
+      operator: 'greaterThan',
+      compareValue: '2',
+    }, 2).valid).toBe(false);
+    expect(registry.validateConfig('core/conditional', {
+      fieldGroupId: 'child-fields',
+      sourceField: 'enabled',
+      operator: 'truthy',
+    }, 2).valid).toBe(true);
   });
 
   it('rejects repeater configurations beyond the runtime safety cap', () => {
@@ -122,5 +152,106 @@ describe('MF-042 advanced field safety', () => {
     if (!result.ok) {
       expect(result.error.message).toContain('non-advanced sibling');
     }
+  });
+
+  it('canonically normalizes nested calculated and conditional values regardless of schema order', () => {
+    let project = baseProject();
+    const detail = createFieldGroup(project, {
+      ...createDefaultFieldGroupDefinition('detail-fields', 'Detail Fields'),
+      fields: [field('core/text', 'note', { name: 'note', defaultValue: 'ready' })],
+    });
+    expect(detail.ok).toBe(true);
+    if (!detail.ok) return;
+    project = detail.project;
+
+    const nested = createFieldGroup(project, {
+      ...createDefaultFieldGroupDefinition('nested-fields', 'Nested Fields'),
+      fields: [
+        field('core/conditional', 'details', {
+          name: 'details',
+          config: {
+            fieldGroupId: 'detail-fields',
+            sourceField: 'enabled',
+            operator: 'truthy',
+          },
+          defaultValue: null,
+        }),
+        field('core/calculated', 'total', {
+          name: 'total',
+          config: { expression: 'quantity * unit_price' },
+          defaultValue: 0,
+        }),
+        field('core/number', 'quantity', { name: 'quantity', defaultValue: 2 }),
+        field('core/currency', 'unit-price', { name: 'unit_price', defaultValue: 3 }),
+        field('core/switch', 'enabled', { name: 'enabled', defaultValue: true }),
+      ],
+    });
+    expect(nested.ok).toBe(true);
+    if (!nested.ok) return;
+    project = nested.project;
+
+    const wrapper = createFieldGroup(project, {
+      ...createDefaultFieldGroupDefinition('wrapper-fields', 'Wrapper Fields'),
+      fields: [
+        field('core/group', 'nested', {
+          name: 'nested',
+          config: { fieldGroupId: 'nested-fields' },
+          defaultValue: {},
+        }),
+        field('core/repeater', 'rows', {
+          name: 'rows',
+          config: { fieldGroupId: 'nested-fields', minItems: 0, maxItems: 5 },
+          defaultValue: [],
+        }),
+      ],
+    });
+    expect(wrapper.ok).toBe(true);
+    if (!wrapper.ok) return;
+    project = wrapper.project;
+
+    const draft = {
+      ...createDefaultContentRecordDefinition(project, 'products', 'nested-normalization'),
+      title: 'Nested normalization',
+      slug: 'nested-normalization',
+      fieldGroupIds: ['wrapper-fields'],
+      fieldValues: {
+        'wrapper-fields': {
+          nested: {
+            details: null,
+            total: 999,
+            quantity: 4,
+            unit_price: 5,
+            enabled: true,
+          },
+          rows: [{
+            details: null,
+            total: 999,
+            quantity: 3,
+            unit_price: 2,
+            enabled: true,
+          }],
+        },
+      },
+    };
+
+    const validation = validateContentRecordDefinition(draft, project);
+    expect(validation.ok).toBe(true);
+    if (!validation.ok) return;
+    expect(validation.value.fieldValues['wrapper-fields']).toEqual({
+      nested: {
+        details: { note: 'ready' },
+        total: 20,
+        quantity: 4,
+        unit_price: 5,
+        enabled: true,
+      },
+      rows: [{
+        details: { note: 'ready' },
+        total: 6,
+        quantity: 3,
+        unit_price: 2,
+        enabled: true,
+      }],
+    });
   });
 });
