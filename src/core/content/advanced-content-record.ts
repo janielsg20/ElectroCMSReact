@@ -49,19 +49,19 @@ function normalizeAdvancedRecordInput(
     const values = isJsonObject(raw) ? structuredClone(raw) : {};
 
     for (const field of group.fields) {
-      if (values[field.name] === undefined) {
-        values[field.name] = MF042_ADVANCED_FIELD_TYPES.includes(field.type as Mf042AdvancedFieldType)
-          ? createAdvancedFieldDefaultValue(field, {
-              registry,
-              resolveGroup: (id) => groups.get(id) ?? null,
-              currentValues: values,
-            })
-          : structuredClone(field.defaultValue);
-      }
+      if (values[field.name] !== undefined) continue;
+      values[field.name] = MF042_ADVANCED_FIELD_TYPES.includes(field.type as Mf042AdvancedFieldType)
+        ? createAdvancedFieldDefaultValue(field, {
+            registry,
+            resolveGroup: (id) => groups.get(id) ?? null,
+            currentValues: values,
+          })
+        : structuredClone(field.defaultValue);
     }
 
+    // Normalize structural fields first so their nested payload is stable before derived fields run.
     for (const field of group.fields) {
-      if (!MF042_ADVANCED_FIELD_TYPES.includes(field.type as Mf042AdvancedFieldType)) continue;
+      if (field.type !== 'core/group' && field.type !== 'core/repeater') continue;
       const value = values[field.name];
       if (!isJsonValue(value)) continue;
       values[field.name] = normalizeAdvancedFieldValue(field, value, {
@@ -70,6 +70,31 @@ function normalizeAdvancedRecordInput(
         currentValues: values,
       });
     }
+
+    // Calculated fields only depend on primitive Number/Currency siblings, so order cannot affect output.
+    for (const field of group.fields) {
+      if (field.type !== 'core/calculated') continue;
+      const value = values[field.name];
+      if (!isJsonValue(value)) continue;
+      values[field.name] = normalizeAdvancedFieldValue(field, value, {
+        registry,
+        resolveGroup: (id) => groups.get(id) ?? null,
+        currentValues: values,
+      });
+    }
+
+    // Conditions run last and can therefore observe normalized primitive/calculated sibling state.
+    for (const field of group.fields) {
+      if (field.type !== 'core/conditional') continue;
+      const value = values[field.name];
+      if (!isJsonValue(value)) continue;
+      values[field.name] = normalizeAdvancedFieldValue(field, value, {
+        registry,
+        resolveGroup: (id) => groups.get(id) ?? null,
+        currentValues: values,
+      });
+    }
+
     fieldValues[groupId] = values;
   }
 
