@@ -1,4 +1,4 @@
-import { isJsonObject, isJsonValue, type JsonObject, type JsonValue } from '../domain';
+import { isJsonObject, isJsonValue, type JsonObject } from '../domain';
 import type { CanonicalProject } from '../project';
 import {
   createContentRecord as createBaseRecord,
