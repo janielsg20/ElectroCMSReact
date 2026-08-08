@@ -332,15 +332,28 @@ export function removeContentType(project: CanonicalProject, id: string): Conten
       error: { code: 'INVALID_DEFINITION', message: 'Existing content type definition is invalid.', issues: validation.issues },
     };
   }
-  const inUse = Object.values(project.records).some(
+  const recordInUse = Object.values(project.records).some(
     (record) => record.contentTypeId === id || record.contentType === id,
   );
-  if (inUse) {
+  if (recordInUse) {
     return {
       ok: false,
       error: {
         code: 'CONTENT_TYPE_IN_USE',
         message: `Content type ${id} has records and cannot be deleted without an explicit migration.`,
+      },
+    };
+  }
+  const taxonomyInUse = Object.values(project.taxonomies).some((taxonomy) => {
+    const contentTypeIds = isJsonObject(taxonomy) ? taxonomy.contentTypeIds : undefined;
+    return Array.isArray(contentTypeIds) && contentTypeIds.includes(id);
+  });
+  if (taxonomyInUse) {
+    return {
+      ok: false,
+      error: {
+        code: 'CONTENT_TYPE_IN_USE',
+        message: `Content type ${id} is assigned to a taxonomy and cannot be deleted until that association is removed.`,
       },
     };
   }
