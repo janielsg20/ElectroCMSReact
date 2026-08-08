@@ -1,7 +1,9 @@
 # KNOWN_ISSUES.md
 
 ## Blocking
-- **MF-042 gate blocked by GitHub Actions runner initialization.** Runs #986, #990, #994, #1000, #1002, #1014 and #1018 complete as `failure` before either job executes a step. Run #1018 was triggered from a brand-new quality PR (`pull_request.opened`) against the exact MF-042 HEAD and still returned `steps=[]`; therefore the blocker is not caused by reusing PR #7 or by the workflow event shape. These runs are not valid code-test results and must not be used to mark MF-042 PASS or FAIL.
+- **MF-042 gate blocked by GitHub Actions runner initialization / execution availability.** Runs #986, #990, #994, #1000, #1002, #1014 and #1018 completed as `failure` before either job executed a step. Run #1018 was triggered from a brand-new quality PR (`pull_request.opened`) and still returned `steps=[]`; job log download returned `BlobNotFound`. Therefore the blocker is not caused by reusing PR #7 or by the workflow event shape. These runs are not valid code-test results and must not be used to mark MF-042 PASS or FAIL.
+- A later attempt with `quality/f05` synchronized to the latest code HEAD again showed no workflow/check status at inspection time. PR #7 was closed without merge.
+- GitHub Status currently reports **All Systems Operational**, Actions operational and no incident on Aug 8, 2026. The Aug 6–7 Actions incident is resolved. This makes a repo/account/quota/runner-allocation issue more likely than a current global outage, but the available connector does not expose Actions billing/quota details to prove the exact cause.
 - MF-043 remains blocked until a real MF-042 gate executes verify, lint, TypeScript, unit, coverage, Playwright and build successfully.
 
 ## Environment
@@ -37,12 +39,13 @@
 - Profundidad máxima de referencias avanzadas: 8 niveles.
 - Repeater aplica `minItems/maxItems` y hard cap runtime de 100 items.
 - Group/Repeater normalizan recursivamente payloads anidados antes de persistir; Calculated y Conditional anidados no pueden quedar obsoletos solo porque validaron sobre una copia temporal.
+- `isMf042AdvancedField()` hace el runtime version-aware; contratos históricos/modelados no se ejecutan solo por compartir el mismo `type`.
 - Calculated usa un parser aritmético propio y nunca `eval`/Function/dynamic code.
 - Calculated solo puede referenciar siblings Number/Currency; no se permiten cadenas Calculated→Calculated dependientes del orden del schema.
 - Conditional se normaliza después de poblar siblings y cálculos; persiste `null` cuando la condición es falsa.
 - Conditional source debe ser un sibling no avanzado. `greaterThan`/`lessThan` además requieren source Number/Currency y `compareValue` numérico finito; `equals`/`notEquals` requieren `compareValue`; `truthy`/`falsy` no lo requieren.
 - Config defaults del registry pueden contener referencias vacías durante la edición; la validación contextual del Field Group exige referencias reales antes de guardar.
-- `AdvancedRecordFieldControl` renderiza Group nested, Repeater rows, Calculated read-only y Conditional reactivo; el core sigue siendo React-free.
+- `AdvancedRecordFieldControl` renderiza Group nested, Repeater rows, Calculated read-only y Conditional reactivo; además rechaza ejecutar versiones modeled/históricas como runtime MF-042.
 
 ## Field type / field group / record boundaries
 - `FieldTypeDefinition` contiene callbacks runtime; nunca se serializan dentro de `CanonicalProject`.
@@ -52,11 +55,14 @@
 - Config/default/value validation se delega al registry + validadores contextuales de referencias; no duplicar reglas persistentes en UI.
 - Record statuses: draft, published, archived.
 - Record slug es único dentro del CPT; ID y `createdAt` son inmutables.
+- `listContentRecords()` valida contra el schema actual y omite records inválidos; por eso `updateFieldGroup` debe impedir de forma preventiva cambios de schema incompatibles.
+- El `updateFieldGroup` público pasa por `updateFieldGroupWithRecordIntegrity`: revalida Records que dependan directa o transitivamente del grupo candidato y rechaza el cambio antes del commit/autosave si alguno quedaría inválido.
 
 ## Referential integrity
 - CPT no puede eliminarse mientras records o taxonomías lo referencien.
 - Taxonomías rechazan CPT/field-group/archive refs desconocidas.
 - Field Group no puede eliminarse mientras taxonomy, record u otro advanced field lo referencie.
+- Field Group no puede actualizarse a un schema que invalide Records existentes que dependan directa o transitivamente de él.
 - No inventar cascadas destructivas para relaciones/terms antes de sus microfases.
 
 ## Persistence testing note
