@@ -1,0 +1,630 @@
+/*
+ * ElectroCMS — Bento High Density modern polish
+ * Final composition layer for the single editor theme. This file refines
+ * hierarchy, adaptive layout and interaction ergonomics without introducing
+ * another theme or touching canonical project data.
+ */
+
+.electrocms-app[data-editor-preset="bento-high-density"] {
+  --ec-modern-gap: 10px;
+  --ec-modern-gap-compact: 7px;
+  --ec-modern-radius: 15px;
+  --ec-modern-radius-control: 9px;
+  --ec-modern-surface-raised: color-mix(in srgb, var(--color-ec-surface) 97%, var(--color-ec-accent-soft));
+  --ec-modern-surface-quiet: color-mix(in srgb, var(--color-ec-surface-subtle) 92%, var(--color-ec-surface));
+  --ec-modern-border: color-mix(in srgb, var(--color-ec-border) 82%, transparent);
+  --ec-modern-border-strong: color-mix(in srgb, var(--color-ec-text-muted) 30%, var(--color-ec-border));
+  --ec-modern-accent-2: color-mix(in srgb, var(--color-ec-violet-600) 54%, var(--color-ec-accent));
+  --ec-modern-shadow: 0 1px 2px rgb(16 19 18 / .045), 0 8px 24px rgb(16 19 18 / .055);
+  --ec-modern-shadow-raised: 0 2px 6px rgb(16 19 18 / .07), 0 18px 46px rgb(16 19 18 / .11);
+  --ec-modern-focus: 0 0 0 3px color-mix(in srgb, var(--color-ec-accent) 22%, transparent);
+  --ec-modern-header-height: 56px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"][data-theme="dark"] {
+  --ec-modern-surface-raised: color-mix(in srgb, var(--color-ec-surface) 96%, var(--color-ec-accent) 4%);
+  --ec-modern-surface-quiet: color-mix(in srgb, var(--color-ec-surface-subtle) 94%, black 6%);
+  --ec-modern-border: color-mix(in srgb, var(--color-ec-border) 92%, transparent);
+  --ec-modern-border-strong: color-mix(in srgb, var(--color-ec-text-muted) 38%, var(--color-ec-border));
+  --ec-modern-shadow: 0 1px 2px rgb(0 0 0 / .22), 0 10px 28px rgb(0 0 0 / .16);
+  --ec-modern-shadow-raised: 0 4px 12px rgb(0 0 0 / .22), 0 22px 52px rgb(0 0 0 / .28);
+}
+
+/* App chrome ------------------------------------------------------------- */
+.electrocms-app[data-editor-preset="bento-high-density"] .app-header {
+  display: grid;
+  grid-template-columns: minmax(190px, auto) minmax(0, 1fr) auto;
+  min-height: var(--ec-modern-header-height);
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px;
+  border-color: var(--ec-modern-border);
+  border-radius: var(--ec-modern-radius);
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--color-ec-surface) 98%, transparent), color-mix(in srgb, var(--color-ec-surface) 92%, var(--color-ec-accent-soft)));
+  box-shadow: var(--ec-modern-shadow);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .header-project {
+  width: auto;
+  min-width: 0;
+  padding-right: 4px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .project-identity {
+  max-width: min(220px, 24vw);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .brand-mark {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  background:
+    linear-gradient(145deg, var(--color-ec-accent), var(--ec-modern-accent-2));
+  color: white;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--color-ec-accent) 24%, transparent);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .brand-mark::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .2);
+  pointer-events: none;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .header-controls {
+  width: 100%;
+  gap: 6px;
+  padding: 2px;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .header-controls > * {
+  scroll-snap-align: start;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .header-controls > div,
+.electrocms-app[data-editor-preset="bento-high-density"] .header-controls > label,
+.electrocms-app[data-editor-preset="bento-high-density"] .segmented-control {
+  border-color: var(--ec-modern-border);
+  background: color-mix(in srgb, var(--color-ec-surface) 90%, transparent);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .035);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .header-actions {
+  justify-self: end;
+  padding-left: 2px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .header-actions button {
+  min-height: 34px;
+  border: 1px solid transparent;
+  border-radius: var(--ec-modern-radius-control);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .header-actions button[aria-pressed="true"]:not([aria-label="Export"]) {
+  border-color: color-mix(in srgb, var(--color-ec-accent) 24%, transparent);
+  background: var(--color-ec-accent-soft);
+  color: var(--color-ec-accent);
+}
+
+/* Studio frame ----------------------------------------------------------- */
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio {
+  gap: var(--ec-modern-gap);
+  padding: var(--ec-modern-gap);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio > .flex.min-w-0.flex-1.flex-col {
+  border-color: var(--ec-modern-border);
+  border-radius: var(--ec-modern-radius);
+  background: var(--color-ec-surface);
+  box-shadow: var(--ec-modern-shadow);
+}
+
+/* The compact context bar remains visible but visually quieter than the task. */
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio > .flex.min-w-0.flex-1.flex-col > .flex.h-10 {
+  min-height: 42px;
+  height: 42px;
+  padding-inline: 12px;
+  border-bottom-color: var(--ec-modern-border);
+  background: var(--ec-modern-surface-raised);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio > .flex.min-w-0.flex-1.flex-col > .flex.h-10 strong {
+  font-size: var(--ec-font-xs);
+  letter-spacing: -.01em;
+}
+
+/* Navigation rail -------------------------------------------------------- */
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail {
+  border-color: rgb(255 255 255 / .07);
+  background:
+    radial-gradient(circle at 22% 0%, color-mix(in srgb, var(--color-ec-accent) 15%, transparent), transparent 30%),
+    linear-gradient(180deg, var(--color-ec-chrome-raised), var(--color-ec-chrome));
+  box-shadow: var(--ec-modern-shadow-raised);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail > div:first-child {
+  min-height: 44px;
+  margin-bottom: 7px;
+  padding-inline: 4px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail nav {
+  scrollbar-gutter: stable;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail nav button {
+  min-height: 38px;
+  gap: 8px;
+  border-radius: 10px;
+  color: rgb(255 255 255 / .58);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail nav button > span.grid {
+  border-radius: 7px;
+  background: rgb(255 255 255 / .025);
+  transition:
+    background-color var(--ec-motion-fast) var(--ec-ease-standard),
+    color var(--ec-motion-fast) var(--ec-ease-standard),
+    transform var(--ec-motion-normal) var(--ec-motion-spring);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail nav button[data-active="true"] {
+  border-color: color-mix(in srgb, var(--color-ec-accent) 24%, transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-ec-accent) 15%, transparent), color-mix(in srgb, var(--color-ec-accent) 6%, transparent));
+  color: white;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail nav button[data-active="true"] > span.grid {
+  background: color-mix(in srgb, var(--color-ec-accent) 18%, transparent);
+  color: var(--color-ec-accent);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail details > summary {
+  border-radius: 10px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-rail details > div {
+  border-color: var(--ec-modern-border-strong);
+  border-radius: 13px;
+  background: var(--color-ec-surface);
+  box-shadow: var(--ec-modern-shadow-raised);
+}
+
+/* Workspace pages -------------------------------------------------------- */
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio > .flex.min-w-0.flex-1.flex-col > .flex.min-h-0.flex-1 > section {
+  background: var(--color-ec-app);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio > .flex.min-w-0.flex-1.flex-col > .flex.min-h-0.flex-1 > section > header {
+  z-index: 2;
+  margin: 8px 8px 0;
+  border: 1px solid var(--ec-modern-border);
+  border-radius: 13px;
+  background:
+    linear-gradient(125deg, var(--color-ec-surface), color-mix(in srgb, var(--color-ec-surface) 88%, var(--color-ec-accent-soft)));
+  box-shadow: var(--ec-modern-shadow);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio > .flex.min-w-0.flex-1.flex-col > .flex.min-h-0.flex-1 > section > header > div {
+  max-width: none;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio > .flex.min-w-0.flex-1.flex-col > .flex.min-h-0.flex-1 > section > header h2 {
+  font-size: clamp(17px, 1.45vw, 20px);
+  line-height: 1.18;
+  letter-spacing: -.025em;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio > .flex.min-w-0.flex-1.flex-col > .flex.min-h-0.flex-1 > section > header p {
+  max-width: 78ch;
+  font-size: var(--ec-font-xs);
+  line-height: 1.55;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio > .flex.min-w-0.flex-1.flex-col > .flex.min-h-0.flex-1 > section > header + div {
+  max-width: none;
+  padding: 10px;
+}
+
+/* Normalize tabs across Pages, Data, Forms, Backend and Settings. */
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio [role="tablist"] {
+  border-radius: 10px;
+  scrollbar-gutter: stable;
+  overscroll-behavior-inline: contain;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio [role="tab"] {
+  min-height: 31px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio [role="tab"][aria-selected="true"] {
+  border-color: var(--ec-modern-border);
+  background: var(--color-ec-surface);
+  color: var(--color-ec-text);
+  box-shadow: 0 1px 2px rgb(16 19 18 / .08);
+}
+
+/* Normalize the many legacy panel/card utilities into one Bento surface. */
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio [class*="shadow-[var(--ec-shadow-panel)]"],
+.electrocms-app[data-editor-preset="bento-high-density"] .project-theme-controls {
+  border-color: var(--ec-modern-border);
+  border-radius: 12px;
+  background: var(--color-ec-surface);
+  box-shadow: var(--ec-modern-shadow);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .production-studio [class*="border-dashed"] {
+  border-color: color-mix(in srgb, var(--color-ec-text-muted) 30%, var(--color-ec-border));
+  background: var(--ec-modern-surface-quiet);
+}
+
+/* Capability/status chips should read as status, not disabled actions. */
+.electrocms-app[data-editor-preset="bento-high-density"] .capability-status {
+  min-height: 32px;
+  border-color: color-mix(in srgb, var(--color-ec-accent) 18%, var(--ec-modern-border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-ec-accent-soft) 55%, var(--color-ec-surface));
+  color: var(--color-ec-text-muted);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .05);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .capability-status svg {
+  color: var(--color-ec-accent);
+}
+
+/* Builder --------------------------------------------------------------- */
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-builder-workspace {
+  gap: var(--ec-modern-gap);
+  padding: var(--ec-modern-gap);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-library,
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-editor-region {
+  border-color: var(--ec-modern-border);
+  border-radius: 13px;
+  box-shadow: var(--ec-modern-shadow);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-library > div:first-child {
+  min-height: 46px;
+  border-bottom-color: var(--ec-modern-border);
+  background: var(--ec-modern-surface-raised);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-library > div:nth-child(2) {
+  padding: 8px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-library > div:nth-child(3) {
+  padding-inline: 8px;
+  border-bottom-color: var(--ec-modern-border);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-library > div:last-child {
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-library section > div:last-child > button {
+  min-height: 68px;
+  border-color: var(--ec-modern-border);
+  background: var(--ec-modern-surface-raised);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .studio-library section > div:last-child > button:focus-visible {
+  border-color: var(--color-ec-accent);
+  box-shadow: var(--ec-modern-focus);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-command-bar-v2 {
+  border-bottom-color: var(--ec-modern-border);
+  background: color-mix(in srgb, var(--color-ec-surface) 96%, transparent);
+  box-shadow: 0 1px 0 rgb(16 19 18 / .04);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-command-bar button,
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-command-bar select,
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-geometry-controls input {
+  border-color: var(--ec-modern-border);
+  border-radius: 8px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-stage-v2 {
+  scroll-padding: 24px;
+  background-color: color-mix(in srgb, var(--color-ec-app) 96%, var(--color-ec-surface-muted));
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-scaled-document {
+  border-color: var(--ec-modern-border-strong);
+  border-radius: 11px;
+  box-shadow: 0 2px 6px rgb(16 19 18 / .08), 0 28px 84px rgb(16 19 18 / .13);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-inspector-dock {
+  border-left-color: var(--ec-modern-border);
+  background: var(--color-ec-surface);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-header-v2,
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-section {
+  border-color: var(--ec-modern-border);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .widget-inspector-tabs {
+  margin-inline: 8px;
+  border-color: var(--ec-modern-border);
+  border-radius: 10px;
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-layers-popover {
+  border-color: var(--ec-modern-border-strong);
+  border-radius: 13px;
+  box-shadow: var(--ec-modern-shadow-raised);
+}
+
+/* Hover behavior is reserved for pointer devices. */
+@media (hover: hover) and (pointer: fine) {
+  .electrocms-app[data-editor-preset="bento-high-density"] .production-studio [class*="shadow-[var(--ec-shadow-panel)]"]:hover {
+    border-color: color-mix(in srgb, var(--color-ec-text-muted) 30%, var(--color-ec-border));
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .studio-library section > div:last-child > button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--color-ec-accent) 46%, var(--color-ec-border));
+    background: var(--ec-bento-highlight);
+    box-shadow: 0 10px 24px rgb(16 19 18 / .08);
+  }
+}
+
+/* Adaptive shell --------------------------------------------------------- */
+@media (max-width: 1180px) {
+  .electrocms-app[data-editor-preset="bento-high-density"] {
+    --ec-modern-gap: 8px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .project-identity {
+    max-width: 170px;
+  }
+}
+
+@media (max-width: 960px) {
+  .electrocms-app[data-editor-preset="bento-high-density"] .production-studio {
+    gap: 7px;
+    padding: 7px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .production-studio > .flex.min-w-0.flex-1.flex-col > .flex.min-h-0.flex-1 > section > header {
+    margin: 7px 7px 0;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .production-studio[data-compact="true"] .studio-rail details > div {
+    position: absolute;
+    right: 4px !important;
+    bottom: 46px;
+    left: 4px !important;
+    width: auto !important;
+    max-height: min(58dvh, 460px);
+    margin: 0 !important;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+@media (max-width: 820px) {
+  .electrocms-app[data-editor-preset="bento-high-density"] .studio-builder-workspace {
+    gap: 7px;
+    padding: 7px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .studio-library {
+    height: 174px;
+    min-height: 166px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .studio-library > div:first-child {
+    min-height: 42px;
+    height: 42px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .studio-library > div:nth-child(2) {
+    padding: 6px 8px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .studio-library section {
+    min-width: 220px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-inspector-dock {
+    border-top-color: var(--ec-modern-border);
+    border-radius: 12px 12px 0 0;
+  }
+}
+
+/* Mobile: split the header into a clear command row and a scrollable editor row. */
+@media (max-width: 720px) {
+  .electrocms-app[data-editor-preset="bento-high-density"] {
+    --ec-modern-gap: 6px;
+    --ec-modern-header-height: auto;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .app-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 44px auto;
+    gap: 4px 6px;
+    min-height: 92px;
+    padding: 4px 6px 6px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .header-project {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .header-actions {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .header-controls {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    max-width: none !important;
+    min-height: 40px;
+    width: 100%;
+    padding: 2px 0;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .project-identity {
+    max-width: min(48vw, 220px);
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .header-actions button,
+  .electrocms-app[data-editor-preset="bento-high-density"] .header-controls button,
+  .electrocms-app[data-editor-preset="bento-high-density"] .header-controls select,
+  .electrocms-app[data-editor-preset="bento-high-density"] .studio-rail button,
+  .electrocms-app[data-editor-preset="bento-high-density"] .studio-rail summary {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .production-studio {
+    padding: 6px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .production-studio > .flex.min-w-0.flex-1.flex-col > .flex.h-10 {
+    min-height: 40px;
+    height: 40px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .production-studio > .flex.min-w-0.flex-1.flex-col > .flex.min-h-0.flex-1 > section > header {
+    margin: 6px 6px 0;
+    padding: 10px 12px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .production-studio > .flex.min-w-0.flex-1.flex-col > .flex.min-h-0.flex-1 > section > header + div {
+    padding: 8px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .studio-library {
+    height: 158px;
+    min-height: 150px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-command-bar-v2 {
+    scroll-padding-inline: 8px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-inspector-dock {
+    min-height: 228px;
+    max-height: 39dvh;
+  }
+}
+
+@media (max-width: 480px) {
+  .electrocms-app[data-editor-preset="bento-high-density"] .app-header {
+    margin: 4px 4px 0;
+    border-radius: 12px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .project-identity {
+    max-width: 42vw;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .project-identity .save-state {
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .production-studio {
+    padding: 4px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .production-studio > .flex.min-w-0.flex-1.flex-col > .flex.min-h-0.flex-1 > section > header {
+    margin: 4px 4px 0;
+    border-radius: 11px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .studio-builder-workspace {
+    gap: 5px;
+    padding: 5px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .studio-library {
+    height: 152px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .studio-library section {
+    min-width: 198px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] .editor-canvas-v2 .canvas-stage-v2 {
+    padding: 10px 6px 34px;
+  }
+}
+
+/* Modern browser layout refinement: let content react to its actual workspace width. */
+@supports (container-type: inline-size) {
+  .electrocms-app[data-editor-preset="bento-high-density"] .production-studio > .flex.min-w-0.flex-1.flex-col {
+    container-type: inline-size;
+    container-name: ec-workspace;
+  }
+
+  @container ec-workspace (max-width: 760px) {
+    .production-studio [role="tablist"] {
+      max-width: 100%;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+    }
+  }
+}
+
+/* Accessibility ---------------------------------------------------------- */
+.electrocms-app[data-editor-preset="bento-high-density"] :where(button, summary, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--color-ec-accent);
+  outline-offset: 2px;
+  box-shadow: var(--ec-modern-focus);
+}
+
+.electrocms-app[data-editor-preset="bento-high-density"] :where(button, [role="tab"]):disabled {
+  filter: saturate(.55);
+}
+
+@media (forced-colors: active) {
+  .electrocms-app[data-editor-preset="bento-high-density"] :where(button, summary, input, select, textarea, [role="tab"]) {
+    border: 1px solid ButtonText;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"] :where(button, summary, a, input, select, textarea):focus-visible {
+    outline: 2px solid Highlight;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .electrocms-app[data-editor-preset="bento-high-density"] {
+    --ec-modern-border: var(--color-ec-text-muted);
+    --ec-modern-border-strong: var(--color-ec-text);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .electrocms-app[data-editor-preset="bento-high-density"] *,
+  .electrocms-app[data-editor-preset="bento-high-density"] *::before,
+  .electrocms-app[data-editor-preset="bento-high-density"] *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
