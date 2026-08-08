@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { CanonicalProject } from '../core/project';
 import type { ProjectThemeRegistry } from '../core/themes';
 import { AppHeader } from './components/AppHeader';
@@ -25,16 +25,37 @@ export interface AppProps {
   projectThemeRegistry?: ProjectThemeRegistry;
 }
 
+function useCompactStudioLayout(): boolean {
+  const query = '(max-width: 960px)';
+  const [compact, setCompact] = useState(() =>
+    typeof globalThis.matchMedia === 'function' ? globalThis.matchMedia(query).matches : false,
+  );
+
+  useEffect(() => {
+    if (typeof globalThis.matchMedia !== 'function') return undefined;
+    const mediaQuery = globalThis.matchMedia(query);
+    const update = () => setCompact(mediaQuery.matches);
+    update();
+    mediaQuery.addEventListener('change', update);
+    return () => mediaQuery.removeEventListener('change', update);
+  }, []);
+
+  return compact;
+}
+
 function EditorApplicationShell() {
   const route = useWorkspaceRoute();
   const { preferences, setLastWorkspace } = useWorkspacePreferences();
   const resolvedTheme = useResolvedEditorTheme(preferences.editorThemeMode);
   const activeWorkspace: WorkspaceId = route.workspaceId ?? preferences.lastWorkspace;
+  const compactLayout = useCompactStudioLayout();
+  const [navigationOpen, setNavigationOpen] = useState(false);
 
   const navigate = useCallback(
     (workspaceId: WorkspaceId) => {
       setLastWorkspace(workspaceId);
       route.navigate(workspaceId);
+      setNavigationOpen(false);
     },
     [route, setLastWorkspace],
   );
@@ -49,6 +70,10 @@ function EditorApplicationShell() {
     }
   }, [preferences.lastWorkspace, route, setLastWorkspace]);
 
+  useEffect(() => {
+    if (!compactLayout) setNavigationOpen(false);
+  }, [compactLayout]);
+
   return (
     <div
       className="electrocms-app"
@@ -56,11 +81,22 @@ function EditorApplicationShell() {
       data-theme-mode={preferences.editorThemeMode}
       data-editor-preset={preferences.editorThemePresetId}
       data-density={preferences.density}
-      data-navigation-position="left"
+      data-navigation-position={preferences.navigationPosition}
     >
       <a className="skip-link" href="#workspace-main">Skip to workspace</a>
-      <AppHeader activeWorkspace={activeWorkspace} onNavigate={navigate} />
-      <ProductionStudio workspaceId={activeWorkspace} onNavigate={navigate} />
+      <AppHeader
+        compactLayout={compactLayout}
+        activeWorkspace={activeWorkspace}
+        onOpenNavigation={() => setNavigationOpen(true)}
+        onNavigate={navigate}
+      />
+      <ProductionStudio
+        workspaceId={activeWorkspace}
+        compactLayout={compactLayout}
+        navigationOpen={navigationOpen}
+        onCloseNavigation={() => setNavigationOpen(false)}
+        onNavigate={navigate}
+      />
     </div>
   );
 }
