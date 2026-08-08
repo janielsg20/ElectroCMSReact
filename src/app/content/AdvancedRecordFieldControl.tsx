@@ -4,12 +4,11 @@ import {
   createGroupDefaultValue,
   evaluateCalculatedField,
   evaluateConditionalField,
+  isMf042AdvancedField,
   MAX_ADVANCED_FIELD_DEPTH,
   MAX_REPEATER_ITEMS,
-  MF042_ADVANCED_FIELD_TYPES,
   type CustomFieldDefinition,
   type FieldGroupDefinition,
-  type Mf042AdvancedFieldType,
 } from '../../core/content';
 import { isJsonObject, type JsonObject, type JsonValue } from '../../core/domain';
 import './advanced-record-field-control.css';
@@ -163,7 +162,7 @@ function NestedGroupEditor({
     <div className="advanced-record-nested-grid" data-depth={depth}>
       {group.fields.map((field) => {
         const current = values[field.name];
-        const advanced = MF042_ADVANCED_FIELD_TYPES.includes(field.type as Mf042AdvancedFieldType);
+        const advanced = isMf042AdvancedField(field);
         return (
           <div className="advanced-record-nested-field" key={field.id}>
             <div className="advanced-record-nested-label">
@@ -204,6 +203,15 @@ export function AdvancedRecordFieldControl({
 }: AdvancedRecordFieldControlProps) {
   if (depth > MAX_ADVANCED_FIELD_DEPTH) {
     return <div className="advanced-record-error">Advanced field depth exceeds the safe editor limit.</div>;
+  }
+
+  if (!isMf042AdvancedField(field)) {
+    return (
+      <div className="advanced-record-inactive" role="status">
+        <strong>Modeled field version</strong>
+        <span>{field.type}@{field.typeVersion} has no MF-042 runtime behavior. Upgrade/create the available v2 field definition instead.</span>
+      </div>
+    );
   }
 
   if (field.type === 'core/calculated') {
