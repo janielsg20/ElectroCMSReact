@@ -56,8 +56,9 @@ describe('ProductionStudio', () => {
     const user = userEvent.setup();
     render(<App initialProject={makeProject()} preferencesRepository={new MemoryWorkspacePreferencesRepository()} />);
 
-    await user.click(screen.getByRole('button', { name: 'Insert container' }));
-    await user.click(screen.getByRole('button', { name: 'Layers' }));
+    const canvasToolbar = screen.getByRole('toolbar', { name: 'Canvas commands' });
+    await user.click(within(canvasToolbar).getByRole('button', { name: 'Insert container' }));
+    await user.click(within(canvasToolbar).getByRole('button', { name: 'Layers' }));
 
     const layers = screen.getByRole('complementary', { name: 'Layers navigator' });
     const containerLayer = within(layers).getByRole('button', { name: 'container' });
