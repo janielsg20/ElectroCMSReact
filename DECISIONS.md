@@ -169,3 +169,13 @@
 **Decision:** the primary ElectroCMS visual editor follows the interaction anatomy of professional page builders: top command bar, left **Insert / Elements Library**, dominant central canvas and right contextual inspector. The library is a first-class insertion surface with search/categories, recognizable icon+label discovery, click-to-insert and drag-to-canvas when supported; it may evolve into Elements/Layers/Templates modes.
 
 **Why:** this supports fast no-code authoring and makes element discovery/insertion spatially predictable. Tools such as Elementor are an interaction-model reference only: ElectroCMS keeps original identity, terminology, assets, architecture, code and visual composition. Backend list/edit tasks may use dense master-detail layouts, but the visual editor must not become a generic dashboard of cards.
+
+## ADR-035 — Records persist in CanonicalProject and validate through field schemas
+**Decision:** `ContentRecordDefinition` v1 records are portable JSON stored only in `CanonicalProject.records`. A record resolves an existing Content Type, selects reusable Field Groups, and stores custom values by group/field storage name. Defaults, required behavior and value validation are resolved through the existing Field Group definitions and `FieldTypeRegistry`.
+
+**Why:** Records are the runtime data counterpart of CPTs and Custom Fields. Reusing the canonical project collections and registry contracts avoids a second data engine, keeps local-first persistence deterministic and preserves exportability/plugin extensibility.
+
+## ADR-036 — Field-group deletion also protects record references
+**Decision:** the public content-core `removeFieldGroup` path routes through `removeFieldGroupWithRecordIntegrity`, which rejects deletion while any content record selects the field group, then delegates to the existing taxonomy-aware removal path.
+
+**Why:** once Records can use Field Groups, silently deleting a referenced schema would orphan persisted field values. Known cross-model references must be guarded explicitly instead of relying on destructive cascades.
