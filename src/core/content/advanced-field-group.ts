@@ -2,8 +2,10 @@ import type { CanonicalProject } from '../project';
 import { createContentFieldTypeRegistry } from './advanced-field-types';
 import {
   MAX_ADVANCED_FIELD_DEPTH,
+  MF042_ADVANCED_FIELD_TYPES,
   advancedFieldGroupReference,
   validateAdvancedFieldConfig,
+  type Mf042AdvancedFieldType,
 } from './advanced-field-runtime';
 import {
   createFieldGroup as createBaseFieldGroup,
@@ -120,6 +122,12 @@ function contextualIssues(
           code: 'INVALID_CONFIG',
           path: `fields.${index}.config.sourceField`,
           message: 'Conditional sourceField must reference another field in the same Field Group.',
+        });
+      } else if (MF042_ADVANCED_FIELD_TYPES.includes(source.type as Mf042AdvancedFieldType)) {
+        issues.push({
+          code: 'INVALID_CONFIG',
+          path: `fields.${index}.config.sourceField`,
+          message: 'Conditional sourceField must reference a non-advanced sibling so its result is independent of schema order.',
         });
       }
     }
