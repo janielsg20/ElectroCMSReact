@@ -12,9 +12,12 @@ This compact log mirrors durable architectural decisions from `DECISIONS.md` for
 - ADR-020: inspector is schema-generated and writes validated reversible commands.
 - ADR-021: responsive visual styles remain in `ResponsiveStyleSet`; no parallel style store.
 - ADR-022: DnD uses stable hit areas and no React structural rerender during native `dragstart`; ephemeral data attributes may drive paint-only feedback.
-- ADR-023: editor mode, editor preset, frontend theme and backend theme are separate concerns.
+- ADR-023: editor appearance, editor visual system, frontend theme and backend theme are separate concerns.
 - ADR-024: project theme definitions live in an extensible framework-neutral registry; project stores selected IDs.
 - ADR-025: imported theme definitions are local editor-library data, not duplicated inside canonical projects.
 - ADR-026: theme package format is versioned, max 256 KB, deep portable JSON validated and collision-safe.
-- ADR-027: adapt UX/design-system principles from `nextlevelbuilder/ui-ux-pro-max-skill`; do not force Tailwind/shadcn migration.
+- ADR-027: adapt UX/design-system principles from `nextlevelbuilder/ui-ux-pro-max-skill`; do not force an unrelated framework rewrite.
 - ADR-028: Vercel Git auto-deploy is disabled; previews deploy only on explicit user request.
+
+## Unified Studio UI
+- ADR-029: ElectroCMS editor uses one visual language only: `bento-high-density`. Selectable editor UI presets are retired. `light`/`dark`/`auto` are appearance modes of the same system; legacy preset IDs normalize to the unified ID. Project frontend/backend themes remain independent canonical/project-library concerns.
