@@ -290,7 +290,7 @@ function SectionPreview(props: WidgetPreviewProps) {
   return <PreviewFrame {...props} className="widget-preview--section" />;
 }
 
-function GridPreview({ node, children, ...rest }: WidgetPreviewProps) {
+function GridPreview({ node, children }: WidgetPreviewProps) {
   const columns = typeof node.props.columns === 'number' ? node.props.columns : 2;
   const gap = typeof node.props.gap === 'number' ? node.props.gap : 16;
   return (
@@ -299,7 +299,6 @@ function GridPreview({ node, children, ...rest }: WidgetPreviewProps) {
       data-widget-preview-type={node.type}
       data-grid-columns={columns}
       style={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gap }}
-      {...rest}
     >
       {children}
     </div>
