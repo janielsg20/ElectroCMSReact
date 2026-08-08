@@ -37,18 +37,15 @@ export {
   type FieldGroupValidationResult,
 } from './field-group';
 export {
-  createAdvancedFieldGroup,
-  createAdvancedFieldGroup as createFieldGroup,
-  listAdvancedFieldGroupDefinitions,
-  listAdvancedFieldGroupDefinitions as listFieldGroupDefinitions,
-  updateAdvancedFieldGroup,
-  validateAdvancedFieldGroupDefinition,
-  validateAdvancedFieldGroupDefinition as validateFieldGroupDefinition,
-} from './advanced-field-group';
-export {
-  updateFieldGroupWithRecordIntegrity,
-  updateFieldGroupWithRecordIntegrity as updateFieldGroup,
-} from './field-group-update-integrity';
+  createReferenceFieldGroup,
+  createReferenceFieldGroup as createFieldGroup,
+  listReferenceFieldGroupDefinitions,
+  listReferenceFieldGroupDefinitions as listFieldGroupDefinitions,
+  updateReferenceFieldGroup,
+  updateReferenceFieldGroup as updateFieldGroup,
+  validateReferenceFieldGroupDefinition,
+  validateReferenceFieldGroupDefinition as validateFieldGroupDefinition,
+} from './reference-field-group';
 export { removeFieldGroupWithRecordIntegrity } from './field-group-record-integrity';
 export {
   removeFieldGroupWithAdvancedIntegrity,
