@@ -40,6 +40,7 @@ export function WorkspaceSurface({ workspaceId }: WorkspaceSurfaceProps) {
       {workspaceId === 'editor' && document && breakpoint ? (
         <EditorCanvas
           document={document}
+          breakpointId={session.activeBreakpointId}
           viewportWidth={breakpoint.width}
           zoom={session.zoom}
           actions={canvasActions}
