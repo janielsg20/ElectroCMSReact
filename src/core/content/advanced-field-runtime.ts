@@ -1,4 +1,4 @@
-import { isJsonObject, type JsonObject, type JsonValue } from '../domain';
+import { isJsonObject, isJsonValue, type JsonObject, type JsonValue } from '../domain';
 import type { CustomFieldDefinition, FieldGroupDefinition } from './field-group';
 import type { FieldTypeValidationIssue } from './field-type-definition';
 import { FieldTypeRegistry } from './field-type-registry';
@@ -34,8 +34,9 @@ export interface AdvancedFieldRuntimeContext {
   depth?: number;
 }
 
-const MAX_NESTED_DEPTH = 8;
-const MAX_CALC_EXPRESSION_LENGTH = 240;
+export const MAX_ADVANCED_FIELD_DEPTH = 8;
+export const MAX_REPEATER_ITEMS = 100;
+export const MAX_CALC_EXPRESSION_LENGTH = 240;
 
 function issue(code: string, path: string, message: string): AdvancedFieldRuntimeIssue {
   return { code, path, message };
@@ -77,6 +78,12 @@ export function validateAdvancedFieldConfig(field: CustomFieldDefinition): Advan
     }
     if (maxItems !== undefined && (!Number.isInteger(maxItems) || Number(maxItems) < 1)) {
       issues.push(issue('INVALID_MAX_ITEMS', 'config.maxItems', 'maxItems must be a positive integer.'));
+    }
+    if (typeof maxItems === 'number' && maxItems > MAX_REPEATER_ITEMS) {
+      issues.push(issue('REPEATER_LIMIT_EXCEEDED', 'config.maxItems', `maxItems cannot exceed ${MAX_REPEATER_ITEMS}.`));
+    }
+    if (typeof minItems === 'number' && minItems > MAX_REPEATER_ITEMS) {
+      issues.push(issue('REPEATER_LIMIT_EXCEEDED', 'config.minItems', `minItems cannot exceed ${MAX_REPEATER_ITEMS}.`));
     }
     if (typeof minItems === 'number' && typeof maxItems === 'number' && minItems > maxItems) {
       issues.push(issue('INVALID_ITEM_RANGE', 'config', 'minItems cannot exceed maxItems.'));
@@ -152,8 +159,8 @@ export function validateAdvancedFieldValue(
   context: AdvancedFieldRuntimeContext,
 ): AdvancedFieldRuntimeIssue[] {
   const depth = context.depth ?? 0;
-  if (depth > MAX_NESTED_DEPTH) {
-    return [issue('ADVANCED_FIELD_DEPTH', '$', `Advanced field nesting exceeds ${MAX_NESTED_DEPTH} levels.`)];
+  if (depth > MAX_ADVANCED_FIELD_DEPTH) {
+    return [issue('ADVANCED_FIELD_DEPTH', '$', `Advanced field nesting exceeds ${MAX_ADVANCED_FIELD_DEPTH} levels.`)];
   }
 
   if (field.type === 'core/calculated') {
@@ -174,14 +181,15 @@ export function validateAdvancedFieldValue(
   if (field.type === 'core/repeater') {
     if (!Array.isArray(value)) return [issue('INVALID_REPEATER', '$', 'Repeater value must be an array.')];
     const minItems = typeof field.config.minItems === 'number' ? field.config.minItems : 0;
-    const maxItems = typeof field.config.maxItems === 'number' ? field.config.maxItems : Number.POSITIVE_INFINITY;
+    const configuredMax = typeof field.config.maxItems === 'number' ? field.config.maxItems : MAX_REPEATER_ITEMS;
+    const maxItems = Math.min(configuredMax, MAX_REPEATER_ITEMS);
     const issues: AdvancedFieldRuntimeIssue[] = [];
     if (value.length < minItems) issues.push(issue('REPEATER_TOO_SHORT', '$', `Repeater requires at least ${minItems} items.`));
     if (value.length > maxItems) issues.push(issue('REPEATER_TOO_LONG', '$', `Repeater allows at most ${maxItems} items.`));
     const groupId = advancedFieldGroupReference(field);
     const group = groupId ? context.resolveGroup(groupId) : null;
     if (!group) return [...issues, issue('UNKNOWN_GROUP_REFERENCE', '$', `Referenced Field Group ${groupId ?? '(empty)'} does not exist.`)];
-    value.forEach((item, index) => {
+    value.slice(0, MAX_REPEATER_ITEMS).forEach((item, index) => {
       if (!isJsonObject(item)) {
         issues.push(issue('INVALID_REPEATER_ITEM', `${index}`, 'Repeater item must be an object.'));
         return;
@@ -238,7 +246,10 @@ export function validateGroupObject(
 
   const normalizedContext: JsonObject = { ...value };
   for (const field of group.fields) {
-    let candidate = value[field.name] === undefined ? structuredClone(field.defaultValue) : value[field.name];
+    const existingValue = value[field.name];
+    let candidate: JsonValue = existingValue === undefined
+      ? structuredClone(field.defaultValue)
+      : existingValue;
     if (!isJsonValue(candidate)) {
       issues.push(issue('INVALID_NESTED_VALUE', field.name, `${field.label} must be portable JSON.`));
       continue;
@@ -250,7 +261,7 @@ export function validateGroupObject(
   }
 
   for (const field of group.fields) {
-    const candidate = normalizedContext[field.name] as JsonValue | undefined;
+    const candidate = normalizedContext[field.name];
     if (candidate === undefined) continue;
     if (field.required && requiredValueMissing(candidate)) {
       issues.push(issue('REQUIRED_NESTED_FIELD', field.name, `${field.label} is required.`));
