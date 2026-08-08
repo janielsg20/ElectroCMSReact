@@ -4,6 +4,7 @@ import {
   createContentFieldTypeRegistry,
   createDefaultContentRecordDefinition,
   createGroupDefaultValue,
+  isMf043ReferenceField,
   listContentRecords,
   listContentTypeDefinitions,
   listFieldGroupDefinitions,
@@ -18,6 +19,7 @@ import {
 import { isJsonObject, type JsonObject, type JsonValue } from '../../core/domain';
 import { useProjectSession } from '../project/project-session-context';
 import { AdvancedRecordFieldControl } from './AdvancedRecordFieldControl';
+import { ReferenceRecordFieldControl } from './ReferenceRecordFieldControl';
 import './records-editor.css';
 
 type EditorMode = 'empty' | 'create' | 'edit';
@@ -354,9 +356,9 @@ export function RecordsEditor() {
     <section className="records-editor" aria-label="Records">
       <header className="records-editor-header">
         <div>
-          <span className="records-editor-eyebrow">Dynamic content · MF-041/042</span>
+          <span className="records-editor-eyebrow">Dynamic content · MF-041/043</span>
           <h3>Content Records</h3>
-          <p>Create and edit local content records against real CPT and Custom Field schemas.</p>
+          <p>Create and edit local content records against real CPT, Custom Field and reference schemas.</p>
         </div>
         <div className="records-editor-summary">
           <strong>{allRecords.length}</strong>
@@ -411,7 +413,7 @@ export function RecordsEditor() {
                   {activeContentType?.supports.title ? <label className="record-field record-field--wide"><span>Title</span><input aria-label="Record title" value={draft.title} onChange={(event) => patchDraft('title', event.target.value)} aria-invalid={issueByPath.has('title')} /><small>{issueByPath.get('title') ?? 'Primary content title'}</small></label> : null}
                   {activeContentType?.supports.editor ? <label className="record-field record-field--wide"><span>Content</span><textarea aria-label="Record content" rows={6} value={draft.content} onChange={(event) => patchDraft('content', event.target.value)} /><small>Main content body</small></label> : null}
                   {activeContentType?.supports.excerpt ? <label className="record-field record-field--wide"><span>Excerpt</span><textarea aria-label="Record excerpt" rows={3} value={draft.excerpt} onChange={(event) => patchDraft('excerpt', event.target.value)} /><small>Short summary</small></label> : null}
-                  {activeContentType?.supports.featuredImage ? <div className="record-scope-note">Featured image is supported by this CPT. Media binding remains owned by the Media Library phase; MF-042 does not fake a file picker.</div> : null}
+                  {activeContentType?.supports.featuredImage ? <div className="record-scope-note">Featured image is supported by this CPT. Media binding remains owned by the Media Library phase; MF-043 does not fake a file picker.</div> : null}
                 </div>
               </section>
 
@@ -429,16 +431,28 @@ export function RecordsEditor() {
                         const path = `fieldValues.${group.id}.${field.name}`;
                         const value = draft.fieldValues[group.id]?.[field.name];
                         const advanced = MF042_ADVANCED_FIELD_TYPES.includes(field.type as Mf042AdvancedFieldType);
+                        const reference = isMf043ReferenceField(field);
                         const issue = [...issueByPath.entries()].find(([issuePath]) => issuePath === path || issuePath.startsWith(`${path}.`))?.[1];
+                        const wide = (advanced && field.type !== 'core/calculated') || reference;
                         return (
-                          <div className={`record-field ${advanced && field.type !== 'core/calculated' ? 'record-field--wide' : ''}`} key={field.id}>
+                          <div className={`record-field ${wide ? 'record-field--wide' : ''}`} key={field.id}>
                             <span>{field.label}{field.required ? ' *' : ''}</span>
                             {advanced ? (
                               <AdvancedRecordFieldControl
+                                project={session.project}
+                                ownerContentTypeId={draft.contentTypeId}
                                 field={field}
                                 value={value}
                                 siblingValues={draft.fieldValues[group.id] ?? {}}
                                 fieldGroups={fieldGroups}
+                                onChange={(next) => patchFieldValue(group.id, field.name, next)}
+                              />
+                            ) : reference ? (
+                              <ReferenceRecordFieldControl
+                                project={session.project}
+                                ownerContentTypeId={draft.contentTypeId}
+                                field={field}
+                                value={value}
                                 onChange={(next) => patchFieldValue(group.id, field.name, next)}
                               />
                             ) : (
