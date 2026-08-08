@@ -53,7 +53,14 @@ function hasCompareValue(field: CustomFieldDefinition): boolean {
   return Object.prototype.hasOwnProperty.call(field.config, 'compareValue');
 }
 
+export function isMf042AdvancedField(
+  field: Pick<CustomFieldDefinition, 'type' | 'typeVersion'>,
+): boolean {
+  return field.typeVersion >= 2 && MF042_ADVANCED_FIELD_TYPES.includes(field.type as Mf042AdvancedFieldType);
+}
+
 export function advancedFieldGroupReference(field: CustomFieldDefinition): string | null {
+  if (!isMf042AdvancedField(field)) return null;
   if (field.type !== 'core/group' && field.type !== 'core/repeater' && field.type !== 'core/conditional') {
     return null;
   }
@@ -64,7 +71,7 @@ export function advancedFieldGroupReference(field: CustomFieldDefinition): strin
 
 export function validateAdvancedFieldConfig(field: CustomFieldDefinition): AdvancedFieldRuntimeIssue[] {
   const issues: AdvancedFieldRuntimeIssue[] = [];
-  if (!MF042_ADVANCED_FIELD_TYPES.includes(field.type as Mf042AdvancedFieldType)) return issues;
+  if (!isMf042AdvancedField(field)) return issues;
 
   if (field.type === 'core/group') {
     const fieldGroupId = advancedFieldGroupReference(field);
@@ -131,6 +138,7 @@ export function createAdvancedFieldDefaultValue(
   field: CustomFieldDefinition,
   context: AdvancedFieldRuntimeContext,
 ): JsonValue {
+  if (!isMf042AdvancedField(field)) return structuredClone(field.defaultValue);
   if (field.type === 'core/repeater') return [];
   if (field.type === 'core/group') {
     const groupId = advancedFieldGroupReference(field);
@@ -155,6 +163,7 @@ export function normalizeAdvancedFieldValue(
   value: JsonValue,
   context: AdvancedFieldRuntimeContext,
 ): JsonValue {
+  if (!isMf042AdvancedField(field)) return structuredClone(value);
   const depth = context.depth ?? 0;
   if (depth > MAX_ADVANCED_FIELD_DEPTH) return structuredClone(value);
 
@@ -214,6 +223,7 @@ export function validateAdvancedFieldValue(
   value: JsonValue,
   context: AdvancedFieldRuntimeContext,
 ): AdvancedFieldRuntimeIssue[] {
+  if (!isMf042AdvancedField(field)) return [];
   const depth = context.depth ?? 0;
   if (depth > MAX_ADVANCED_FIELD_DEPTH) {
     return [issue('ADVANCED_FIELD_DEPTH', '$', `Advanced field nesting exceeds ${MAX_ADVANCED_FIELD_DEPTH} levels.`)];
@@ -283,18 +293,18 @@ export function normalizeGroupObject(
   // Populate all primitive/structural defaults before derived fields so schema order cannot affect results.
   for (const field of group.fields) {
     if (values[field.name] !== undefined) continue;
-    if (field.type === 'core/calculated' || field.type === 'core/conditional') {
+    if (isMf042AdvancedField(field) && (field.type === 'core/calculated' || field.type === 'core/conditional')) {
       values[field.name] = null;
       continue;
     }
-    values[field.name] = MF042_ADVANCED_FIELD_TYPES.includes(field.type as Mf042AdvancedFieldType)
+    values[field.name] = isMf042AdvancedField(field)
       ? createAdvancedFieldDefaultValue(field, { ...context, currentValues: values, depth: depth + 1 })
       : structuredClone(field.defaultValue);
   }
 
   // Structural fields recurse first so nested payloads become canonical before validation/persistence.
   for (const field of group.fields) {
-    if (field.type !== 'core/group' && field.type !== 'core/repeater') continue;
+    if (!isMf042AdvancedField(field) || (field.type !== 'core/group' && field.type !== 'core/repeater')) continue;
     const candidate = values[field.name];
     if (!isJsonValue(candidate)) continue;
     values[field.name] = normalizeAdvancedFieldValue(field, candidate, {
@@ -306,7 +316,7 @@ export function normalizeGroupObject(
 
   // Calculated values are always recomputed from the complete primitive sibling context.
   for (const field of group.fields) {
-    if (field.type !== 'core/calculated') continue;
+    if (!isMf042AdvancedField(field) || field.type !== 'core/calculated') continue;
     const candidate = values[field.name];
     if (!isJsonValue(candidate)) continue;
     values[field.name] = normalizeAdvancedFieldValue(field, candidate, {
@@ -318,7 +328,7 @@ export function normalizeGroupObject(
 
   // Conditions run last so source defaults are available regardless of stored schema order.
   for (const field of group.fields) {
-    if (field.type !== 'core/conditional') continue;
+    if (!isMf042AdvancedField(field) || field.type !== 'core/conditional') continue;
     const candidate = values[field.name];
     if (!isJsonValue(candidate)) continue;
     values[field.name] = normalizeAdvancedFieldValue(field, candidate, {
@@ -357,7 +367,7 @@ export function validateGroupObject(
     if (field.required && requiredValueMissing(candidate)) {
       issues.push(issue('REQUIRED_NESTED_FIELD', field.name, `${field.label} is required.`));
     }
-    if (MF042_ADVANCED_FIELD_TYPES.includes(field.type as Mf042AdvancedFieldType)) {
+    if (isMf042AdvancedField(field)) {
       issues.push(...validateAdvancedFieldValue(field, candidate, { ...context, currentValues: normalizedContext }).map((nested) => ({ ...nested, path: `${field.name}${nested.path === '$' ? '' : `.${nested.path}`}` })));
       continue;
     }
