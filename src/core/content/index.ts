@@ -28,10 +28,13 @@ export {
   listAdvancedFieldGroupDefinitions,
   listAdvancedFieldGroupDefinitions as listFieldGroupDefinitions,
   updateAdvancedFieldGroup,
-  updateAdvancedFieldGroup as updateFieldGroup,
   validateAdvancedFieldGroupDefinition,
   validateAdvancedFieldGroupDefinition as validateFieldGroupDefinition,
 } from './advanced-field-group';
+export {
+  updateFieldGroupWithRecordIntegrity,
+  updateFieldGroupWithRecordIntegrity as updateFieldGroup,
+} from './field-group-update-integrity';
 export { removeFieldGroupWithRecordIntegrity } from './field-group-record-integrity';
 export {
   removeFieldGroupWithAdvancedIntegrity,
