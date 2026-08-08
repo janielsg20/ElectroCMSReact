@@ -1,6 +1,6 @@
 import type { CanonicalProject } from '../project';
 import { createContentFieldTypeRegistry } from './advanced-field-types';
-import { advancedFieldGroupReference } from './advanced-field-runtime';
+import { advancedFieldGroupReference, validateAdvancedFieldConfig } from './advanced-field-runtime';
 import {
   createFieldGroup as createBaseFieldGroup,
   listFieldGroupDefinitions as listBaseFieldGroups,
@@ -32,6 +32,14 @@ function contextualIssues(
   groups.set(candidate.id, candidate);
 
   candidate.fields.forEach((field, index) => {
+    for (const advancedIssue of validateAdvancedFieldConfig(field)) {
+      issues.push({
+        code: 'INVALID_CONFIG',
+        path: `fields.${index}.${advancedIssue.path}`,
+        message: advancedIssue.message,
+      });
+    }
+
     const reference = advancedFieldGroupReference(field);
     if (reference && !groups.has(reference)) {
       issues.push({
