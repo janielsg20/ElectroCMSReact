@@ -41,7 +41,8 @@ describe('breakpoint engine', () => {
   it('rejects duplicate order and non-descending widths', () => {
     const invalid = [
       { ...breakpoints[0]!, id: 'wide', order: 0, width: 1200 },
-      { ...breakpoints[1]!, id: 'wider', order: 0, width: 1400 },
+      { ...breakpoints[1]!, id: 'narrower-same-order', order: 0, width: 1000 },
+      { ...breakpoints[2]!, id: 'too-wide-next', order: 1, width: 1100 },
     ];
     const result = validateBreakpointSet(invalid);
     expect(result.valid).toBe(false);
