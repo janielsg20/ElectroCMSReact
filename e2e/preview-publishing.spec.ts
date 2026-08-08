@@ -21,12 +21,14 @@ test('publishing center exposes destinations without simulating exporters', asyn
   await expect(page.getByRole('heading', { name: 'Export workspace', level: 2 })).toBeVisible();
   await expect(page.getByText('No simulated publishing')).toBeVisible();
   for (const destination of ['Local', 'React', 'LAMP', 'WordPress']) {
-    await expect(page.getByRole('button', { name: `Configure ${destination} export` })).toBeDisabled();
+    await expect(page.getByLabel(`${destination} exporter runtime required`)).toHaveText('Runtime required');
+    await expect(page.getByRole('button', { name: `Configure ${destination} export` })).toHaveCount(0);
   }
 });
 
 test('command palette opens with keyboard and routes to existing systems', async ({ page }) => {
   await page.goto('/editor');
+  await expect(page.getByRole('navigation', { name: 'Primary workspaces' })).toBeVisible();
 
   await page.keyboard.press('Control+K');
   const palette = page.getByRole('dialog', { name: 'Command palette' });
