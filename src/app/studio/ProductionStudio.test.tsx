@@ -187,9 +187,9 @@ describe('ProductionStudio', () => {
     const backendStudio = screen.getByRole('region', { name: 'Backend and roles studio' });
     expect(within(backendStudio).getByRole('heading', { name: 'Backend Builder' })).toBeInTheDocument();
     expect(within(backendStudio).getByText('defaultDashboard')).toBeInTheDocument();
-    expect(within(backendStudio).getByText('Dashboards')).toBeInTheDocument();
-    expect(within(backendStudio).getByText('Roles')).toBeInTheDocument();
-    expect(within(backendStudio).getByText('Users')).toBeInTheDocument();
+    expect(within(backendStudio).getByRole('tab', { name: 'Dashboards' })).toBeInTheDocument();
+    expect(within(backendStudio).getByRole('tab', { name: 'Roles' })).toBeInTheDocument();
+    expect(within(backendStudio).getByRole('tab', { name: 'Users' })).toBeInTheDocument();
 
     await user.click(within(backendStudio).getByRole('tab', { name: 'Roles' }));
     expect(within(backendStudio).getByRole('button', { name: /Manager/i })).toBeInTheDocument();
