@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { JsonObject } from '../../core/domain';
+import type { ProjectThemePackageResources } from '../../core/themes';
 
 export interface ThemePackageImportSuccess {
   ok: true;
@@ -48,7 +49,7 @@ export interface ImportedThemeEdit {
 export interface ProjectThemePackageLibraryState {
   importedThemeIds: readonly string[];
   importPackageText(text: string): ThemePackageImportOutcome;
-  exportPackage(themeId: string): ThemePackageExportOutcome;
+  exportPackage(themeId: string, resources?: ProjectThemePackageResources): ThemePackageExportOutcome;
   duplicateTheme(themeId: string): ThemeLibraryMutationOutcome;
   updateImportedTheme(themeId: string, edit: ImportedThemeEdit): ThemeLibraryMutationOutcome;
 }
