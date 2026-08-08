@@ -60,7 +60,8 @@ Desde la revisión de UI del 2026-08-08, ElectroCMS usa **un único tema UI/UX p
 Fuentes de verdad:
 - `design-system/electrocms-editor/MASTER.md`.
 - `design-system/electrocms-editor/pages/editor.md` para el workspace Builder.
-- Override final de implementación: `src/app/ui/bento-high-density.css`, cargado después del CSS V2 existente.
+- Base unificada de implementación: `src/app/ui/bento-high-density.css`.
+- Refinamiento de composición del mismo tema: `src/app/ui/bento-modern-polish.css`, cargado al final de la cascada V2.
 
 Arquetipo vigente:
 - professional no-code builder;
@@ -70,7 +71,7 @@ Arquetipo vigente:
 - responsive/accessibility first.
 
 Reglas visuales durables:
-- gaps principales 6–8px;
+- gaps principales 6–10px según viewport y contexto;
 - superficies principales agrupadas como módulos Bento, no cada fila como card;
 - navegación con iconografía compartida en todos los workspaces/módulos principales;
 - estados hover/focus/pressed/selected/disabled explícitos;
@@ -78,8 +79,21 @@ Reglas visuales durables:
 - motion basado preferentemente en transform/opacity;
 - `prefers-reduced-motion` elimina motion no esencial;
 - `prefers-contrast: more` fortalece límites;
+- `forced-colors` conserva límites/focus de controles;
 - controles críticos touch >=44px;
 - dense desktop no implica texto ilegible.
+
+## Modern Bento composition vigente
+- AppHeader usa jerarquía grid en desktop y dos filas en móvil: project/actions arriba y editor controls abajo.
+- Header editor controls exponen semántica `toolbar`; document/breakpoint, zoom e historial usan groups; save state usa live `status`.
+- Workspace context bar es visualmente secundario al task content.
+- Root workspace headers son Bento surfaces compactas de ancho útil completo, con jerarquía de título/descripción consistente.
+- Tabs de Pages, Dynamic Content, Forms, Backend y Settings comparten selected/focus language.
+- Legacy panel/card shadows se normalizan visualmente mediante la capa Bento final sin introducir otro sistema de estado.
+- Capability labels son status chips informativos, no disabled-action lookalikes.
+- Navigation rail usa icon tiles, active surface clara y floating settings surface.
+- En compact layout, settings popover queda contenido dentro del drawer.
+- Container queries pueden refinar tab overflow según el ancho real del workspace cuando el navegador las soporta.
 
 ## Production Studio
 - Navegación principal vive en `ProductionStudio`/`StudioRail`.
@@ -104,7 +118,7 @@ Reglas visuales durables:
 - Documento escalado conserva transform origin estable `top center`.
 - Padding del stage se reduce progresivamente en tablet/móvil.
 - En layouts estrechos, inspector baja debajo del canvas y mantiene altura acotada.
-- Insert library se convierte en strip horizontal en tablet/móvil.
+- Insert library se convierte en strip horizontal en tablet/móvil con altura útil suficiente para búsqueda/categorías/items.
 - Command bars pueden usar scroll horizontal local.
 - Nunca deshabilitar browser zoom.
 - Root document no debe producir overflow horizontal.
@@ -152,12 +166,14 @@ Estos permanecen separados del editor Bento:
 ## Accesibilidad durable
 - WCAG AA como baseline.
 - Focus visible para controles keyboard-operable.
+- Focusable controls usan scroll margin para reducir riesgo de quedar ocultos bajo chrome denso/sticky.
 - ARIA en icon-only controls.
 - Labels semánticos en inputs/selects.
 - No hover-only functionality.
 - Status usa más que color.
-- Reduced motion y increased contrast se respetan.
+- Reduced motion, increased contrast y forced-colors se respetan.
 - Touch floor 44px en móvil.
+- E2E debe verificar no-root-overflow y containment de drawer/settings en móvil.
 
 ## Quality gates
 No cerrar/mergear trabajo con fallos en:
@@ -170,8 +186,8 @@ No cerrar/mergear trabajo con fallos en:
 - production build.
 
 ## Trabajo actual
-Rama: `agent/unified-bento-high-density-ui`.
+Rama: `agent/unified-bento-high-density-ui` / PR #36.
 
-Objetivo: consolidar definitivamente el editor en Bento High Density único, retirar selector/presets antiguos, mejorar motion/estados, layout responsive y compatibilidad del canvas, preservando arquitectura canónica y themes frontend/backend.
+Objetivo: consolidar definitivamente el editor en Bento High Density único, mejorar jerarquía, motion/estados, layout responsive, accesibilidad y compatibilidad del canvas, preservando arquitectura canónica y themes frontend/backend.
 
-Antes de mergear, el quality gate completo de GitHub Actions debe estar verde.
+Antes de mergear, el quality gate completo de GitHub Actions del último head debe estar verde.
