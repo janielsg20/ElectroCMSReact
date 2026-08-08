@@ -1,4 +1,4 @@
-import { useMemo, useState, type ChangeEvent } from 'react';
+import { useMemo, useState } from 'react';
 import {
   CONTENT_RECORD_STATUSES,
   createDefaultContentRecordDefinition,
