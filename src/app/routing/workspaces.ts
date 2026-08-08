@@ -1,3 +1,5 @@
+import { editorModuleFromPathname } from './editor-modules';
+
 export const WORKSPACE_IDS = ['editor', 'preview', 'backend', 'export'] as const;
 
 export type WorkspaceId = (typeof WORKSPACE_IDS)[number];
@@ -56,7 +58,9 @@ export function getWorkspaceDefinition(workspaceId: WorkspaceId): WorkspaceDefin
 
 export function workspaceFromPathname(pathname: string): WorkspaceId | null {
   const normalized = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
-  return workspaceByPath.get(normalized as `/${WorkspaceId}`) ?? null;
+  const exactWorkspace = workspaceByPath.get(normalized as `/${WorkspaceId}`);
+  if (exactWorkspace) return exactWorkspace;
+  return editorModuleFromPathname(normalized) ? 'editor' : null;
 }
 
 export function pathForWorkspace(workspaceId: WorkspaceId): `/${WorkspaceId}` {
