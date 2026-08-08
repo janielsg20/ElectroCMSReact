@@ -1,6 +1,10 @@
 import type { CanonicalProject } from '../project';
 import { createContentFieldTypeRegistry } from './advanced-field-types';
-import { advancedFieldGroupReference, validateAdvancedFieldConfig } from './advanced-field-runtime';
+import {
+  MAX_ADVANCED_FIELD_DEPTH,
+  advancedFieldGroupReference,
+  validateAdvancedFieldConfig,
+} from './advanced-field-runtime';
 import {
   createFieldGroup as createBaseFieldGroup,
   listFieldGroupDefinitions as listBaseFieldGroups,
@@ -16,6 +20,65 @@ import { FieldTypeRegistry } from './field-type-registry';
 function calculationIdentifiers(expression: string): string[] {
   const matches = expression.match(/[A-Za-z_][A-Za-z0-9_]*/g) ?? [];
   return [...new Set(matches)];
+}
+
+function referenceGraphIssues(
+  candidateId: string,
+  groups: ReadonlyMap<string, FieldGroupDefinition>,
+): FieldGroupValidationIssue[] {
+  const issues: FieldGroupValidationIssue[] = [];
+  const visiting = new Set<string>();
+  const visited = new Set<string>();
+
+  const hasCycle = (groupId: string): boolean => {
+    if (visiting.has(groupId)) return true;
+    if (visited.has(groupId)) return false;
+    visiting.add(groupId);
+    const group = groups.get(groupId);
+    if (group) {
+      for (const field of group.fields) {
+        const reference = advancedFieldGroupReference(field);
+        if (reference && groups.has(reference) && hasCycle(reference)) return true;
+      }
+    }
+    visiting.delete(groupId);
+    visited.add(groupId);
+    return false;
+  };
+
+  if (hasCycle(candidateId)) {
+    return [{
+      code: 'INVALID_CONFIG',
+      path: 'fields',
+      message: 'Advanced Field Group references cannot contain direct or indirect cycles.',
+    }];
+  }
+
+  const memo = new Map<string, number>();
+  const maxDepth = (groupId: string): number => {
+    const cached = memo.get(groupId);
+    if (cached !== undefined) return cached;
+    const group = groups.get(groupId);
+    if (!group) return 0;
+    let depth = 0;
+    for (const field of group.fields) {
+      const reference = advancedFieldGroupReference(field);
+      if (!reference || !groups.has(reference)) continue;
+      depth = Math.max(depth, 1 + maxDepth(reference));
+    }
+    memo.set(groupId, depth);
+    return depth;
+  };
+
+  const depth = maxDepth(candidateId);
+  if (depth > MAX_ADVANCED_FIELD_DEPTH) {
+    issues.push({
+      code: 'INVALID_CONFIG',
+      path: 'fields',
+      message: `Advanced Field Group nesting cannot exceed ${MAX_ADVANCED_FIELD_DEPTH} referenced levels.`,
+    });
+  }
+  return issues;
 }
 
 function contextualIssues(
@@ -80,32 +143,7 @@ function contextualIssues(
     }
   });
 
-  const visiting = new Set<string>();
-  const visited = new Set<string>();
-  const visit = (groupId: string): boolean => {
-    if (visiting.has(groupId)) return true;
-    if (visited.has(groupId)) return false;
-    visiting.add(groupId);
-    const group = groups.get(groupId);
-    if (group) {
-      for (const field of group.fields) {
-        const reference = advancedFieldGroupReference(field);
-        if (reference && groups.has(reference) && visit(reference)) return true;
-      }
-    }
-    visiting.delete(groupId);
-    visited.add(groupId);
-    return false;
-  };
-
-  if (visit(candidate.id)) {
-    issues.push({
-      code: 'INVALID_CONFIG',
-      path: 'fields',
-      message: 'Advanced Field Group references cannot contain direct or indirect cycles.',
-    });
-  }
-
+  issues.push(...referenceGraphIssues(candidate.id, groups));
   return issues;
 }
 
