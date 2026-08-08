@@ -6,6 +6,7 @@ import {
   serializeProjectThemePackage,
   validateProjectThemeDefinition,
   type ProjectThemeDefinition,
+  type ProjectThemePackageResources,
 } from '../../core/themes';
 import {
   BrowserProjectThemePackageRepository,
@@ -96,14 +97,21 @@ export function ProjectThemeRegistryProvider({
   );
 
   const exportPackage = useCallback(
-    (themeId: string): ThemePackageExportOutcome => {
+    (themeId: string, resources?: ProjectThemePackageResources): ThemePackageExportOutcome => {
       const theme = registry.get(themeId);
       if (!theme) return { ok: false, message: `Theme ${themeId} is not installed.` };
-      return {
-        ok: true,
-        fileName: `${theme.id.replaceAll('.', '-')}.electrocms-theme.json`,
-        text: serializeProjectThemePackage(theme),
-      };
+      try {
+        return {
+          ok: true,
+          fileName: `${theme.id.replaceAll('.', '-')}.electrocms-theme.json`,
+          text: serializeProjectThemePackage(theme, resources),
+        };
+      } catch (error) {
+        return {
+          ok: false,
+          message: error instanceof Error ? error.message : 'Theme package could not be exported.',
+        };
+      }
     },
     [registry],
   );
