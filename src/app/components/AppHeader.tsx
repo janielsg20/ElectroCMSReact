@@ -85,8 +85,12 @@ export function AppHeader({ activeWorkspace, onNavigate }: AppHeaderProps) {
 
       <div className="header-actions">
         <span className="local-badge" title="Project data remains on this device"><Icon name="local" size={14} /><span>Local</span></span>
-        <button className="toolbar-button" type="button" aria-pressed={activeWorkspace === 'preview'} onClick={() => onNavigate('preview')}><Icon name="preview" size={13} /> Preview</button>
-        <button className="toolbar-button toolbar-button-primary" type="button" aria-pressed={activeWorkspace === 'export'} onClick={() => onNavigate('export')}><Icon name="export" size={13} /> Publish</button>
+        <button className="toolbar-button header-incomplete-action" type="button" aria-pressed={activeWorkspace === 'preview'} onClick={() => onNavigate('preview')}>
+          <Icon name="preview" size={13} /> Preview <span className="studio-pending-dot" title="Full frontend renderer is still being implemented" aria-label="Full frontend renderer is still being implemented" />
+        </button>
+        <button className="toolbar-button toolbar-button-primary header-incomplete-action" type="button" aria-pressed={activeWorkspace === 'export'} onClick={() => onNavigate('export')}>
+          <Icon name="export" size={13} /> Publish <span className="studio-pending-dot" title="Publishing/export is still being implemented" aria-label="Publishing/export is still being implemented" />
+        </button>
       </div>
 
       <span className="sr-only" aria-live="polite">Active document: {activeDocument?.name ?? 'None'}. Zoom {session.zoom} percent.</span>
