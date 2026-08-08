@@ -18,3 +18,6 @@ This compact log mirrors durable architectural decisions from `DECISIONS.md` for
 - ADR-026: theme package format is versioned, max 256 KB, deep portable JSON validated and collision-safe.
 - ADR-027: adapt UX/design-system principles from `nextlevelbuilder/ui-ux-pro-max-skill`; do not force Tailwind/shadcn migration.
 - ADR-028: Vercel Git auto-deploy is disabled; previews deploy only on explicit user request.
+
+## F05
+- ADR-029: field types use a framework-neutral versioned `FieldTypeRegistry`; config/value validation, capability states and migrations stay in core while advanced types remain `modeled` until their dedicated microphases.
