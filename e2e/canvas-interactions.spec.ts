@@ -68,3 +68,30 @@ test('canvas supports single and additive multi-selection and Escape clear', asy
   await expect(nodes.nth(1)).toHaveAttribute('data-selected', 'false');
   await expect(page.getByTestId('canvas-overlay-layer')).toHaveAttribute('data-selection-count', '0');
 });
+
+test('document commands undo and redo through keyboard and header controls', async ({ page }) => {
+  await page.goto('/editor');
+  const insertButton = page.getByRole('button', { name: 'Insert container' });
+  const undoButton = page.getByRole('button', { name: 'Undo' });
+  const redoButton = page.getByRole('button', { name: 'Redo' });
+  const nodes = page.locator('[data-canvas-node-type="core/container"]');
+
+  await expect(undoButton).toBeDisabled();
+  await expect(redoButton).toBeDisabled();
+  await insertButton.click();
+  await expect(nodes).toHaveCount(1);
+  await expect(undoButton).toBeEnabled();
+
+  await page.keyboard.press('Control+z');
+  await expect(nodes).toHaveCount(0);
+  await expect(redoButton).toBeEnabled();
+
+  await page.keyboard.press('Control+Shift+z');
+  await expect(nodes).toHaveCount(1);
+  await expect(redoButton).toBeDisabled();
+
+  await undoButton.click();
+  await expect(nodes).toHaveCount(0);
+  await redoButton.click();
+  await expect(nodes).toHaveCount(1);
+});
