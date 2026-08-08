@@ -5,3 +5,4 @@ export * from './node-geometry';
 export * from './project-factory';
 export * from './project-model';
 export * from './project-validator';
+export * from './style-engine';
