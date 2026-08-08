@@ -4,6 +4,7 @@ import { Icon, type IconName } from '../components/Icon';
 import { EditorCanvas } from '../editor/canvas/EditorCanvas';
 import { useCanvasDocumentActions } from '../editor/canvas/use-canvas-document-actions';
 import { useProjectSession } from '../project/project-session-context';
+import type { EditorModuleId } from '../routing/editor-modules';
 import type { WorkspaceId } from '../routing/workspaces';
 import { useEditorWidgetRegistry } from '../widgets/editor-widget-registry-context';
 import { MAX_NAVIGATION_WIDTH, MIN_NAVIGATION_WIDTH } from '../workspace/workspace-preferences';
@@ -17,29 +18,18 @@ import { PagesAssetsWorkspace } from './PagesAssetsWorkspace';
 import { PublishingWorkspace } from './PublishingWorkspace';
 import { StudioCommandPalette } from './StudioCommandPalette';
 
-type StudioModuleId =
-  | 'builder'
-  | 'pages'
-  | 'content'
-  | 'queries'
-  | 'forms'
-  | 'filters'
-  | 'media'
-  | 'themes'
-  | 'users'
-  | 'blueprints'
-  | 'settings';
-
 interface ProductionStudioProps {
   workspaceId: WorkspaceId;
+  editorModuleId: EditorModuleId;
   compactLayout: boolean;
   navigationOpen: boolean;
   onCloseNavigation(): void;
   onNavigate(workspaceId: WorkspaceId): void;
+  onNavigateEditorModule(moduleId: EditorModuleId): void;
 }
 
 interface StudioModuleDefinition {
-  id: StudioModuleId;
+  id: EditorModuleId;
   label: string;
   description: string;
   icon: IconName;
@@ -91,11 +81,11 @@ const quietButton = 'ec-control ec-focus-ring inline-flex h-8 items-center justi
 function StudioRail({ compactLayout, workspaceId, activeModule, settingsOpen, onSettingsOpenChange, onNavigate, onSelectModule, onClose }: {
   compactLayout: boolean;
   workspaceId: WorkspaceId;
-  activeModule: StudioModuleId;
+  activeModule: EditorModuleId;
   settingsOpen: boolean;
   onSettingsOpenChange(open: boolean): void;
   onNavigate(workspaceId: WorkspaceId): void;
-  onSelectModule(moduleId: StudioModuleId): void;
+  onSelectModule(moduleId: EditorModuleId): void;
   onClose(): void;
 }) {
   const { preferences, setNavigationPosition, setNavigationWidth, setNavigationCollapsed, setNavigationDisplayMode, moveWorkspace, setDensity, reset } = useWorkspacePreferences();
@@ -211,7 +201,7 @@ function BuilderWorkspace() {
   return <div className="studio-builder-workspace flex min-h-0 flex-1 overflow-hidden"><WidgetLibrary onInsert={(definition) => actions.insertWidget(definition.type)} /><div className="studio-editor-region flex min-w-0 flex-1 flex-col bg-[var(--color-ec-app)]"><div className="flex h-10 shrink-0 items-center border-b border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] px-3"><div className="flex min-w-0 items-center gap-1.5 text-[9px] text-[var(--color-ec-text-muted)]"><span className="truncate">{document.name}</span><span>/</span><strong className="font-semibold text-[var(--color-ec-text)]">Canvas</strong></div></div><EditorCanvas document={document} breakpointId={session.activeBreakpointId} breakpoints={session.project.breakpoints} viewportWidth={breakpoint.width} zoom={session.zoom} actions={actions} /></div></div>;
 }
 
-function EditorModuleWorkspace({ module, onOpenBuilder }: { module: StudioModuleId; onOpenBuilder(): void }) {
+function EditorModuleWorkspace({ module, onOpenBuilder }: { module: EditorModuleId; onOpenBuilder(): void }) {
   if (module === 'builder') return <BuilderWorkspace />;
   if (module === 'pages') return <PagesAssetsWorkspace key="pages" initialView="pages" onOpenBuilder={onOpenBuilder} />;
   if (module === 'media') return <PagesAssetsWorkspace key="media" initialView="assets" onOpenBuilder={onOpenBuilder} />;
@@ -225,26 +215,25 @@ function EditorModuleWorkspace({ module, onOpenBuilder }: { module: StudioModule
   return <GlobalSystemsWorkspace key="settings" initialView="project" />;
 }
 
-export function ProductionStudio({ workspaceId, compactLayout, navigationOpen, onCloseNavigation, onNavigate }: ProductionStudioProps) {
+export function ProductionStudio({ workspaceId, editorModuleId, compactLayout, navigationOpen, onCloseNavigation, onNavigate, onNavigateEditorModule }: ProductionStudioProps) {
   const { preferences } = useWorkspacePreferences();
-  const [activeModule, setActiveModule] = useState<StudioModuleId>('builder');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
-  const activeDefinition = modules.find((module) => module.id === activeModule) ?? modules[0];
+  const activeDefinition = modules.find((module) => module.id === editorModuleId) ?? modules[0];
   const collapsed = !compactLayout && preferences.navigationCollapsed;
-  const selectModule = (moduleId: StudioModuleId) => { setActiveModule(moduleId); if (workspaceId !== 'editor') onNavigate('editor'); };
+  const selectModule = (moduleId: EditorModuleId) => onNavigateEditorModule(moduleId);
 
   let content: ReactNode;
   if (workspaceId === 'preview') content = <LivePreviewWorkspace />;
   else if (workspaceId === 'backend') content = <BackendRolesWorkspace initialView="overview" />;
   else if (workspaceId === 'export') content = <PublishingWorkspace />;
-  else content = <EditorModuleWorkspace module={activeModule} onOpenBuilder={() => setActiveModule('builder')} />;
+  else content = <EditorModuleWorkspace module={editorModuleId} onOpenBuilder={() => onNavigateEditorModule('builder')} />;
 
   const workspaceLabel = primaryWorkspaces.find((workspace) => workspace.id === workspaceId)?.label ?? 'Editor';
-  const rail = <StudioRail compactLayout={compactLayout} workspaceId={workspaceId} activeModule={activeModule} settingsOpen={settingsOpen} onSettingsOpenChange={setSettingsOpen} onNavigate={onNavigate} onSelectModule={selectModule} onClose={onCloseNavigation} />;
+  const rail = <StudioRail compactLayout={compactLayout} workspaceId={workspaceId} activeModule={editorModuleId} settingsOpen={settingsOpen} onSettingsOpenChange={setSettingsOpen} onNavigate={onNavigate} onSelectModule={selectModule} onClose={onCloseNavigation} />;
 
   return (
-    <main className="production-studio flex min-h-0 flex-1 overflow-hidden bg-[var(--color-ec-app)] text-[var(--color-ec-text)]" id="workspace-main" tabIndex={-1} data-workspace={workspaceId} data-compact={compactLayout ? 'true' : 'false'} data-navigation-position={preferences.navigationPosition} data-navigation-collapsed={collapsed ? 'true' : 'false'}>
+    <main className="production-studio flex min-h-0 flex-1 overflow-hidden bg-[var(--color-ec-app)] text-[var(--color-ec-text)]" id="workspace-main" tabIndex={-1} data-workspace={workspaceId} data-editor-module={editorModuleId} data-compact={compactLayout ? 'true' : 'false'} data-navigation-position={preferences.navigationPosition} data-navigation-collapsed={collapsed ? 'true' : 'false'}>
       <h1 className="sr-only">{workspaceLabel} workspace</h1>
       {!compactLayout && preferences.navigationPosition === 'left' ? rail : null}
       <div className="flex min-w-0 flex-1 flex-col">
