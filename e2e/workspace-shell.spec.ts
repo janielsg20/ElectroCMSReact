@@ -10,7 +10,7 @@ test('workspace navigation preserves session state between routes', async ({ pag
   await navigation.getByRole('button', { name: 'Preview' }).click();
 
   await expect(page).toHaveURL(/\/preview$/);
-  await expect(page.getByRole('heading', { name: 'Preview workspace' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Preview workspace', level: 2 })).toBeVisible();
   await expect(page.getByLabel('Zoom level')).toHaveText('110%');
 
   await navigation.getByRole('button', { name: 'Editor' }).click();
@@ -22,7 +22,7 @@ test('workspace layout and editor theme preferences survive reload', async ({ pa
   await page.goto('/editor');
 
   await page.getByLabel('Editor theme mode').selectOption('dark');
-  await page.getByText('Workspace settings', { exact: true }).click();
+  await page.locator('summary').filter({ hasText: 'Workspace settings' }).click();
   await page.getByLabel('Navigation position').selectOption('right');
   await page.getByLabel('Navigation display mode').selectOption('icons');
   await page.getByLabel('Workspace density').selectOption('comfortable');
@@ -57,7 +57,7 @@ test('tablet keeps every primary function available through the compact workspac
   await expect(drawer).toBeVisible();
   await drawer.getByRole('button', { name: 'Backend' }).click();
   await expect(page).toHaveURL(/\/backend$/);
-  await expect(page.getByRole('heading', { name: 'Backend workspace' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Backend workspace', level: 2 })).toBeVisible();
 
   const hasHorizontalOverflow = await page.evaluate(() =>
     document.documentElement.scrollWidth > document.documentElement.clientWidth,
@@ -79,7 +79,7 @@ test('mobile keeps navigation available through an accessible drawer without roo
   await drawer.getByRole('button', { name: 'Preview' }).click();
   await expect(page).toHaveURL(/\/preview$/);
   await expect(drawer).toHaveCount(0);
-  await expect(page.getByRole('heading', { name: 'Preview workspace' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Preview workspace', level: 2 })).toBeVisible();
 
   const layout = await page.evaluate(() => {
     const viewportWidth = document.documentElement.clientWidth;

@@ -2,18 +2,16 @@ import { useCallback, useEffect, useState } from 'react';
 import type { CanonicalProject } from '../core/project';
 import type { ProjectThemeRegistry } from '../core/themes';
 import { AppHeader } from './components/AppHeader';
-import { WorkspaceNavigation } from './components/WorkspaceNavigation';
-import { WorkspaceSurface } from './components/WorkspaceSurface';
 import type { EditorProjectPersistence } from './project/editor-project-persistence';
 import { ProjectSessionProvider } from './project/project-session';
 import { useWorkspaceRoute } from './routing/use-workspace-route';
 import type { WorkspaceId } from './routing/workspaces';
+import { ProductionStudio } from './studio/ProductionStudio';
 import { ProjectThemeRegistryProvider } from './themes/ProjectThemeRegistryProvider';
 import { EditorWidgetRegistryProvider } from './widgets/EditorWidgetRegistryProvider';
 import type { EditorWidgetRegistry } from './widgets/editor-widget-registry';
 import { useResolvedEditorTheme } from './workspace/editor-theme';
 import './workspace/editor-theme-presets.css';
-import { useMediaQuery } from './workspace/use-media-query';
 import { WorkspacePreferencesProvider } from './workspace/workspace-preferences-context';
 import type { WorkspacePreferencesRepository } from './workspace/workspace-preferences-repository';
 import { useWorkspacePreferences } from './workspace/workspace-preferences-store';
@@ -26,19 +24,37 @@ export interface AppProps {
   projectThemeRegistry?: ProjectThemeRegistry;
 }
 
+function useCompactStudioLayout(): boolean {
+  const query = '(max-width: 960px)';
+  const [compact, setCompact] = useState(() =>
+    typeof globalThis.matchMedia === 'function' ? globalThis.matchMedia(query).matches : false,
+  );
+
+  useEffect(() => {
+    if (typeof globalThis.matchMedia !== 'function') return undefined;
+    const mediaQuery = globalThis.matchMedia(query);
+    const update = () => setCompact(mediaQuery.matches);
+    update();
+    mediaQuery.addEventListener('change', update);
+    return () => mediaQuery.removeEventListener('change', update);
+  }, []);
+
+  return compact;
+}
+
 function EditorApplicationShell() {
   const route = useWorkspaceRoute();
   const { preferences, setLastWorkspace } = useWorkspacePreferences();
-  const compactLayout = useMediaQuery('(max-width: 960px)');
   const resolvedTheme = useResolvedEditorTheme(preferences.editorThemeMode);
-  const [navigationOpen, setNavigationOpen] = useState(false);
   const activeWorkspace: WorkspaceId = route.workspaceId ?? preferences.lastWorkspace;
+  const compactLayout = useCompactStudioLayout();
+  const [navigationOpen, setNavigationOpen] = useState(false);
 
   const navigate = useCallback(
     (workspaceId: WorkspaceId) => {
       setLastWorkspace(workspaceId);
-      setNavigationOpen(false);
       route.navigate(workspaceId);
+      setNavigationOpen(false);
     },
     [route, setLastWorkspace],
   );
@@ -63,28 +79,19 @@ function EditorApplicationShell() {
       data-navigation-position={preferences.navigationPosition}
     >
       <a className="skip-link" href="#workspace-main">Skip to workspace</a>
-
       <AppHeader
         compactLayout={compactLayout}
         activeWorkspace={activeWorkspace}
         onOpenNavigation={() => setNavigationOpen(true)}
         onNavigate={navigate}
       />
-
-      <div
-        className="workspace-body"
-        data-navigation-position={preferences.navigationPosition}
-        data-navigation-collapsed={preferences.navigationCollapsed ? 'true' : 'false'}
-      >
-        <WorkspaceNavigation
-          compactLayout={compactLayout}
-          open={compactLayout && navigationOpen}
-          activeWorkspace={activeWorkspace}
-          onNavigate={navigate}
-          onClose={() => setNavigationOpen(false)}
-        />
-        <WorkspaceSurface workspaceId={activeWorkspace} />
-      </div>
+      <ProductionStudio
+        workspaceId={activeWorkspace}
+        compactLayout={compactLayout}
+        navigationOpen={compactLayout && navigationOpen}
+        onCloseNavigation={() => setNavigationOpen(false)}
+        onNavigate={navigate}
+      />
     </div>
   );
 }
