@@ -24,6 +24,7 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - `DocumentNode.version = 1`.
 - `ContentTypeDefinition.version = 1` desde MF-037.
 - `TaxonomyDefinition.version = 1` desde MF-038.
+- `FieldGroupDefinition.version = 1` y `CustomFieldDefinition.version = 1` desde MF-040.
 - `FieldTypeDefinition` es runtime-registry data versionada por `type@version`; no se persiste una copia de callbacks en `CanonicalProject`.
 - Proyecto inicial crea una página Home con nodo `core/root`.
 - Breakpoints iniciales: desktop, laptop, tablet landscape, tablet portrait, mobile large y mobile small.
@@ -133,10 +134,14 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - Arquetipo del editor: Productivity Tool + Design System tooling + Data-Dense SaaS.
 - Lenguaje base: Minimal/Swiss + Flat + Data-Dense + Accessible, con micro-interacciones funcionales.
 - Editor = entorno de autoría no-code, no un dashboard genérico de cards.
-- Anatomía objetivo: header global, navegación/insert/layers lateral, canvas dominante y inspector/context panels.
+- Anatomía principal: header global + **Insert/Elements Library izquierda** + canvas central dominante + inspector contextual derecho.
+- El modelo mental debe resultar familiar a builders profesionales como Elementor, pero ElectroCMS conserva identidad, terminología, assets, código y composición originales.
+- La Insert Library es una superficie de autoría principal: búsqueda, categorías, icono+label, click-to-insert, drag-to-canvas, estados modeled/disabled honestos y futuras vistas Elements/Layers/Templates.
+- En desktop la library/inspector permanecen persistentes cuando el espacio lo permita; en tablet/móvil pueden convertirse en drawers/sheets sin perder acceso.
 - Ritmo: micro-grid 4px, base 8px; desktop denso, touch crítico >=44px.
 - Editores de modelos dinámicos usan master-detail cuando la tarea es list + inspect/edit; formularios rutinarios no deben forzar modales.
-- `DynamicContentManager` agrupa Content Types/Taxonomies mediante tabs para mantener densidad sin apilar herramientas extensas.
+- `DynamicContentManager` agrupa Content Types/Taxonomies/Field Groups mediante tabs para mantener densidad sin apilar herramientas extensas.
+- `FieldGroupEditor` adopta el mismo mental model a escala de herramienta: Field Library → Stored Order → contextual Field Inspector.
 - Tokens siguen primitive → semantic → component.
 - No forzar Tailwind/shadcn; adaptar principios al stack React/CSS existente salvo decisión futura explícita.
 
@@ -199,11 +204,11 @@ Nunca mezclar estos tres niveles.
 - Cada taxonomía debe asociarse a uno o más CPT IDs únicos existentes.
 - `hierarchical=true` modela categorías/árbol; `false` modela taxonomías planas tipo tags.
 - ID es inmutable tras crear y slug debe ser único entre taxonomías.
-- `fieldGroupIds` solo acepta IDs presentes en `project.fieldGroups`; MF-038 permite enlazar grupos existentes, MF-039 define field types y MF-040 implementará grupos/campos persistentes.
+- `fieldGroupIds` solo acepta IDs presentes en `project.fieldGroups`; MF-040 ya implementa la creación/edición de esos grupos.
 - `archiveTemplateId` solo puede apuntar a un `CanonicalDocument.kind === 'archive'` existente.
 - `createTaxonomy`, `updateTaxonomy`, `removeTaxonomy` son operaciones core React-free que validan referencias y el proyecto resultante.
 - `TaxonomyEditor` ofrece identity, hierarchy/flat, multi-CPT associations, archive template y field-group associations en master-detail responsive.
-- `DynamicContentManager` usa tabs Content Types / Taxonomies y mantiene cada editor en el mismo Backend workspace.
+- `DynamicContentManager` usa tabs Content Types / Taxonomies / Field Groups y mantiene cada editor en el mismo Backend workspace.
 - E2E prueba 2 CPTs → multi-CPT taxonomy → persistencia → slug inválido → flat + 1 target → persistencia → delete, verificando IndexedDB.
 - Evidencia funcional MF-038: run #766 PASS; cierre documental #776 PASS.
 
@@ -220,6 +225,23 @@ Nunca mezclar estos tres niveles.
 - El test `plugin/rating` demuestra que un tipo externo se registra, valida, crea defaults y migra config sin modificar el core registry.
 - Evidencia funcional MF-039: GitHub Actions run #786 PASS; cierre documental #800 PASS.
 
+## Contenido dinámico F05 — MF-040 Custom Field Groups
+- `CanonicalProject.fieldGroups` es la única fuente persistente de field groups; no existe store paralelo.
+- `FieldGroupDefinition.version = 1`; `CustomFieldDefinition.version = 1`.
+- Group IDs son kebab-case e inmutables después de crear.
+- Field IDs son kebab-case; field `name` es lowercase snake_case; ambos deben ser únicos dentro del grupo.
+- Cada campo persiste referencia `type + typeVersion`, label, description, placeholder, required, portable default value, portable type-specific config, `conditions[]` y `roleVisibility[]`.
+- Solo tipos `availability=available` pueden instanciarse en MF-040. Los tipos advanced `modeled` permanecen bloqueados.
+- Config y default value se validan mediante `FieldTypeRegistry`; el group model no duplica validadores por tipo.
+- `presentation` admite `group` o `tabs` como metadata portable.
+- El orden de `fields[]` es el orden canónico persistente; reorder modifica ese array directamente.
+- El delete de field group se bloquea cuando una taxonomy conserva su ID en `fieldGroupIds`.
+- `FieldGroupEditor` ofrece library buscable de field types disponibles, ordered list con reorder y contextual inspector para common settings + config schema.
+- Conditions/role visibility se muestran honestamente como portable/modelado, sin UI/runtime falso antes de su fase.
+- `ProjectSession` expone create/update/remove field group y reutiliza autosave/recovery.
+- E2E verifica create → add/config fields → reorder → durable IndexedDB → reload → edit → durable save → delete → durable removal.
+- Evidencia funcional MF-040: GitHub Actions run #834 PASS.
+
 ## Evidencia F04
 - MF-034 definitiva: run #568 PASS.
 - MF-035 definitiva, incluyendo duplicate/edit/version: run #662 PASS.
@@ -232,4 +254,5 @@ Nunca mezclar estos tres niveles.
 - MF-037 CPT model + editor: DONE, run #730 PASS; docs #740 PASS.
 - MF-038 Taxonomy model + editor: DONE, run #766 PASS; docs #776 PASS.
 - MF-039 Field type registry: DONE, run #786 PASS; docs #800 PASS.
-- MF-040 Custom field groups: siguiente microfase; no iniciada todavía.
+- MF-040 Custom field groups: DONE, run #834 PASS; cierre documental pendiente.
+- Siguiente: MF-041 Records CRUD, solo después de un cierre documental completamente verde.
