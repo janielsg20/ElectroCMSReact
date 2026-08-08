@@ -49,6 +49,10 @@ function requiredValueMissing(value: JsonValue): boolean {
   return false;
 }
 
+function hasCompareValue(field: CustomFieldDefinition): boolean {
+  return Object.prototype.hasOwnProperty.call(field.config, 'compareValue');
+}
+
 export function advancedFieldGroupReference(field: CustomFieldDefinition): string | null {
   if (field.type !== 'core/group' && field.type !== 'core/repeater' && field.type !== 'core/conditional') {
     return null;
@@ -106,8 +110,19 @@ export function validateAdvancedFieldConfig(field: CustomFieldDefinition): Advan
   if (!fieldGroupId) issues.push(issue('INVALID_GROUP_REFERENCE', 'config.fieldGroupId', 'Conditional requires a referenced Field Group id.'));
   const sourceField = typeof field.config.sourceField === 'string' ? field.config.sourceField.trim() : '';
   if (!sourceField) issues.push(issue('INVALID_SOURCE_FIELD', 'config.sourceField', 'Conditional requires a source field storage name.'));
-  if (!CONDITIONAL_OPERATORS.includes(field.config.operator as ConditionalOperator)) {
+  const operator = field.config.operator as ConditionalOperator;
+  if (!CONDITIONAL_OPERATORS.includes(operator)) {
     issues.push(issue('INVALID_CONDITION_OPERATOR', 'config.operator', 'Conditional operator is not supported.'));
+    return issues;
+  }
+  if ((operator === 'equals' || operator === 'notEquals') && !hasCompareValue(field)) {
+    issues.push(issue('MISSING_COMPARE_VALUE', 'config.compareValue', `${operator} requires compareValue.`));
+  }
+  if (
+    (operator === 'greaterThan' || operator === 'lessThan')
+    && (typeof field.config.compareValue !== 'number' || !Number.isFinite(field.config.compareValue))
+  ) {
+    issues.push(issue('INVALID_COMPARE_VALUE', 'config.compareValue', `${operator} requires a finite numeric compareValue.`));
   }
   return issues;
 }
@@ -140,16 +155,57 @@ export function normalizeAdvancedFieldValue(
   value: JsonValue,
   context: AdvancedFieldRuntimeContext,
 ): JsonValue {
+  const depth = context.depth ?? 0;
+  if (depth > MAX_ADVANCED_FIELD_DEPTH) return structuredClone(value);
+
   if (field.type === 'core/calculated') {
     const result = evaluateCalculatedField(field, context.currentValues ?? {});
     return result.ok ? result.value : null;
   }
-  if (field.type === 'core/conditional' && !evaluateConditionalField(field, context.currentValues ?? {})) {
-    return null;
+
+  if (field.type === 'core/conditional') {
+    if (!evaluateConditionalField(field, context.currentValues ?? {})) return null;
+    const groupId = advancedFieldGroupReference(field);
+    const group = groupId ? context.resolveGroup(groupId) : null;
+    if (!group) return structuredClone(value);
+    if (value !== null && !isJsonObject(value)) return structuredClone(value);
+    const objectValue = isJsonObject(value) ? value : {};
+    return normalizeGroupObject(group, objectValue, {
+      ...context,
+      currentValues: objectValue,
+      depth: depth + 1,
+    });
   }
-  if ((field.type === 'core/group' || field.type === 'core/conditional') && value === null) {
-    return createAdvancedFieldDefaultValue(field, context);
+
+  if (field.type === 'core/group') {
+    const groupId = advancedFieldGroupReference(field);
+    const group = groupId ? context.resolveGroup(groupId) : null;
+    if (!group) return structuredClone(value);
+    if (value !== null && !isJsonObject(value)) return structuredClone(value);
+    const objectValue = isJsonObject(value) ? value : {};
+    return normalizeGroupObject(group, objectValue, {
+      ...context,
+      currentValues: objectValue,
+      depth: depth + 1,
+    });
   }
+
+  if (field.type === 'core/repeater') {
+    if (!Array.isArray(value)) return structuredClone(value);
+    const groupId = advancedFieldGroupReference(field);
+    const group = groupId ? context.resolveGroup(groupId) : null;
+    if (!group) return structuredClone(value);
+    return value.map((item) => (
+      isJsonObject(item)
+        ? normalizeGroupObject(group, item, {
+            ...context,
+            currentValues: item,
+            depth: depth + 1,
+          })
+        : structuredClone(item)
+    ));
+  }
+
   return structuredClone(value);
 }
 
@@ -214,23 +270,72 @@ function validateNestedGroupValue(
   return validateGroupObject(group, value, { ...context, currentValues: value, depth: (context.depth ?? 0) + 1 });
 }
 
+export function normalizeGroupObject(
+  group: FieldGroupDefinition,
+  value: JsonObject,
+  context: AdvancedFieldRuntimeContext,
+): JsonObject {
+  const depth = context.depth ?? 0;
+  if (depth > MAX_ADVANCED_FIELD_DEPTH) return structuredClone(value);
+
+  const values = structuredClone(value);
+
+  // Populate all primitive/structural defaults before derived fields so schema order cannot affect results.
+  for (const field of group.fields) {
+    if (values[field.name] !== undefined) continue;
+    if (field.type === 'core/calculated' || field.type === 'core/conditional') {
+      values[field.name] = null;
+      continue;
+    }
+    values[field.name] = MF042_ADVANCED_FIELD_TYPES.includes(field.type as Mf042AdvancedFieldType)
+      ? createAdvancedFieldDefaultValue(field, { ...context, currentValues: values, depth: depth + 1 })
+      : structuredClone(field.defaultValue);
+  }
+
+  // Structural fields recurse first so nested payloads become canonical before validation/persistence.
+  for (const field of group.fields) {
+    if (field.type !== 'core/group' && field.type !== 'core/repeater') continue;
+    const candidate = values[field.name];
+    if (!isJsonValue(candidate)) continue;
+    values[field.name] = normalizeAdvancedFieldValue(field, candidate, {
+      ...context,
+      currentValues: values,
+      depth: depth + 1,
+    });
+  }
+
+  // Calculated values are always recomputed from the complete primitive sibling context.
+  for (const field of group.fields) {
+    if (field.type !== 'core/calculated') continue;
+    const candidate = values[field.name];
+    if (!isJsonValue(candidate)) continue;
+    values[field.name] = normalizeAdvancedFieldValue(field, candidate, {
+      ...context,
+      currentValues: values,
+      depth: depth + 1,
+    });
+  }
+
+  // Conditions run last so source defaults are available regardless of stored schema order.
+  for (const field of group.fields) {
+    if (field.type !== 'core/conditional') continue;
+    const candidate = values[field.name];
+    if (!isJsonValue(candidate)) continue;
+    values[field.name] = normalizeAdvancedFieldValue(field, candidate, {
+      ...context,
+      currentValues: values,
+      depth: depth + 1,
+    });
+  }
+
+  return values;
+}
+
 export function createGroupDefaultValue(
   group: FieldGroupDefinition,
   context: AdvancedFieldRuntimeContext,
 ): JsonObject {
-  const values: JsonObject = {};
-  for (const field of group.fields) {
-    const value = MF042_ADVANCED_FIELD_TYPES.includes(field.type as Mf042AdvancedFieldType)
-      ? createAdvancedFieldDefaultValue(field, { ...context, currentValues: values, depth: (context.depth ?? 0) + 1 })
-      : structuredClone(field.defaultValue);
-    values[field.name] = value;
-  }
-  for (const field of group.fields) {
-    if (field.type === 'core/calculated') {
-      values[field.name] = createAdvancedFieldDefaultValue(field, { ...context, currentValues: values, depth: (context.depth ?? 0) + 1 });
-    }
-  }
-  return values;
+  return normalizeGroupObject(group, {}, context);
 }
 
 export function validateGroupObject(
@@ -244,21 +349,7 @@ export function validateGroupObject(
     if (!known.has(key)) issues.push(issue('UNKNOWN_NESTED_FIELD', key, `Field ${key} is not defined by ${group.label}.`));
   }
 
-  const normalizedContext: JsonObject = { ...value };
-  for (const field of group.fields) {
-    const existingValue = value[field.name];
-    let candidate: JsonValue = existingValue === undefined
-      ? structuredClone(field.defaultValue)
-      : existingValue;
-    if (!isJsonValue(candidate)) {
-      issues.push(issue('INVALID_NESTED_VALUE', field.name, `${field.label} must be portable JSON.`));
-      continue;
-    }
-    if (MF042_ADVANCED_FIELD_TYPES.includes(field.type as Mf042AdvancedFieldType)) {
-      candidate = normalizeAdvancedFieldValue(field, candidate, { ...context, currentValues: normalizedContext });
-    }
-    normalizedContext[field.name] = candidate;
-  }
+  const normalizedContext = normalizeGroupObject(group, value, context);
 
   for (const field of group.fields) {
     const candidate = normalizedContext[field.name];
