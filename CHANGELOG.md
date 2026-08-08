@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+### F03 — Canvas, nodos, DnD e historial
+- Added immutable canonical document tree engine with derived parent/depth/traversal indexes and structural validation.
+- Added recursive canvas renderer with overlay separation, empty-root state and invalid-tree fallback.
+- Added semantic insert/reorder/nesting drag-and-drop using node IDs and parent/index targets.
+- Added transient single/multi selection with keyboard accessibility and Escape clear.
+- Added per-document reversible `DocumentCommand` history with real Undo/Redo buttons and shortcuts.
+- Added canonical Copy/Cut/Paste with fresh ID remapping, Group/Ungroup and Lock/Hide operations.
+- Added responsive node geometry using existing `ResponsiveStyleSet` for X/Y/W/H.
+- Added 8px grid snapping, viewport edge/center guides and transient overlay feedback.
+- Added geometry nudge/resize controls and full Undo/Redo support.
+- Integrated editor commands with F01 autosave/recovery and native IndexedDB hydration after reload.
+- Added monotonic autosave revisions and metadata-only save completion merging to protect newer edits.
+- Added automatic Vercel preview configuration and SPA route fallback.
+- Added unit/component/E2E coverage across tree invariants, DnD, selection, history, clipboard, geometry, autosave and reload recovery.
+
 ### F02 — Editor shell y workspace responsive
 - Added internal History API routing for Editor, Preview, Backend and Export workspaces.
 - Added persistent project session context above routed workspace surfaces.
