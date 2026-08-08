@@ -23,6 +23,7 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - `CanonicalProject.schemaVersion = 1`.
 - `DocumentNode.version = 1`.
 - `ContentTypeDefinition.version = 1` desde MF-037.
+- `TaxonomyDefinition.version = 1` desde MF-038.
 - Proyecto inicial crea una página Home con nodo `core/root`.
 - Breakpoints iniciales: desktop, laptop, tablet landscape, tablet portrait, mobile large y mobile small.
 - Responsive distingue explícitamente `explicit`, `inherited` y `unset`.
@@ -133,6 +134,7 @@ ElectroCMS es un CMS visual local-first construido en React + TypeScript. El pro
 - Anatomía objetivo: header global, navegación/insert/layers lateral, canvas dominante y inspector/context panels.
 - Ritmo: micro-grid 4px, base 8px; desktop denso, touch crítico >=44px.
 - Editores de modelos dinámicos usan master-detail cuando la tarea es list + inspect/edit; formularios rutinarios no deben forzar modales.
+- `DynamicContentManager` agrupa Content Types/Taxonomies mediante tabs para mantener densidad sin apilar herramientas extensas.
 - Tokens siguen primitive → semantic → component.
 - No forzar Tailwind/shadcn; adaptar principios al stack React/CSS existente salvo decisión futura explícita.
 
@@ -183,11 +185,25 @@ Nunca mezclar estos tres niveles.
 - Slug usa lowercase kebab-case, máximo 80 y debe ser único.
 - Labels máximo 80; description máximo 280.
 - `createContentType`, `updateContentType`, `removeContentType` son operaciones core puras que devuelven un proyecto canónico validado.
-- Delete se rechaza si records referencian el CPT mediante `contentTypeId` o `contentType`; la migración explícita de records pertenece a MF posteriores.
-- `ProjectSession` expone las mutations y autosave; lee `projectRef.current` para evitar estado stale.
-- `ContentTypeEditor` vive en Backend y usa patrón master-detail responsive con validación inline, flags, supports y delete de dos pasos.
-- E2E cubre create → save → reload → validation → edit → save → reload → delete → reload.
-- Evidencia: GitHub Actions run #730 PASS.
+- Delete se rechaza si records referencian el CPT mediante `contentTypeId` o `contentType`.
+- Desde MF-038, delete también se rechaza si una taxonomy conserva ese CPT en `contentTypeIds`.
+- `ProjectSession` expone mutations y autosave; lee `projectRef.current` para evitar estado stale.
+- `ContentTypeEditor` usa patrón master-detail responsive con validación inline, flags, supports y delete de dos pasos.
+- Evidencia funcional MF-037: run #730 PASS; cierre documental #740 PASS.
+
+## Contenido dinámico F05 — MF-038 Taxonomy
+- `CanonicalProject.taxonomies` es la única fuente persistente de taxonomías.
+- `TaxonomyDefinition` v1 incluye: `id`, `label`, `singularLabel`, `slug`, `description`, `hierarchical`, `contentTypeIds`, `fieldGroupIds`, `archiveTemplateId`.
+- Cada taxonomía debe asociarse a uno o más CPT IDs únicos existentes.
+- `hierarchical=true` modela categorías/árbol; `false` modela taxonomías planas tipo tags.
+- ID es inmutable tras crear y slug debe ser único entre taxonomías.
+- `fieldGroupIds` solo acepta IDs presentes en `project.fieldGroups`; MF-038 permite enlazar grupos existentes sin implementar su constructor antes de MF-039/MF-040.
+- `archiveTemplateId` solo puede apuntar a un `CanonicalDocument.kind === 'archive'` existente.
+- `createTaxonomy`, `updateTaxonomy`, `removeTaxonomy` son operaciones core React-free que validan referencias y el proyecto resultante.
+- `TaxonomyEditor` ofrece identity, hierarchy/flat, multi-CPT associations, archive template y field-group associations en master-detail responsive.
+- `DynamicContentManager` usa tabs Content Types / Taxonomies y mantiene cada editor en el mismo Backend workspace.
+- E2E prueba 2 CPTs → multi-CPT taxonomy → persistencia → slug inválido → flat + 1 target → persistencia → delete, verificando IndexedDB.
+- Evidencia funcional MF-038: run #766 PASS.
 
 ## Evidencia F04
 - MF-034 definitiva: run #568 PASS.
@@ -198,6 +214,6 @@ Nunca mezclar estos tres niveles.
 ## Estado actual
 - F04 está cerrada y fusionada.
 - F05 — Contenido dinámico está activa en `agent/f05-dynamic-content` / draft PR #6.
-- MF-037 CPT model + editor: DONE, run #730 PASS.
-- MF-038 Taxonomy model + editor: siguiente microfase activa.
-- No avanzar a MF-039 hasta que MF-038 tenga gate completo verde y memoria/tracking actualizados.
+- MF-037 CPT model + editor: DONE, run #730 PASS; docs gate #740 PASS.
+- MF-038 Taxonomy model + editor: DONE, run #766 PASS; cierre documental pendiente de gate final.
+- MF-039 Field type registry: siguiente; no iniciar hasta que el HEAD documental de MF-038 quede verde.
