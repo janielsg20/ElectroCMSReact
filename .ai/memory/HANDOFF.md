@@ -5,22 +5,29 @@ F04 is fully closed and merged into `main` by squash at `57798d9e00f4a3bb87867a8
 
 F05 — Contenido dinámico is active on `agent/f05-dynamic-content` / draft PR #6.
 
-MF-037 — CPT model + editor is DONE. GitHub Actions run #730 is fully green across verify, lint, TypeScript, unit, coverage, Playwright E2E and production build.
+MF-037 — CPT model + editor is DONE. Functional run #730 PASS; documentation closure run #740 PASS.
 
-Current microphase: MF-038 — Taxonomy model + editor.
+MF-038 — Taxonomy model + editor is functionally DONE. GitHub Actions run #766 is fully green across verify, lint, TypeScript, unit, coverage, Playwright E2E and production build. Documentation closure must pass one final HEAD gate before MF-039 begins.
 
-## Durable F05 facts from MF-037
+Next microphase: MF-039 — Field type registry. Do not start until the MF-038 documentation HEAD is green.
+
+## Durable F05 facts from MF-037/MF-038
 - Dynamic content uses existing `CanonicalProject` collections; do not create a second persistence model.
 - `CanonicalProject.contentTypes` is the source of truth for CPT definitions.
-- `ContentTypeDefinition.version = 1`.
-- CPT IDs are kebab-case and immutable after creation; slugs are unique and editable.
-- Delete is rejected while records reference the CPT through `contentTypeId` or `contentType`.
-- Core CRUD lives in `src/core/content/content-type.ts` and remains React-free.
-- `ProjectSession` exposes typed CPT mutations and reads `projectRef.current` before shared project mutations.
-- CPT changes use the existing autosave/recovery pipeline.
-- Backend CPT authoring is a dense master-detail no-code surface: compact model list + contextual settings panel, inline validation, Public/Hierarchical flags, supports and two-step delete.
-- MF-037 does not implement taxonomies, field groups or records CRUD early; those remain later F05 microphases.
-- The persistence regression test for frontend/backend themes now polls the real `electrocms/projects` IndexedDB record before reload. Do not replace durable-storage assertions with UI save text when storage timing matters.
+- `CanonicalProject.taxonomies` is the source of truth for taxonomy definitions.
+- `ContentTypeDefinition.version = 1`; `TaxonomyDefinition.version = 1`.
+- CPT/taxonomy IDs are kebab-case and immutable after creation; slugs are editable and unique within their domain.
+- CPT delete is rejected while records reference the CPT or while a taxonomy keeps that CPT in `contentTypeIds`.
+- Every taxonomy targets one or more unique existing CPTs.
+- Taxonomies support `hierarchical=true` for category/tree semantics and `false` for flat tag-like semantics.
+- Taxonomies store `fieldGroupIds`, but MF-038 only associates already-existing groups; field registry/group creation belongs to MF-039/MF-040.
+- Taxonomies store optional `archiveTemplateId`, accepted only when it points to an existing `CanonicalDocument.kind === 'archive'`.
+- Core CRUD lives in `src/core/content/` and remains React-free.
+- `ProjectSession` exposes typed CPT/taxonomy mutations and reads `projectRef.current` before shared project mutations.
+- CPT/taxonomy changes reuse the existing autosave/recovery pipeline.
+- Backend dynamic-content authoring is a dense no-code surface: `DynamicContentManager` tabs plus master-detail editors, inline validation and two-step destructive actions.
+- MF-038 does not implement field definitions, custom field groups, records CRUD or taxonomy-term records early.
+- Persistence E2E polls the real `electrocms/projects` IndexedDB record before reload when durable write visibility matters.
 
 ## Durable F04 facts still binding
 - Widget contracts are framework-neutral in `src/core/widgets`; React preview binding lives in `src/app/widgets`.
@@ -36,19 +43,19 @@ Current microphase: MF-038 — Taxonomy model + editor.
 
 ## Resume protocol
 1. Read `AI_ENTRYPOINT.md`, `RULES.md`, `MEMORY.md`, `TRACKING.md`, then this handoff.
-2. Confirm latest branch CI is green before advancing a microphase.
-3. Work only MF-038 until its exact contract is implemented and green.
-4. Build taxonomy core in the React-free content domain and persist into canonical `project.taxonomies`.
-5. Reuse `ProjectSession` + autosave; do not bypass repository/persistence contracts.
-6. Apply `design-system/electrocms-editor/MASTER.md` to Backend taxonomy UI; prefer master-detail/progressive disclosure over modal-heavy CRUD.
-7. Add unit + Playwright coverage, including reload persistence and relation to compatible content types if required by the MF contract.
-8. Update TRACKING/MEMORY/IMPLEMENTATION_MEMORY/KNOWN_ISSUES/HANDOFF before marking MF-038 DONE.
-9. Do not begin MF-039 while any MF-038 gate is red.
+2. Confirm the latest documentation HEAD after MF-038 is completely green.
+3. Only then mark MF-039 active and recover its exact contract from the F05 phase/master specification.
+4. Build field-type registry contracts in React-free `src/core/content` (or a dedicated core submodule) and do not persist UI component instances in `CanonicalProject`.
+5. Keep field definitions versioned/portable and compatible with later Custom Field Groups and Records CRUD.
+6. Apply `design-system/electrocms-editor/MASTER.md` to any new Backend UI; prefer registry/library + contextual inspector patterns over modal-heavy CRUD.
+7. Add unit/E2E coverage required by the exact MF-039 contract.
+8. Update TRACKING/MEMORY/IMPLEMENTATION_MEMORY/KNOWN_ISSUES/HANDOFF before marking MF-039 DONE.
+9. Do not begin MF-040 while any MF-039 gate is red.
 
 ## Phase sequence
-- MF-037 — CPT model + editor — DONE — run #730 PASS
-- MF-038 — Taxonomy model + editor — CURRENT
-- MF-039 — Field type registry — BLOCKED
+- MF-037 — CPT model + editor — DONE — run #730; docs #740
+- MF-038 — Taxonomy model + editor — DONE functional — run #766; docs HEAD gate pending
+- MF-039 — Field type registry — NEXT
 - MF-040 — Custom field groups — BLOCKED
 - MF-041 — Records CRUD — BLOCKED
 - MF-042 — Advanced fields — BLOCKED
