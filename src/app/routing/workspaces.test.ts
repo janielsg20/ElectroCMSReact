@@ -16,9 +16,12 @@ describe('workspace routing model', () => {
     ]);
   });
 
-  it('parses canonical paths and ignores unsupported routes', () => {
+  it('parses canonical workspace and editor-module paths while ignoring unsupported routes', () => {
     expect(workspaceFromPathname('/preview')).toBe('preview');
     expect(workspaceFromPathname('/backend/')).toBe('backend');
+    expect(workspaceFromPathname('/editor/content')).toBe('editor');
+    expect(workspaceFromPathname('/editor/roles/')).toBe('editor');
+    expect(workspaceFromPathname('/editor/unknown')).toBeNull();
     expect(workspaceFromPathname('/unknown')).toBeNull();
     expect(getWorkspaceDefinition('export').label).toBe('Export');
   });
