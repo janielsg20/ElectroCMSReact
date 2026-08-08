@@ -87,4 +87,40 @@ describe('MF-042 advanced field safety', () => {
       expect(result.error.message).toContain('Number or Currency');
     }
   });
+
+  it('requires conditional sources to be non-advanced siblings', () => {
+    const project = baseProject();
+    const child = createFieldGroup(project, {
+      ...createDefaultFieldGroupDefinition('conditional-child', 'Conditional Child'),
+      fields: [field('core/text', 'note', { name: 'note' })],
+    });
+    expect(child.ok).toBe(true);
+    if (!child.ok) return;
+
+    const result = createFieldGroup(child.project, {
+      ...createDefaultFieldGroupDefinition('conditional-order', 'Conditional Order'),
+      fields: [
+        field('core/number', 'quantity', { name: 'quantity', defaultValue: 2 }),
+        field('core/calculated', 'subtotal', {
+          name: 'subtotal',
+          config: { expression: 'quantity * 2' },
+          defaultValue: 0,
+        }),
+        field('core/conditional', 'details', {
+          name: 'details',
+          config: {
+            fieldGroupId: 'conditional-child',
+            sourceField: 'subtotal',
+            operator: 'greaterThan',
+            compareValue: 2,
+          },
+          defaultValue: null,
+        }),
+      ],
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toContain('non-advanced sibling');
+    }
+  });
 });
