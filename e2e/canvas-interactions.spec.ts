@@ -53,12 +53,12 @@ test('canvas supports single and additive multi-selection and Escape clear', asy
   await insertButton.click();
 
   const nodes = page.locator('[data-canvas-node-type="core/container"]');
-  await nodes.nth(0).click();
+  await nodes.nth(0).locator('.canvas-node-label').click();
   await expect(nodes.nth(0)).toHaveAttribute('data-selected', 'true');
   await expect(nodes.nth(1)).toHaveAttribute('data-selected', 'false');
   await expect(page.getByTestId('canvas-overlay-layer')).toHaveAttribute('data-selection-count', '1');
 
-  await nodes.nth(1).click({ modifiers: ['Control'] });
+  await nodes.nth(1).locator('.canvas-node-label').click({ modifiers: ['Control'] });
   await expect(nodes.nth(0)).toHaveAttribute('data-selected', 'true');
   await expect(nodes.nth(1)).toHaveAttribute('data-selected', 'true');
   await expect(page.getByTestId('canvas-overlay-layer')).toHaveAttribute('data-selection-count', '2');
