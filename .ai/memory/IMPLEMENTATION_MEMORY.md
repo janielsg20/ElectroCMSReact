@@ -68,6 +68,19 @@
 - `src/app/themes/ProjectThemePackageTransfer.tsx`: two-step selective export/import review UI.
 - `src/app/project/project-session.tsx`: theme selection and validated selective resource merge with autosave.
 
+## F05 code map — dynamic content
+### MF-037 CPT
+- `src/core/content/content-type.ts`: `ContentTypeDefinition` v1, validation, list/create/update/remove operations, slug uniqueness and in-use delete guard.
+- `src/core/content/content-type.test.ts`: unit coverage for valid/invalid definitions, CRUD, duplicate id/slug and record-reference delete protection.
+- `src/core/content/index.ts`: public core content exports.
+- `src/app/content/ContentTypeEditor.tsx`: Backend master-detail CPT authoring UI with inline validation, supports, public/hierarchical flags and two-step delete.
+- `src/app/content/content-type-editor.css`: dense responsive/touch-aware CPT editor styling using semantic editor tokens.
+- `src/app/components/WorkspaceSurface.tsx`: mounts CPT authoring in Backend without claiming records/taxonomy features early.
+- `src/app/project/project-session-context.ts`: typed CPT mutation surface.
+- `src/app/project/project-session.tsx`: CPT mutations over `projectRef.current`, canonical validation and autosave.
+- `e2e/content-types.spec.ts`: create → persist → reload → invalid edit → valid edit → persist → delete → reload.
+- `e2e/project-themes.spec.ts`: durable IndexedDB assertion added to protect cross-workspace autosave regression before reload.
+
 ## Critical invariants
 - Never mutate payloads during validation/migration.
 - Persisted projects must validate before create/save.
@@ -85,10 +98,12 @@
 - Undo/Redo is per-document and command based.
 - Save completion merges metadata only; never overwrite newer editor content.
 - Autosave revisions must remain monotonic across stale pending payloads.
+- Shared project mutations read `projectRef.current`; do not use render-snapshot closures when several workspaces can mutate one project session.
+- Durable persistence E2E should verify IndexedDB when correctness depends on data actually reaching storage before reload.
 - Widget core definitions never import React; preview binding belongs to app/presentation.
 - Adding a widget must not require branching `CanvasRenderer` by type.
 - Inspector patches validate candidate props before commands enter history.
-- Dynamic/commerce/form/filter widgets stay `modeled` until later phases implement their engines.
+- Dynamic/commerce/form/filter widgets stay `modeled` until their dedicated later microphase implements behavior.
 - Native drag feedback must not cause a React rerender during the active gesture.
 - Editor mode/preset never alter `frontendThemeId`/`backendThemeId`.
 - Project themes are scope-validated and store only selected IDs in canonical project.
@@ -98,6 +113,8 @@
 - Package import must validate and review before mutating project state.
 - Demo records are opt-in, never imported by default.
 - Resource merge never overwrites existing IDs/keys.
+- Dynamic content CRUD uses existing canonical collections (`contentTypes`, `taxonomies`, `fieldGroups`, `records`, `relations`), never parallel stores.
+- CPT IDs are immutable after creation; destructive delete is blocked while records reference the type.
 - Vercel deployments are manual-only.
 - Do not use root overflow hiding as a substitute for responsive layout fixes.
 
@@ -133,7 +150,13 @@
 - Package validate → review → selective apply → select → reload → export E2E.
 - Package collision preservation E2E.
 
-## F04 functional evidence
+## Tests added in F05
+- MF-037 ContentType definition/CRUD/slug uniqueness/delete-in-use unit tests.
+- MF-037 Backend CPT authoring/persistence/validation/delete E2E.
+- Durable theme persistence test now polls `electrocms/projects` before reload, preventing false confidence from UI save text alone.
+
+## Functional evidence
+### F04
 - MF-027: run #424 PASS.
 - MF-028: run #434 PASS.
 - MF-029: run #446 PASS.
@@ -144,3 +167,8 @@
 - MF-034: run #568 PASS.
 - MF-035 definitive original contract: run #662 PASS.
 - MF-036 definitive original contract: run #688 PASS.
+- F04 closing gate: run #712 PASS; merged PR #5.
+
+### F05
+- MF-037 CPT model + editor: run #730 PASS.
+- MF-038 Taxonomy model + editor: current.
