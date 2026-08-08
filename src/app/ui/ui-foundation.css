@@ -38,6 +38,13 @@
   --color-ec-chrome: var(--color-ec-graphite-950);
   --color-ec-chrome-raised: var(--color-ec-graphite-900);
 
+  /* Dense, but still readable. Reserve 10px for metadata only. */
+  --ec-font-micro: 10px;
+  --ec-font-xs: 11px;
+  --ec-font-sm: 12px;
+  --ec-font-md: 14px;
+  --ec-font-lg: 18px;
+
   --ec-space-1: 4px;
   --ec-space-2: 8px;
   --ec-space-3: 12px;
@@ -132,6 +139,24 @@
     cursor: not-allowed;
     opacity: 0.42;
   }
+}
+
+/*
+ * Temporary V2 typography bridge. Many migrated Studio surfaces still carry
+ * their original Tailwind arbitrary pixel classes. Clamp those legacy values
+ * to the new readable dense scale until each component adopts semantic type
+ * tokens directly.
+ */
+.electrocms-app .text-\[7px\],
+.electrocms-app .text-\[8px\],
+.electrocms-app .text-\[8\.5px\] {
+  font-size: var(--ec-font-micro) !important;
+}
+
+.electrocms-app .text-\[9px\],
+.electrocms-app .text-\[9\.5px\],
+.electrocms-app .text-\[10px\] {
+  font-size: var(--ec-font-xs) !important;
 }
 
 @media (max-width: 720px) {
