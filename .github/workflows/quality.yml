@@ -2,7 +2,7 @@ name: ElectroCMS Quality Gates
 
 on:
   push:
-    branches: [main, 'agent/**']
+    branches: [main, 'agent/**', 'quality/**']
   pull_request:
     branches: [main]
   workflow_dispatch:
