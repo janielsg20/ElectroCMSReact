@@ -94,6 +94,12 @@ describe('ProductionStudio', () => {
     expect(screen.getByRole('complementary', { name: 'Insert library' })).toBeInTheDocument();
     expect(screen.getByTestId('editor-canvas')).toBeInTheDocument();
 
+    const navigationResizer = screen.getByRole('separator', { name: 'Resize navigation' });
+    expect(navigationResizer).toHaveAttribute('aria-valuenow', '232');
+    navigationResizer.focus();
+    await user.keyboard('{ArrowRight}');
+    expect(navigationResizer).toHaveAttribute('aria-valuenow', '244');
+
     await user.click(within(modules).getByRole('button', { name: 'Pages' }));
     expect(screen.getByRole('heading', { name: 'Pages, templates & assets' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /pages/i })).toHaveAttribute('aria-selected', 'true');
