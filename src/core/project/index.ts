@@ -1,3 +1,4 @@
+export * from './breakpoint-engine';
 export * from './document-tree';
 export * from './document-tree-editing';
 export * from './document-tree-move';
