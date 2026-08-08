@@ -5,9 +5,12 @@
 - Fase completada: F04 — Widgets, inspector, responsive y themes
 - Fase actual: F05 — Contenido dinámico
 - Última microfase completada: MF-041 — Records CRUD
-- Siguiente microfase: MF-042 — Advanced fields
+- Microfase actual: MF-042 — Advanced fields
+- Siguiente microfase bloqueada: MF-043 — Relations
 - Último quality gate funcional completo: GitHub Actions run #901 PASS
-- Cierre documental MF-041: GitHub Actions run #915 PASS
+- Cierre documental MF-041: GitHub Actions run #915 PASS; evidence-sync #921 PASS
+- MF-042: implementación y tests en curso; NO marcar DONE hasta un gate ejecutado completo.
+- GitHub Actions desde runs #986/#990/#994/#1000/#1002 está fallando antes de ejecutar steps (jobs sin steps/logs), por lo que esos runs no constituyen evidencia de fallo ni de éxito del código MF-042.
 - Repositorio oficial: `janielsg20/ElectroCMSReact`
 - PR de fase: #6 `agent/f05-dynamic-content -> main` (draft)
 - Preview deployment: MANUAL ONLY. `vercel.json` usa `git.deploymentEnabled: false`; no desplegar por push/PR.
@@ -76,9 +79,9 @@
 | MF-038 | DONE | `TaxonomyDefinition` v1, hierarchy/flat, multi-CPT associations, field-group/archive refs, referential delete guard CPT, Dynamic Content tabs, autosave/reload/delete E2E; run #766 PASS; cierre documental #776 PASS |
 | MF-039 | DONE | `FieldTypeDefinition` + `FieldTypeRegistry` React-free, resolución `type@version`, config/value validation, defaults, feature matrix, migrations, 27 built-ins (20 available + 7 modeled) y plugin `plugin/rating`; run #786 PASS; cierre documental #800 PASS |
 | MF-040 | DONE | `FieldGroupDefinition`/`CustomFieldDefinition` v1, portable JSON en `CanonicalProject.fieldGroups`, library de 20 tipos disponibles, ordered schema, contextual inspector, config/default validation por registry, referential delete guard y persistencia E2E; run #834 PASS; cierre documental #850 PASS |
-| MF-041 | DONE | `ContentRecordDefinition` v1, estados draft/published/archived, CRUD canónico, búsqueda/filtros, slug único por CPT, required/default/FieldType validation, Records master-detail Backend, field-group integrity guard y persistencia IndexedDB E2E; run #901 PASS; cierre documental #915 PASS |
-| MF-042 | NEXT | Advanced fields |
-| MF-043 | BLOCKED | Relations |
+| MF-041 | DONE | `ContentRecordDefinition` v1, estados draft/published/archived, CRUD canónico, búsqueda/filtros, slug único por CPT, required/default/FieldType validation, Records master-detail Backend, field-group integrity guard y persistencia IndexedDB E2E; run #901 PASS; cierre documental #915 PASS; evidence-sync #921 PASS |
+| MF-042 | IN_PROGRESS | Repeater/Group/Calculated/Conditional v2 `available`, runtime React-free, graph/depth guards, safe calculation parser, Field Group authoring, Records nested runtime, unit safety tests y E2E durable añadidos; gate pendiente porque GitHub Actions no inicia runners |
+| MF-043 | BLOCKED | Relations; `relation/user/taxonomy` continúan `modeled` hasta cerrar MF-042 |
 | MF-044 | BLOCKED | Dynamic bindings |
 
 ## Design system del editor
@@ -92,6 +95,7 @@
 - La biblioteca de inserción es una superficie principal: búsqueda, categorías, icono+label, click/drag para insertar, estados modeled/disabled honestos y futuras vistas Elements/Layers/Templates.
 - Los editores de modelos dinámicos en Backend usan master-detail denso, validación inline y no dependen de modales para tareas rutinarias.
 - Backend Dynamic Content usa tabs para mantener Content Types, Taxonomies, Field Groups y Records en un mismo workspace sin apilar herramientas extensas.
+- MF-042 se integra dentro de Field Groups + Records; no existe una segunda pestaña/editor Advanced Fields paralela.
 - No forzar migración a Tailwind/shadcn; adaptar las reglas al React/CSS actual salvo que una fase futura justifique explícitamente esa migración.
 
 ## Contenido dinámico F05
@@ -102,20 +106,24 @@
 - Taxonomías deben asociarse a uno o más CPTs únicos y pueden ser jerárquicas o flat.
 - Taxonomy model guarda `fieldGroupIds` y `archiveTemplateId`; solo acepta field groups existentes y documentos `kind=archive` existentes.
 - `FieldTypeRegistry` vive en core y es framework-neutral. Los tipos se resuelven por `type@version` y pueden ser extendidos por plugins sin modificar el registro central.
-- MF-039 cubre 27 contratos mínimos del prompt: 20 `available` para schema y 7 avanzados `modeled` hasta MF-042/MF-043.
-- MF-040 instancia únicamente tipos `available`; los 7 advanced continúan bloqueados como frontera de honestidad.
+- MF-039 cubre 27 contratos mínimos del prompt: 20 `available` para schema y 7 avanzados inicialmente `modeled`.
+- MF-042 promueve únicamente `core/repeater`, `core/group`, `core/calculated` y `core/conditional` a v2 `available`; `core/relation`, `core/user`, `core/taxonomy` siguen `modeled` para MF-043.
 - Cada custom field persiste `type`, `typeVersion`, `id`, `name`, `label`, description, placeholder, required, portable default value, type-specific config, conditions[] y roleVisibility[].
-- Conditions/roleVisibility quedan modelados como datos portables; runtime/editor avanzado permanece reservado para fases posteriores.
+- Repeater/Group/Conditional referencian Field Groups reutilizables por ID; ciclos y profundidad > 8 se rechazan.
+- Repeater aplica límites `minItems/maxItems` y hard cap runtime de 100 filas.
+- Calculated usa parser aritmético seguro, nunca `eval`; las expresiones solo pueden usar siblings Number/Currency para evitar dependencia del orden del schema.
+- Conditional se normaliza después de los cálculos; cuando la condición es falsa su valor canónico se normaliza a `null`.
 - El orden de `fields[]` es canónico y editable; reorder no crea otra representación paralela.
 - `presentation` del grupo soporta `group` y `tabs` como metadata portable de composición.
-- Config y default value se validan por `FieldTypeRegistry`; no existe un `switch` de validación por tipo dentro del modelo de grupos.
+- Config y default value se validan por `FieldTypeRegistry` + validación contextual del Field Group; no existe un `switch` de validación distribuido en el modelo persistente.
 - Records guardan `contentTypeId`, `status`, `title`, `slug`, `excerpt`, `content`, `fieldGroupIds`, `fieldValues`, `createdAt` y `updatedAt` como JSON portable dentro de `CanonicalProject.records`.
 - Estados de record: `draft`, `published`, `archived`; el Backend permite filtrar por CPT/status y buscar por title/slug.
 - Slug de record es único dentro de su CPT; ID y `createdAt` se protegen como identidad estable.
 - Los valores de custom fields se normalizan con defaults, required y validación real del `FieldTypeRegistry`; fields desconocidos o grupos inexistentes se rechazan.
+- Records MF-042 renderiza Group anidado, filas Repeater, Calculated read-only y Conditional reactivo sin crear stores paralelos.
 - El editor de Records respeta los `supports` del CPT y no finge un Media Picker: featured image queda explícitamente reservado al Media Library cuando corresponda.
 - El editor Records usa master-detail denso porque es un flujo de gestión de contenido, mientras el visual editor principal conserva Insert Library → Canvas → Inspector.
-- Eliminar un field group se bloquea si una taxonomía o un content record conserva su ID en `fieldGroupIds`.
+- Eliminar un field group se bloquea si una taxonomía, un content record o un advanced field conserva una referencia válida a ese grupo.
 - `ProjectSession` ejecuta mutations core sobre `projectRef.current` y encola autosave para modelos persistentes.
 - Tests de persistencia que dependen de IndexedDB comprueban el estado durable real antes de reload; un texto `Saved locally` no sustituye esa verificación.
 
@@ -142,4 +150,4 @@
 - Los deployments de preview son manuales y solo se ejecutan bajo petición explícita del usuario.
 
 ## Regla de salida
-Cada microfase F05 debe actualizar tracking/memory/implementation-memory/known-issues/handoff y pasar `verify:repo`, lint, TypeScript, unit, coverage, Playwright E2E y build antes de avanzar. MF-042 puede comenzar únicamente desde un HEAD completamente verde posterior al cierre documental de MF-041.
+Cada microfase F05 debe actualizar tracking/memory/implementation-memory/known-issues/handoff y pasar `verify:repo`, lint, TypeScript, unit, coverage, Playwright E2E y build antes de avanzar. **MF-043 no puede comenzar mientras MF-042 no tenga un gate real completamente verde; runs sin steps ejecutados no cuentan como gate.**
