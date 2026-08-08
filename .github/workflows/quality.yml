@@ -1,10 +1,13 @@
 name: ElectroCMS Quality Gates
 
 on:
+  # Normal agent/* development commits intentionally do not run the expensive gate.
+  # Move/create a quality/* branch at the exact microphase HEAD to request one explicit gate.
   push:
-    branches: [main, 'agent/**']
+    branches: [main, 'quality/**']
   pull_request:
     branches: [main]
+    types: [opened, reopened, ready_for_review]
   workflow_dispatch:
 
 permissions:
