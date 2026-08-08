@@ -38,17 +38,17 @@ function rejectUnknownKeys(config: JsonObject, allowed: readonly string[]): Fiel
 function validateGroupConfig(config: JsonObject): FieldTypeValidationResult {
   const unknown = rejectUnknownKeys(config, ['fieldGroupId']);
   if (unknown) return unknown;
-  return typeof config.fieldGroupId === 'string' && config.fieldGroupId.trim()
+  return typeof config.fieldGroupId === 'string'
     ? validFieldTypeValue()
-    : invalidFieldTypeValue('INVALID_GROUP_REFERENCE', 'fieldGroupId', 'fieldGroupId must be a non-empty Field Group id.');
+    : invalidFieldTypeValue('INVALID_GROUP_REFERENCE', 'fieldGroupId', 'fieldGroupId must be a string.');
 }
 
 function validateRepeaterConfig(config: JsonObject): FieldTypeValidationResult {
   const unknown = rejectUnknownKeys(config, ['fieldGroupId', 'minItems', 'maxItems']);
   if (unknown) return unknown;
   const issues = [] as { code: string; path: string; message: string }[];
-  if (typeof config.fieldGroupId !== 'string' || !config.fieldGroupId.trim()) {
-    issues.push({ code: 'INVALID_GROUP_REFERENCE', path: 'fieldGroupId', message: 'fieldGroupId must be a non-empty Field Group id.' });
+  if (typeof config.fieldGroupId !== 'string') {
+    issues.push({ code: 'INVALID_GROUP_REFERENCE', path: 'fieldGroupId', message: 'fieldGroupId must be a string.' });
   }
   if (config.minItems !== undefined && (!Number.isInteger(config.minItems) || Number(config.minItems) < 0)) {
     issues.push({ code: 'INVALID_MIN_ITEMS', path: 'minItems', message: 'minItems must be a non-negative integer.' });
@@ -77,11 +77,11 @@ function validateConditionalConfig(config: JsonObject): FieldTypeValidationResul
   const unknown = rejectUnknownKeys(config, ['fieldGroupId', 'sourceField', 'operator', 'compareValue']);
   if (unknown) return unknown;
   const issues = [] as { code: string; path: string; message: string }[];
-  if (typeof config.fieldGroupId !== 'string' || !config.fieldGroupId.trim()) {
-    issues.push({ code: 'INVALID_GROUP_REFERENCE', path: 'fieldGroupId', message: 'fieldGroupId must be a non-empty Field Group id.' });
+  if (typeof config.fieldGroupId !== 'string') {
+    issues.push({ code: 'INVALID_GROUP_REFERENCE', path: 'fieldGroupId', message: 'fieldGroupId must be a string.' });
   }
-  if (typeof config.sourceField !== 'string' || !config.sourceField.trim()) {
-    issues.push({ code: 'INVALID_SOURCE_FIELD', path: 'sourceField', message: 'sourceField must be a non-empty field storage name.' });
+  if (typeof config.sourceField !== 'string') {
+    issues.push({ code: 'INVALID_SOURCE_FIELD', path: 'sourceField', message: 'sourceField must be a string.' });
   }
   if (!CONDITIONAL_OPERATORS.includes(config.operator as (typeof CONDITIONAL_OPERATORS)[number])) {
     issues.push({ code: 'INVALID_CONDITION_OPERATOR', path: 'operator', message: 'operator must be a supported conditional operator.' });
