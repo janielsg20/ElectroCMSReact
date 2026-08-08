@@ -1,0 +1,580 @@
+/* UI-02 — Professional Builder Workspace */
+
+.studio-editor-region .editor-canvas-v2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 304px;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  place-items: stretch;
+  background: var(--color-ec-app);
+  background-image: none;
+}
+
+.editor-canvas-v2 .canvas-command-bar-v2 {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  position: relative;
+  z-index: var(--ec-z-sticky);
+  display: flex;
+  min-width: 0;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--color-ec-border);
+  background: color-mix(in srgb, var(--color-ec-surface) 96%, transparent);
+  scrollbar-width: none;
+}
+
+.editor-canvas-v2 .canvas-command-bar-v2::-webkit-scrollbar {
+  display: none;
+}
+
+.editor-canvas-v2 .canvas-command-cluster {
+  display: flex;
+  min-width: max-content;
+  align-items: center;
+  gap: 4px;
+  padding-right: 8px;
+  border-right: 1px solid var(--color-ec-border);
+}
+
+.editor-canvas-v2 .canvas-command-cluster:last-child {
+  padding-right: 0;
+  border-right: 0;
+}
+
+.editor-canvas-v2 .canvas-command-cluster--selection {
+  flex: 1 0 auto;
+}
+
+.editor-canvas-v2 .canvas-command-label {
+  color: var(--color-ec-text-muted);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.editor-canvas-v2 .canvas-command-bar button,
+.editor-canvas-v2 .canvas-command-bar select,
+.editor-canvas-v2 .canvas-geometry-controls input {
+  height: 28px;
+  border: 1px solid var(--color-ec-border);
+  border-radius: var(--ec-radius-sm);
+  background: var(--color-ec-surface);
+  color: var(--color-ec-text-muted);
+  font-size: 9px;
+  font-weight: 600;
+  outline: none;
+  transition:
+    border-color var(--ec-motion-fast) var(--ec-ease-standard),
+    background-color var(--ec-motion-fast) var(--ec-ease-standard),
+    color var(--ec-motion-fast) var(--ec-ease-standard),
+    box-shadow var(--ec-motion-fast) var(--ec-ease-standard);
+}
+
+.editor-canvas-v2 .canvas-command-bar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+}
+
+.editor-canvas-v2 .canvas-command-bar button:hover:not(:disabled),
+.editor-canvas-v2 .canvas-command-bar select:hover:not(:disabled),
+.editor-canvas-v2 .canvas-geometry-controls input:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--color-ec-text-muted) 45%, var(--color-ec-border));
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text);
+}
+
+.editor-canvas-v2 .canvas-command-bar button:focus-visible,
+.editor-canvas-v2 .canvas-command-bar select:focus-visible,
+.editor-canvas-v2 .canvas-geometry-controls input:focus-visible {
+  border-color: var(--color-ec-accent);
+  box-shadow: var(--ec-focus-ring);
+}
+
+.editor-canvas-v2 .canvas-command-bar button:disabled,
+.editor-canvas-v2 .canvas-command-bar select:disabled,
+.editor-canvas-v2 .canvas-geometry-controls input:disabled {
+  cursor: not-allowed;
+  opacity: .36;
+}
+
+.editor-canvas-v2 .canvas-command-primary {
+  border-color: var(--color-ec-accent) !important;
+  background: var(--color-ec-accent) !important;
+  color: #fff !important;
+}
+
+.editor-canvas-v2 .canvas-command-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-ec-accent) 88%, black) !important;
+}
+
+.editor-canvas-v2 .canvas-layers-trigger[aria-pressed="true"] {
+  border-color: var(--color-ec-accent);
+  background: var(--color-ec-accent-soft);
+  color: var(--color-ec-accent);
+}
+
+.editor-canvas-v2 .canvas-insert-control,
+.editor-canvas-v2 .canvas-geometry-controls label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-ec-text-muted);
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.editor-canvas-v2 .canvas-insert-control select {
+  width: 142px;
+  padding: 0 22px 0 7px;
+}
+
+.editor-canvas-v2 .canvas-selection-summary {
+  display: inline-flex;
+  height: 24px;
+  min-width: 74px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--color-ec-surface-muted);
+  padding: 0 8px;
+  color: var(--color-ec-text-muted);
+  font-size: 8px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.editor-canvas-v2[data-selection-count]:not([data-selection-count="0"]) .canvas-selection-summary {
+  background: var(--color-ec-accent-soft);
+  color: var(--color-ec-accent);
+}
+
+.editor-canvas-v2 .canvas-command-divider {
+  width: 1px;
+  height: 16px;
+  margin: 0 2px;
+  background: var(--color-ec-border);
+}
+
+.editor-canvas-v2 .canvas-geometry-controls input {
+  width: 48px;
+  padding: 0 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.editor-canvas-v2 .canvas-nudge-group {
+  display: grid;
+  grid-template-columns: repeat(4, 26px);
+  gap: 2px;
+}
+
+.editor-canvas-v2 .canvas-nudge-group button {
+  width: 26px;
+  padding: 0;
+}
+
+.editor-canvas-v2 .canvas-stage-v2 {
+  grid-column: 1;
+  grid-row: 2;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  place-items: start center;
+  padding: 38px 48px 90px;
+  background-color: var(--color-ec-app);
+  background-image: radial-gradient(color-mix(in srgb, var(--color-ec-text-muted) 24%, transparent) .65px, transparent .65px);
+  background-size: 18px 18px;
+}
+
+.editor-canvas-v2 .canvas-scaled-document {
+  border: 1px solid color-mix(in srgb, var(--color-ec-border) 90%, var(--color-ec-text-muted));
+  border-radius: var(--ec-radius-md);
+  background: var(--color-ec-surface);
+  box-shadow: 0 24px 70px rgb(16 19 18 / .12), 0 2px 6px rgb(16 19 18 / .06);
+}
+
+.editor-canvas-v2 .canvas-viewport-badge {
+  border-color: var(--color-ec-border);
+  background: color-mix(in srgb, var(--color-ec-chrome) 94%, transparent);
+  color: rgb(255 255 255 / .72);
+  box-shadow: 0 8px 24px rgb(16 19 18 / .16);
+}
+
+.editor-canvas-v2 .canvas-inspector-dock {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-left: 1px solid var(--color-ec-border);
+  background: var(--color-ec-surface);
+}
+
+.editor-canvas-v2 .widget-inspector-v2 {
+  position: static;
+  width: 100%;
+  max-height: none;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--color-ec-surface);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.editor-canvas-v2 .widget-inspector-header-v2 {
+  min-height: 58px;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-ec-border);
+}
+
+.editor-canvas-v2 .widget-inspector-header-v2 strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-ec-text);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.editor-canvas-v2 .widget-inspector-header-v2 code {
+  max-width: 112px;
+  overflow: hidden;
+  border-radius: var(--ec-radius-sm);
+  background: var(--color-ec-surface-muted);
+  padding: 3px 5px;
+  color: var(--color-ec-text-muted);
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-canvas-v2 .widget-inspector-eyebrow {
+  color: var(--color-ec-accent);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.editor-canvas-v2 .widget-inspector-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  margin: 8px 10px 0;
+  padding: 2px;
+  border-radius: var(--ec-radius-md);
+  background: var(--color-ec-surface-muted);
+}
+
+.editor-canvas-v2 .widget-inspector-tabs button {
+  height: 28px;
+  border: 0;
+  border-radius: var(--ec-radius-sm);
+  background: transparent;
+  color: var(--color-ec-text-muted);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.editor-canvas-v2 .widget-inspector-tabs button[data-active="true"] {
+  background: var(--color-ec-surface);
+  color: var(--color-ec-text);
+  box-shadow: 0 1px 2px rgb(16 19 18 / .08);
+}
+
+.editor-canvas-v2 .widget-inspector-tabs button:focus-visible {
+  box-shadow: var(--ec-focus-ring);
+}
+
+.editor-canvas-v2 .widget-inspector-scroll {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 10px 18px;
+  scrollbar-width: thin;
+}
+
+.editor-canvas-v2 .widget-inspector-section {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 0 12px;
+  border: 0;
+  border-bottom: 1px solid var(--color-ec-border);
+  border-radius: 0;
+}
+
+.editor-canvas-v2 .widget-inspector-section:last-child {
+  border-bottom: 0;
+}
+
+.editor-canvas-v2 .widget-inspector-section legend {
+  width: 100%;
+  padding: 0 1px 3px;
+  color: var(--color-ec-text);
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.editor-canvas-v2 .widget-inspector-field {
+  grid-template-columns: minmax(76px, .72fr) minmax(0, 1.28fr);
+  gap: 4px 7px;
+  color: var(--color-ec-text-muted);
+  font-size: 8.5px;
+}
+
+.editor-canvas-v2 .widget-inspector-field input:not([type="checkbox"]),
+.editor-canvas-v2 .widget-inspector-field select,
+.editor-canvas-v2 .widget-inspector-field textarea {
+  border-color: var(--color-ec-border);
+  border-radius: var(--ec-radius-sm);
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text);
+}
+
+.editor-canvas-v2 .widget-inspector-field input:not([type="checkbox"]):focus,
+.editor-canvas-v2 .widget-inspector-field select:focus,
+.editor-canvas-v2 .widget-inspector-field textarea:focus {
+  border-color: var(--color-ec-accent);
+  box-shadow: var(--ec-focus-ring);
+  outline: none;
+}
+
+.editor-canvas-v2 .widget-inspector-empty-v2 {
+  min-height: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 5px;
+  padding: 28px;
+  text-align: center;
+}
+
+.editor-canvas-v2 .widget-inspector-empty-v2 strong {
+  color: var(--color-ec-text);
+  font-size: 11px;
+}
+
+.editor-canvas-v2 .widget-inspector-empty-v2 > span:last-child {
+  max-width: 28ch;
+  color: var(--color-ec-text-muted);
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.editor-canvas-v2 .widget-inspector-empty-mark {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  margin-bottom: 4px;
+  border: 1px solid var(--color-ec-border);
+  border-radius: var(--ec-radius-lg);
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-accent);
+  font-size: 20px;
+  font-weight: 300;
+}
+
+.editor-canvas-v2 .canvas-layers-popover {
+  position: absolute;
+  z-index: var(--ec-z-popover);
+  top: 10px;
+  left: 10px;
+  width: min(248px, calc(100% - 20px));
+  max-height: calc(100% - 20px);
+  overflow: hidden;
+  border: 1px solid var(--color-ec-border);
+  border-radius: var(--ec-radius-lg);
+  background: color-mix(in srgb, var(--color-ec-surface) 97%, transparent);
+  box-shadow: var(--ec-shadow-float);
+  backdrop-filter: blur(14px);
+}
+
+.editor-canvas-v2 .canvas-layers-popover > header {
+  display: flex;
+  height: 46px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px 0 11px;
+  border-bottom: 1px solid var(--color-ec-border);
+}
+
+.editor-canvas-v2 .canvas-layers-popover > header div {
+  display: grid;
+  gap: 1px;
+}
+
+.editor-canvas-v2 .canvas-layers-popover > header span {
+  color: var(--color-ec-text-muted);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.editor-canvas-v2 .canvas-layers-popover > header strong {
+  color: var(--color-ec-text);
+  font-size: 10px;
+}
+
+.editor-canvas-v2 .canvas-layers-popover > header button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 0;
+  border-radius: var(--ec-radius-sm);
+  background: transparent;
+  color: var(--color-ec-text-muted);
+  font-size: 16px;
+}
+
+.editor-canvas-v2 .canvas-layers-popover > header button:hover {
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+}
+
+.editor-canvas-v2 .canvas-layers-tree {
+  max-height: min(520px, calc(100vh - 220px));
+  overflow: auto;
+  padding: 6px;
+}
+
+.editor-canvas-v2 .canvas-layers-tree ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.editor-canvas-v2 .canvas-layer-row {
+  display: flex;
+  width: 100%;
+  height: 28px;
+  align-items: center;
+  gap: 4px;
+  padding: 0 7px 0 calc(7px + var(--layer-depth, 0) * 12px);
+  border: 0;
+  border-radius: var(--ec-radius-sm);
+  background: transparent;
+  color: var(--color-ec-text-muted);
+  font-size: 9px;
+  text-align: left;
+}
+
+.editor-canvas-v2 .canvas-layer-row:hover {
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+}
+
+.editor-canvas-v2 .canvas-layer-row[data-selected="true"] {
+  background: var(--color-ec-accent-soft);
+  color: var(--color-ec-accent);
+}
+
+.editor-canvas-v2 .canvas-layer-disclosure {
+  width: 12px;
+  color: currentColor;
+  opacity: .55;
+  text-align: center;
+}
+
+.editor-canvas-v2 .canvas-layer-name {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-canvas-v2 .canvas-layer-flags {
+  min-width: 16px;
+  color: var(--color-ec-text-muted);
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-align: right;
+}
+
+@media (max-width: 1180px) {
+  .studio-editor-region .editor-canvas-v2 {
+    grid-template-columns: minmax(0, 1fr) 276px;
+  }
+
+  .editor-canvas-v2 .canvas-command-cluster--geometry {
+    display: none;
+  }
+}
+
+@media (max-width: 820px) {
+  .studio-editor-region .editor-canvas-v2 {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) minmax(220px, 38vh);
+  }
+
+  .editor-canvas-v2 .canvas-stage-v2 {
+    grid-column: 1;
+    grid-row: 2;
+    padding: 28px 20px 64px;
+  }
+
+  .editor-canvas-v2 .canvas-inspector-dock {
+    grid-column: 1;
+    grid-row: 3;
+    border-top: 1px solid var(--color-ec-border);
+    border-left: 0;
+  }
+
+  .editor-canvas-v2 .widget-inspector-header-v2 {
+    min-height: 48px;
+  }
+
+  .editor-canvas-v2 .widget-inspector-scroll {
+    padding-bottom: 12px;
+  }
+}
+
+@media (max-width: 620px) {
+  .editor-canvas-v2 .canvas-command-bar-v2 {
+    min-height: 48px;
+    padding-inline: 6px;
+  }
+
+  .editor-canvas-v2 .canvas-command-cluster--selection {
+    display: none;
+  }
+
+  .editor-canvas-v2 .canvas-stage-v2 {
+    padding: 22px 12px 52px;
+  }
+
+  .editor-canvas-v2 .canvas-insert-control select {
+    width: 126px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor-canvas-v2 .canvas-command-bar button,
+  .editor-canvas-v2 .canvas-command-bar select,
+  .editor-canvas-v2 .canvas-geometry-controls input {
+    transition-duration: .01ms;
+  }
+}
