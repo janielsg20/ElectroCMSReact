@@ -5,6 +5,7 @@ import './styles.css';
 import './app/workspace/workspace-responsive.css';
 import './app/editor/canvas/canvas.css';
 import './app/editor/canvas/canvas-interactions.css';
+import './app/ui/ui-foundation.css';
 import './app/studio/studio.css';
 
 const rootElement = document.getElementById('root');
