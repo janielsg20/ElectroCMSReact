@@ -1,25 +1,30 @@
+/* Structural overflow guards shared by the single Bento Density theme. */
+
+.electrocms-app,
+.app-header,
+.production-studio,
+.studio-workspace-frame,
+.studio-builder-workspace,
+.studio-editor-region,
+.editor-canvas {
+  min-width: 0;
+  min-height: 0;
+}
+
 @media (max-width: 960px) {
   .app-header {
     width: 100%;
     max-width: 100%;
-    min-width: 0;
-    grid-template-columns: minmax(0, 1fr) auto;
-    overflow-x: clip;
+    overflow: hidden;
   }
 
-  .header-actions {
+  .header-actions,
+  .header-controls {
     min-width: 0;
     max-width: 100%;
   }
 
   .header-controls {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    justify-self: stretch;
-    overflow-x: auto;
-    overflow-y: hidden;
     overscroll-behavior-inline: contain;
-    contain: inline-size paint;
   }
 }
