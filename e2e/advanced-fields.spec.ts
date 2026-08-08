@@ -178,7 +178,7 @@ test('authors and persists Group Repeater Calculated and Conditional fields', as
     const record = await readPersistedRecord(page, 'products-record') as {
       fieldValues?: Record<string, Record<string, unknown>>;
     } | null;
-    return record?.fieldValues?.['order-data']?.extra_address ?? 'missing';
+    return record?.fieldValues?.['order-data']?.extra_address;
   }).toBeNull();
 
   // A child Field Group update that would invalidate the existing nested Record must be rejected.
