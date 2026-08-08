@@ -1,0 +1,241 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme {
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --color-studio-blue: #2563eb;
+  --color-studio-cyan: #06b6d4;
+  --color-studio-ink: #09111f;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-slate-50 font-sans text-slate-900 antialiased;
+  }
+
+  button,
+  select,
+  input,
+  textarea,
+  summary {
+    font: inherit;
+  }
+
+  button,
+  summary,
+  select {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@layer components {
+  .electrocms-app {
+    @apply flex h-dvh min-h-[560px] min-w-0 flex-col overflow-hidden bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  }
+
+  .skip-link {
+    @apply fixed left-3 top-3 z-[100] -translate-y-20 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition focus:translate-y-0;
+  }
+
+  /* Canvas integration: preserve canonical editor behavior while restyling the chrome. */
+  .studio-editor-region .editor-canvas {
+    @apply grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_292px] overflow-hidden bg-slate-100 dark:bg-slate-900;
+  }
+
+  .studio-editor-region .canvas-command-bar {
+    @apply col-span-2 flex min-h-10 items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white px-2 py-1 [scrollbar-width:none] dark:border-slate-800 dark:bg-slate-950;
+  }
+
+  .studio-editor-region .canvas-command-bar button,
+  .studio-editor-region .canvas-command-bar select,
+  .studio-editor-region .canvas-geometry-controls input {
+    @apply h-7 rounded-md border border-slate-200 bg-white px-2 text-[10px] font-medium text-slate-600 outline-none transition hover:border-slate-300 hover:bg-slate-50 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/15 disabled:opacity-35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800;
+  }
+
+  .studio-editor-region .canvas-command-bar button {
+    @apply inline-flex items-center justify-center;
+  }
+
+  .studio-editor-region .canvas-insert-control,
+  .studio-editor-region .canvas-geometry-controls label {
+    @apply flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[.08em] text-slate-400;
+  }
+
+  .studio-editor-region .canvas-selection-summary {
+    @apply whitespace-nowrap rounded-md bg-blue-50 px-2 py-1 text-[9px] font-semibold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300;
+  }
+
+  .studio-editor-region .canvas-command-divider {
+    @apply h-4 w-px shrink-0 bg-slate-200 dark:bg-slate-800;
+  }
+
+  .studio-editor-region .editor-canvas-layers {
+    @apply relative min-h-0 overflow-auto bg-slate-100 p-8 dark:bg-slate-900;
+    background-image: radial-gradient(rgb(148 163 184 / .34) .65px, transparent .65px);
+    background-size: 18px 18px;
+  }
+
+  .dark .studio-editor-region .editor-canvas-layers,
+  [data-theme="dark"] .studio-editor-region .editor-canvas-layers {
+    background-image: radial-gradient(rgb(71 85 105 / .45) .65px, transparent .65px);
+  }
+
+  .studio-editor-region .editor-canvas > div:last-child {
+    @apply min-h-0 overflow-y-auto border-l border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950;
+  }
+
+  .studio-editor-region .widget-inspector {
+    @apply min-h-full bg-transparent text-slate-700 dark:text-slate-200;
+  }
+
+  .studio-editor-region .widget-inspector-header {
+    @apply flex items-start justify-between gap-2 border-b border-slate-100 px-3 py-3 dark:border-slate-800;
+  }
+
+  .studio-editor-region .widget-inspector-header strong {
+    @apply block text-[12px] font-semibold text-slate-900 dark:text-white;
+  }
+
+  .studio-editor-region .widget-inspector-eyebrow {
+    @apply mb-1 block text-[9px] font-semibold uppercase tracking-[.14em] text-blue-600 dark:text-blue-400;
+  }
+
+  .studio-editor-region .widget-inspector-header code {
+    @apply rounded-md bg-slate-100 px-1.5 py-1 text-[9px] text-slate-400 dark:bg-slate-900;
+  }
+
+  .studio-editor-region .widget-inspector-capability {
+    @apply mx-3 mt-3 rounded-lg bg-slate-50 px-2.5 py-2 text-[9px] font-medium text-slate-500 dark:bg-slate-900 dark:text-slate-400;
+  }
+
+  .studio-editor-region .widget-inspector-section {
+    @apply border-0 border-b border-slate-100 px-3 py-3 dark:border-slate-800;
+  }
+
+  .studio-editor-region .widget-inspector-section legend {
+    @apply mb-2 text-[10px] font-semibold text-slate-700 dark:text-slate-200;
+  }
+
+  .studio-editor-region .widget-inspector-field {
+    @apply mb-2 grid gap-1 text-[9px] font-medium text-slate-500 dark:text-slate-400;
+  }
+
+  .studio-editor-region .widget-inspector-field input:not([type="checkbox"]),
+  .studio-editor-region .widget-inspector-field select,
+  .studio-editor-region .widget-inspector-field textarea {
+    @apply min-h-8 w-full rounded-lg border border-slate-200 bg-white px-2 text-[10px] text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200;
+  }
+
+  .studio-editor-region .widget-inspector-field small,
+  .studio-editor-region .widget-inspector-empty {
+    @apply text-[9px] leading-4 text-slate-400;
+  }
+
+  .studio-editor-region .widget-inspector-empty {
+    @apply p-4;
+  }
+
+  /* Retheme the existing project theme editor instead of duplicating its state. */
+  .project-theme-controls {
+    @apply rounded-xl border border-slate-200 bg-white p-4 text-slate-700 shadow-sm shadow-slate-900/[.02] dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200;
+  }
+
+  .project-theme-controls h3 {
+    @apply text-[13px] font-semibold text-slate-900 dark:text-white;
+  }
+
+  .project-theme-controls p,
+  .project-theme-origin,
+  .project-theme-package-status {
+    @apply text-[10px] leading-4 text-slate-500 dark:text-slate-400;
+  }
+
+  .project-theme-controls-eyebrow {
+    @apply text-[9px] font-semibold uppercase tracking-[.14em] text-blue-600 dark:text-blue-400;
+  }
+
+  .project-theme-controls select,
+  .project-theme-controls input,
+  .project-theme-controls textarea {
+    @apply rounded-lg border border-slate-200 bg-white px-2 text-[10px] text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200;
+  }
+
+  .project-theme-controls button {
+    @apply rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[10px] font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800;
+  }
+
+  .project-theme-preview {
+    @apply overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700;
+  }
+}
+
+@media (max-width: 1024px) {
+  .studio-builder-workspace {
+    @apply flex-col;
+  }
+
+  .studio-library {
+    @apply h-[168px] w-full border-b border-r-0;
+  }
+
+  .studio-library > div:last-child {
+    @apply flex gap-3 overflow-x-auto overflow-y-hidden;
+  }
+
+  .studio-library section {
+    @apply min-w-[250px];
+  }
+}
+
+@media (max-width: 720px) {
+  .electrocms-app {
+    min-height: 100dvh;
+  }
+
+  .app-header {
+    @apply min-h-[52px] px-2;
+  }
+
+  .header-controls {
+    max-width: calc(100vw - 184px);
+  }
+
+  .studio-editor-region .editor-canvas {
+    @apply grid-cols-1;
+  }
+
+  .studio-editor-region .canvas-command-bar {
+    @apply col-span-1;
+  }
+
+  .studio-editor-region .editor-canvas > div:last-child {
+    @apply border-l-0 border-t border-slate-200 dark:border-slate-800;
+  }
+
+  .studio-editor-region .editor-canvas-layers {
+    @apply p-4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
