@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { createEntityId } from '../../../core/domain';
 import {
+  copyDocumentSubtrees,
   cutDocumentSubtrees,
   groupDocumentNodes,
   insertDocumentNode,
@@ -19,6 +20,7 @@ import { useProjectSession } from '../../project/project-session-context';
 export interface CanvasDocumentActions {
   insertContainer(parentId?: string, index?: number): string | null;
   moveNode(nodeId: string, parentId: string, index?: number): boolean;
+  copyNodes(nodeIds: readonly string[]): DocumentClipboardPayload | null;
   cutNodes(nodeIds: readonly string[]): DocumentClipboardPayload | null;
   pasteClipboard(
     clipboard: DocumentClipboardPayload,
@@ -98,6 +100,19 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
       }
     },
     [execute, getActiveDocument],
+  );
+
+  const copyNodes = useCallback(
+    (nodeIds: readonly string[]): DocumentClipboardPayload | null => {
+      const document = getActiveDocument();
+      if (!document) return null;
+      try {
+        return copyDocumentSubtrees(document, nodeIds);
+      } catch {
+        return null;
+      }
+    },
+    [getActiveDocument],
   );
 
   const cutNodes = useCallback(
@@ -203,6 +218,7 @@ export function useCanvasDocumentActions(): CanvasDocumentActions {
   return {
     insertContainer,
     moveNode,
+    copyNodes,
     cutNodes,
     pasteClipboard,
     groupNodes,
