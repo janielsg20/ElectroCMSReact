@@ -7,7 +7,6 @@
 .editor-canvas-v2 .canvas-selection-summary,
 .editor-canvas-v2 .widget-inspector-eyebrow,
 .editor-canvas-v2 .canvas-layers-popover > header span,
-.editor-canvas-v2 .canvas-layer-flags,
 .editor-canvas-v2 .widget-inspector-empty-v2 small {
   font-size: var(--ec-font-micro);
 }
@@ -16,7 +15,6 @@
 .editor-canvas-v2 .canvas-command-bar select,
 .editor-canvas-v2 .canvas-geometry-controls input,
 .editor-canvas-v2 .widget-inspector-tabs button,
-.editor-canvas-v2 .widget-inspector-section legend,
 .editor-canvas-v2 .widget-inspector-field,
 .editor-canvas-v2 .widget-inspector-header-v2 code,
 .editor-canvas-v2 .canvas-layers-popover > header strong,
@@ -36,10 +34,165 @@
   line-height: 1.5;
 }
 
+/* Professional Layers navigator. */
+.editor-canvas-v2 .canvas-layers-popover {
+  width: min(340px, calc(100% - 20px));
+}
+
+.editor-canvas-v2 .canvas-layers-search {
+  display: flex;
+  height: 38px;
+  align-items: center;
+  gap: 7px;
+  margin: 8px;
+  padding: 0 9px;
+  border: 1px solid var(--color-ec-border);
+  border-radius: var(--ec-radius-md);
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text-muted);
+}
+
+.editor-canvas-v2 .canvas-layers-search:focus-within {
+  border-color: var(--color-ec-accent);
+  box-shadow: var(--ec-focus-ring);
+}
+
+.editor-canvas-v2 .canvas-layers-search input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-ec-text);
+  font-size: var(--ec-font-xs);
+}
+
+.editor-canvas-v2 .canvas-layers-tree {
+  max-height: min(560px, calc(100vh - 260px));
+  padding: 4px 6px 8px;
+}
+
+.editor-canvas-v2 .canvas-layer-row {
+  min-height: 32px;
+  height: auto;
+  padding: 2px 4px 2px calc(4px + var(--layer-depth, 0) * 12px);
+}
+
+.editor-canvas-v2 .canvas-layer-disclosure,
+.editor-canvas-v2 .canvas-layer-actions button {
+  display: grid;
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  min-height: 24px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ec-radius-sm);
+  background: transparent;
+  color: currentColor;
+}
+
+.editor-canvas-v2 .canvas-layer-disclosure:disabled {
+  opacity: .35;
+}
+
+.editor-canvas-v2 .canvas-layer-select {
+  min-width: 0;
+  flex: 1;
+  height: 28px;
+  padding: 0 3px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.editor-canvas-v2 .canvas-layer-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 1px;
+  opacity: 0;
+  transition: opacity var(--ec-motion-fast) var(--ec-ease-standard);
+}
+
+.editor-canvas-v2 .canvas-layer-row:hover .canvas-layer-actions,
+.editor-canvas-v2 .canvas-layer-row:focus-within .canvas-layer-actions,
+.editor-canvas-v2 .canvas-layer-row[data-selected="true"] .canvas-layer-actions {
+  opacity: 1;
+}
+
+.editor-canvas-v2 .canvas-layer-actions button:hover:not(:disabled),
+.editor-canvas-v2 .canvas-layer-disclosure:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-ec-text) 8%, transparent);
+}
+
+.editor-canvas-v2 .canvas-layer-actions button[aria-pressed="true"] {
+  background: var(--color-ec-surface);
+  color: var(--color-ec-accent);
+}
+
+.editor-canvas-v2 .canvas-layer-rename {
+  min-width: 0;
+  flex: 1;
+  height: 28px;
+  border: 1px solid var(--color-ec-accent);
+  border-radius: var(--ec-radius-sm);
+  background: var(--color-ec-surface);
+  padding: 0 6px;
+  color: var(--color-ec-text);
+  font-size: var(--ec-font-xs);
+  outline: 0;
+  box-shadow: var(--ec-focus-ring);
+}
+
+.editor-canvas-v2 .canvas-layers-empty {
+  padding: 22px 12px;
+  color: var(--color-ec-text-muted);
+  font-size: var(--ec-font-xs);
+  text-align: center;
+}
+
 .editor-canvas-v2 .canvas-layer-row:focus-visible,
-.editor-canvas-v2 .canvas-layers-popover > header button:focus-visible {
+.editor-canvas-v2 .canvas-layers-popover > header button:focus-visible,
+.editor-canvas-v2 .canvas-layer-actions button:focus-visible,
+.editor-canvas-v2 .canvas-layer-disclosure:focus-visible,
+.editor-canvas-v2 .canvas-layer-select:focus-visible {
   outline: none;
   box-shadow: var(--ec-focus-ring);
+}
+
+/* Inspector disclosures keep long schemas scannable without changing data. */
+.editor-canvas-v2 .widget-inspector-disclosure {
+  display: block;
+  padding: 6px 0;
+}
+
+.editor-canvas-v2 .widget-inspector-disclosure-trigger {
+  display: flex;
+  width: 100%;
+  min-height: 32px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 0;
+  border-radius: var(--ec-radius-sm);
+  background: transparent;
+  padding: 0 4px;
+  color: var(--color-ec-text);
+  font-size: var(--ec-font-xs);
+  font-weight: 750;
+  text-align: left;
+}
+
+.editor-canvas-v2 .widget-inspector-disclosure-trigger:hover {
+  background: var(--color-ec-surface-muted);
+}
+
+.editor-canvas-v2 .widget-inspector-section-fields {
+  display: grid;
+  gap: 8px;
+  padding: 6px 2px 8px;
 }
 
 @media (max-width: 1024px) {
@@ -53,5 +206,15 @@
    * horizontally scrollable, so hiding the whole cluster is unnecessary. */
   .editor-canvas-v2 .canvas-command-cluster--selection {
     display: flex;
+  }
+
+  .editor-canvas-v2 .canvas-layers-popover {
+    width: calc(100% - 16px);
+    top: 8px;
+    left: 8px;
+  }
+
+  .editor-canvas-v2 .canvas-layer-actions {
+    opacity: 1;
   }
 }
