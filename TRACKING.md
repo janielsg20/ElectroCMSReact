@@ -4,8 +4,9 @@
 - Estado: IN_PROGRESS
 - Fase completada: F04 — Widgets, inspector, responsive y themes
 - Fase actual: F05 — Contenido dinámico
-- Microfase actual: MF-038 — Taxonomy model + editor
-- Último quality gate funcional completo: GitHub Actions run #730 PASS
+- Última microfase completada: MF-038 — Taxonomy model + editor
+- Siguiente microfase: MF-039 — Field type registry
+- Último quality gate funcional completo: GitHub Actions run #766 PASS
 - Repositorio oficial: `janielsg20/ElectroCMSReact`
 - PR de fase: #6 `agent/f05-dynamic-content -> main` (draft)
 - Preview deployment: MANUAL ONLY. `vercel.json` usa `git.deploymentEnabled: false`; no desplegar por push/PR.
@@ -70,9 +71,9 @@
 ## F05
 | Microfase | Estado | Evidencia |
 |---|---|---|
-| MF-037 | DONE | `ContentTypeDefinition` v1, CRUD canónico, unique id/slug, delete guard por records, editor master-detail Backend, autosave/reload/delete E2E; run #730 PASS |
-| MF-038 | IN_PROGRESS | Taxonomy model + editor; no avanzar hasta gate completo verde |
-| MF-039 | BLOCKED | Field type registry |
+| MF-037 | DONE | `ContentTypeDefinition` v1, CRUD canónico, unique id/slug, delete guard por records, editor master-detail Backend, autosave/reload/delete E2E; run #730 PASS; cierre documental #740 PASS |
+| MF-038 | DONE | `TaxonomyDefinition` v1, hierarchy/flat, multi-CPT associations, field-group/archive refs, referential delete guard CPT, Dynamic Content tabs, autosave/reload/delete E2E; run #766 PASS |
+| MF-039 | NEXT | Field type registry; no iniciado |
 | MF-040 | BLOCKED | Custom field groups |
 | MF-041 | BLOCKED | Records CRUD |
 | MF-042 | BLOCKED | Advanced fields |
@@ -87,16 +88,20 @@
 - Base visual: Minimal/Flat + Data-Dense + Accessible, con micro-interacciones funcionales.
 - El editor debe sentirse como un no-code builder profesional: header global, canvas dominante, navegación/paleta lateral e inspector/context panels.
 - Los editores de modelos dinámicos en Backend usan master-detail denso, validación inline y no dependen de modales para tareas rutinarias.
+- Backend Dynamic Content usa tabs para mantener Content Types y Taxonomies en un mismo workspace sin apilar editores extensos.
 - No forzar migración a Tailwind/shadcn; adaptar las reglas al React/CSS actual salvo que una fase futura justifique explícitamente esa migración.
 
 ## Contenido dinámico F05
-- `CanonicalProject.contentTypes` sigue siendo la única fuente persistente de CPTs; no existe store paralelo.
-- `ContentTypeDefinition.version = 1` y se serializa como JSON portable dentro de `contentTypes`.
-- IDs son kebab-case e inmutables después de crear; slugs son únicos y editables.
-- Delete de CPT se bloquea si `project.records` contiene referencias por `contentTypeId` o `contentType`.
+- `CanonicalProject.contentTypes` y `CanonicalProject.taxonomies` son las únicas fuentes persistentes de CPTs/taxonomías; no existen stores paralelos.
+- `ContentTypeDefinition.version = 1` y `TaxonomyDefinition.version = 1`.
+- IDs son kebab-case e inmutables después de crear; slugs son únicos y editables dentro de su dominio.
+- Delete de CPT se bloquea si records lo referencian o si una taxonomía lo tiene asociado.
+- Taxonomías deben asociarse a uno o más CPTs únicos y pueden ser jerárquicas o flat.
+- Taxonomy model guarda `fieldGroupIds` y `archiveTemplateId`; solo acepta field groups existentes y documentos `kind=archive` existentes.
+- MF-038 permite asociar field groups ya existentes sin implementar aún su creación/editor; ese motor pertenece a MF-039/MF-040.
 - `ProjectSession` ejecuta mutations core sobre `projectRef.current` y encola autosave.
-- UI Backend de CPT es master-detail responsive: listado compacto + configuración contextual, soportes, flags Public/Hierarchical y delete de dos pasos.
-- Tests de persistencia que dependen de IndexedDB deben comprobar el estado durable real antes de reload; un texto `Saved locally` no sustituye esa verificación.
+- UI Backend usa `DynamicContentManager` con tabs Content Types / Taxonomies; ambos editores son responsive y accesibles.
+- Tests de persistencia que dependen de IndexedDB comprueban el estado durable real antes de reload; un texto `Saved locally` no sustituye esa verificación.
 
 ## Invariantes consolidadas
 - El DOM nunca es fuente de verdad; el canvas es una proyección de `CanonicalDocument`.
@@ -112,8 +117,9 @@
 - Editor theme/preset vive en workspace preferences; frontend/backend theme IDs viven en `CanonicalProject`.
 - Imported theme library es local al editor; solo IDs seleccionados entran al proyecto.
 - Theme resource merge nunca sobrescribe IDs existentes.
-- Content model CRUD muta exclusivamente las colecciones canónicas existentes (`contentTypes`, luego taxonomies/fieldGroups/records según su MF), nunca clones de dominio paralelos.
+- Content model CRUD muta exclusivamente las colecciones canónicas existentes (`contentTypes`, `taxonomies`, luego fieldGroups/records según su MF), nunca clones de dominio paralelos.
+- Relaciones referenciales conocidas se protegen de borrado destructivo silencioso.
 - Los deployments de preview son manuales y solo se ejecutan bajo petición explícita del usuario.
 
 ## Regla de salida
-Cada microfase F05 debe actualizar tracking/memory/handoff y pasar `verify:repo`, lint, TypeScript, unit, coverage, Playwright E2E y build antes de avanzar. No iniciar MF-039 mientras MF-038 tenga un gate rojo.
+Cada microfase F05 debe actualizar tracking/memory/handoff y pasar `verify:repo`, lint, TypeScript, unit, coverage, Playwright E2E y build antes de avanzar. MF-039 no debe comenzar hasta que el cierre documental de MF-038 también quede verde.
