@@ -50,4 +50,23 @@ describe('ProductionStudio', () => {
     expect(window.location.pathname).toBe('/export');
     expect(screen.getAllByRole('heading', { name: 'Export workspace' }).length).toBeGreaterThan(0);
   });
+
+  it('uses canonical layers for selection and exposes tabbed inspector surfaces', async () => {
+    window.history.replaceState({}, '', '/editor');
+    const user = userEvent.setup();
+    render(<App initialProject={makeProject()} preferencesRepository={new MemoryWorkspacePreferencesRepository()} />);
+
+    await user.click(screen.getByRole('button', { name: 'Insert container' }));
+    await user.click(screen.getByRole('button', { name: 'Layers' }));
+
+    const layers = screen.getByRole('complementary', { name: 'Layers navigator' });
+    const containerLayer = within(layers).getByRole('button', { name: 'container' });
+    await user.click(containerLayer);
+    expect(containerLayer).toHaveAttribute('aria-pressed', 'true');
+
+    const inspector = screen.getByRole('complementary', { name: 'Widget inspector' });
+    expect(within(inspector).getByRole('tab', { name: 'Content' })).toHaveAttribute('aria-selected', 'true');
+    await user.click(within(inspector).getByRole('tab', { name: 'Style' }));
+    expect(within(inspector).getByRole('tabpanel', { name: 'Style inspector' })).toBeInTheDocument();
+  });
 });
