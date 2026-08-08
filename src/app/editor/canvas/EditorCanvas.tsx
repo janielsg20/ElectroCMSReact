@@ -6,6 +6,7 @@ import {
   type NodeGeometryPatch,
   type SnapGuide,
 } from '../../../core/project';
+import { useEditorWidgetRegistry } from '../../widgets/editor-widget-registry-context';
 import { CanvasOverlayLayer } from './CanvasOverlayLayer';
 import { CanvasRenderer } from './CanvasRenderer';
 import type { CanvasDocumentActions } from './use-canvas-document-actions';
@@ -26,10 +27,19 @@ export function EditorCanvas({
   zoom,
   actions,
 }: EditorCanvasProps) {
+  const widgetRegistry = useEditorWidgetRegistry();
   const selection = useCanvasSelection(Object.keys(document.nodes));
   const clearSelection = selection.clearSelection;
   const [clipboard, setClipboard] = useState<DocumentClipboardPayload | null>(null);
   const [guides, setGuides] = useState<readonly SnapGuide[]>([]);
+  const structuralWidgets = useMemo(
+    () =>
+      widgetRegistry.core
+        .listLatest()
+        .filter((definition) => definition.metadata.category === 'structural'),
+    [widgetRegistry],
+  );
+  const [insertWidgetType, setInsertWidgetType] = useState('core/section');
   const selectedNodes = useMemo(
     () => selection.selectedNodeIds.flatMap((nodeId) => {
       const node = document.nodes[nodeId];
@@ -45,6 +55,7 @@ export function EditorCanvas({
   const allHidden = selectedNodes.length > 0 && selectedNodes.every((node) => node.hidden === true);
   const canUngroup = selectedNodes.length === 1 && primaryNode?.type === 'core/group';
   const canEditGeometry = selectedNodes.length === 1 && primaryNode?.locked !== true;
+  const canInsertSelectedWidget = widgetRegistry.has(insertWidgetType);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -143,6 +154,27 @@ export function EditorCanvas({
           aria-label="Canvas commands"
           onClick={stopToolbarPropagation}
         >
+          <label className="canvas-insert-control">
+            <span>Insert</span>
+            <select
+              aria-label="Widget to insert"
+              value={insertWidgetType}
+              onChange={(event) => setInsertWidgetType(event.target.value)}
+            >
+              {structuralWidgets.map((definition) => (
+                <option key={definition.type} value={definition.type}>
+                  {definition.metadata.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            disabled={!canInsertSelectedWidget}
+            onClick={() => actions.insertWidget(insertWidgetType)}
+          >
+            Insert widget
+          </button>
           <button type="button" onClick={() => actions.insertContainer()}>
             Insert container
           </button>
