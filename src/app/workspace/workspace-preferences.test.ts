@@ -10,59 +10,66 @@ describe('workspace preferences', () => {
     localStorage.clear();
   });
 
-  it('normalizes invalid layout data without accepting incomplete workspace orders', () => {
+  it('migrates legacy appearance preferences while preserving structural layout choices', () => {
     const normalized = normalizeWorkspacePreferences({
       schemaVersion: 1,
       navigationPosition: 'right',
       navigationWidth: 999,
       navigationCollapsed: true,
-      navigationDisplayMode: 'icons',
+      navigationDisplayMode: 'labels',
       workspaceOrder: ['editor', 'preview'],
       density: 'comfortable',
       lastWorkspace: 'backend',
       editorThemeMode: 'dark',
-      editorThemePresetId: 'unknown-theme',
+      editorThemePresetId: 'developer-console',
     });
 
+    expect(normalized.schemaVersion).toBe(2);
     expect(normalized.navigationPosition).toBe('right');
-    expect(normalized.navigationWidth).toBe(360);
+    expect(normalized.navigationWidth).toBe(344);
     expect(normalized.navigationCollapsed).toBe(true);
     expect(normalized.workspaceOrder).toEqual(['editor', 'preview', 'backend', 'export']);
-    expect(normalized.editorThemeMode).toBe('dark');
-    expect(normalized.editorThemePresetId).toBe('high-density');
+    expect(normalized.navigationDisplayMode).toBe('both');
+    expect(normalized.density).toBe('compact');
+    expect(normalized).not.toHaveProperty('editorThemeMode');
+    expect(normalized).not.toHaveProperty('editorThemePresetId');
   });
 
-  it('persists editor workspace preferences independently from project data', () => {
+  it('persists structural workspace preferences independently from project data', () => {
     const repository = new BrowserWorkspacePreferencesRepository(localStorage, 'test:workspace-preferences');
     const preferences = createDefaultWorkspacePreferences();
     preferences.navigationPosition = 'right';
     preferences.navigationWidth = 312;
     preferences.navigationCollapsed = true;
     preferences.lastWorkspace = 'preview';
-    preferences.editorThemeMode = 'dark';
-    preferences.editorThemePresetId = 'developer-console';
 
     repository.save(preferences);
 
     expect(repository.load()).toMatchObject({
+      schemaVersion: 2,
       navigationPosition: 'right',
       navigationWidth: 312,
       navigationCollapsed: true,
+      navigationDisplayMode: 'both',
+      density: 'compact',
       lastWorkspace: 'preview',
-      editorThemeMode: 'dark',
-      editorThemePresetId: 'developer-console',
     });
     const serialized = localStorage.getItem('test:workspace-preferences') ?? '';
+    expect(serialized).not.toContain('editorTheme');
     expect(serialized).not.toContain('documents');
     expect(serialized).not.toContain('contentTypes');
   });
 
-  it('fills the additive preset field for older schema-v1 preference payloads', () => {
+  it('keeps the fixed Bento Density layout contract on current payloads', () => {
     const defaults = createDefaultWorkspacePreferences();
-    const legacy = { ...defaults } as Record<string, unknown>;
-    delete legacy.editorThemePresetId;
+    const normalized = normalizeWorkspacePreferences({
+      ...defaults,
+      navigationDisplayMode: 'icons',
+      density: 'comfortable',
+    });
 
-    expect(normalizeWorkspacePreferences(legacy).editorThemePresetId).toBe('high-density');
+    expect(normalized.navigationDisplayMode).toBe('both');
+    expect(normalized.density).toBe('compact');
   });
 
   it('falls back to defaults when local storage is corrupted', () => {

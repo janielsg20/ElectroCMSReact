@@ -1,14 +1,5 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
-
-@theme {
-  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --color-studio-blue: #2563eb;
-  --color-studio-cyan: #06b6d4;
-  --color-studio-ink: #09111f;
-}
-
 @layer base {
   html,
   body,
@@ -17,7 +8,14 @@
   }
 
   body {
-    @apply bg-slate-50 font-sans text-slate-900 antialiased;
+    margin: 0;
+    overflow: hidden;
+    background: var(--color-ec-app);
+    color: var(--color-ec-text);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
 
   button,
@@ -42,200 +40,543 @@
 
 @layer components {
   .electrocms-app {
-    @apply flex h-dvh min-h-[560px] min-w-0 flex-col overflow-hidden bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+    display: flex;
+    height: 100dvh;
+    min-height: 560px;
+    min-width: 0;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+    padding: 8px;
+    background:
+      radial-gradient(circle at 18% -10%, rgb(49 198 188 / 0.08), transparent 32%),
+      radial-gradient(circle at 92% 4%, rgb(148 132 255 / 0.08), transparent 28%),
+      var(--color-ec-app);
+    color: var(--color-ec-text);
   }
 
   .skip-link {
-    @apply fixed left-3 top-3 z-[100] -translate-y-20 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition focus:translate-y-0;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 100;
+    transform: translateY(-88px);
+    border-radius: var(--ec-radius-md);
+    background: var(--color-ec-accent);
+    padding: 8px 12px;
+    color: #06110f;
+    font-size: 12px;
+    font-weight: 800;
+    transition: transform var(--ec-motion-normal) var(--ec-ease-spring);
   }
 
-  /* Canvas integration: preserve canonical editor behavior while restyling the chrome. */
-  .studio-editor-region .editor-canvas {
-    @apply grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_292px] overflow-hidden bg-slate-100 dark:bg-slate-900;
+  .skip-link:focus {
+    transform: translateY(0);
   }
 
-  .studio-editor-region .canvas-command-bar {
-    @apply col-span-2 flex min-h-10 items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white px-2 py-1 [scrollbar-width:none] dark:border-slate-800 dark:bg-slate-950;
+  /* Floating Bento top bar */
+  .app-header.bento-topbar {
+    position: relative;
+    z-index: 40;
+    display: grid;
+    grid-template-columns: minmax(190px, 236px) minmax(0, 1fr) auto;
+    min-height: 56px;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    border: 1px solid var(--color-ec-border);
+    border-radius: var(--ec-radius-xl);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.035), transparent 70%), var(--color-ec-surface);
+    box-shadow: var(--ec-shadow-panel);
   }
 
-  .studio-editor-region .canvas-command-bar button,
-  .studio-editor-region .canvas-command-bar select,
-  .studio-editor-region .canvas-geometry-controls input {
-    @apply h-7 rounded-md border border-slate-200 bg-white px-2 text-[10px] font-medium text-slate-600 outline-none transition hover:border-slate-300 hover:bg-slate-50 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/15 disabled:opacity-35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800;
+  .header-project {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 9px;
+    padding: 0 2px;
   }
 
-  .studio-editor-region .canvas-command-bar button {
-    @apply inline-flex items-center justify-center;
+  .brand-mark {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgb(49 198 188 / 0.22);
+    border-radius: 11px;
+    background: linear-gradient(145deg, rgb(49 198 188 / 0.2), rgb(148 132 255 / 0.1)), var(--color-ec-chrome-raised);
+    color: var(--color-ec-accent);
+    box-shadow: 0 8px 20px rgb(0 0 0 / 0.22), 0 1px 0 rgb(255 255 255 / 0.04) inset;
   }
 
-  .studio-editor-region .canvas-insert-control,
-  .studio-editor-region .canvas-geometry-controls label {
-    @apply flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[.08em] text-slate-400;
+  .brand-mark svg {
+    filter: drop-shadow(0 0 8px rgb(49 198 188 / 0.2));
   }
 
-  .studio-editor-region .canvas-selection-summary {
-    @apply whitespace-nowrap rounded-md bg-blue-50 px-2 py-1 text-[9px] font-semibold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300;
+  .project-identity {
+    min-width: 0;
+    line-height: 1.15;
   }
 
-  .studio-editor-region .canvas-command-divider {
-    @apply h-4 w-px shrink-0 bg-slate-200 dark:bg-slate-800;
+  .project-title-line {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 7px;
   }
 
-  .studio-editor-region .editor-canvas-layers {
-    @apply relative min-h-0 overflow-auto bg-slate-100 p-8 dark:bg-slate-900;
-    background-image: radial-gradient(rgb(148 163 184 / .34) .65px, transparent .65px);
-    background-size: 18px 18px;
+  .project-name {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--color-ec-text);
+    font-size: 12px;
+    font-weight: 760;
+    letter-spacing: -0.01em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .dark .studio-editor-region .editor-canvas-layers,
-  [data-theme="dark"] .studio-editor-region .editor-canvas-layers {
-    background-image: radial-gradient(rgb(71 85 105 / .45) .65px, transparent .65px);
+  .project-mode {
+    flex: 0 0 auto;
+    border: 1px solid rgb(49 198 188 / 0.18);
+    border-radius: 999px;
+    background: rgb(49 198 188 / 0.075);
+    padding: 2px 6px;
+    color: var(--color-ec-accent);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
-  .studio-editor-region .editor-canvas > div:last-child {
-    @apply min-h-0 overflow-y-auto border-l border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950;
+  .save-state {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 4px;
+    color: var(--color-ec-text-muted);
+    font-size: 10px;
+    font-weight: 620;
   }
 
-  .studio-editor-region .widget-inspector {
-    @apply min-h-full bg-transparent text-slate-700 dark:text-slate-200;
+  .save-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--color-ec-success-600);
+    box-shadow: 0 0 0 3px rgb(88 201 120 / 0.07);
   }
 
-  .studio-editor-region .widget-inspector-header {
-    @apply flex items-start justify-between gap-2 border-b border-slate-100 px-3 py-3 dark:border-slate-800;
+  .save-state[data-state="dirty"] .save-dot {
+    background: var(--color-ec-warning-600);
+    box-shadow: 0 0 0 3px rgb(231 180 83 / 0.08);
   }
 
-  .studio-editor-region .widget-inspector-header strong {
-    @apply block text-[12px] font-semibold text-slate-900 dark:text-white;
+  .save-state[data-state="saving"] .save-dot {
+    background: var(--color-ec-secondary);
+    animation: ec-active-pulse 1.4s ease-in-out infinite;
   }
 
-  .studio-editor-region .widget-inspector-eyebrow {
-    @apply mb-1 block text-[9px] font-semibold uppercase tracking-[.14em] text-blue-600 dark:text-blue-400;
+  .save-state[data-state="error"] .save-dot {
+    background: var(--color-ec-danger-600);
+    box-shadow: 0 0 0 3px rgb(255 116 109 / 0.08);
   }
 
-  .studio-editor-region .widget-inspector-header code {
-    @apply rounded-md bg-slate-100 px-1.5 py-1 text-[9px] text-slate-400 dark:bg-slate-900;
+  .header-controls {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
   }
 
-  .studio-editor-region .widget-inspector-capability {
-    @apply mx-3 mt-3 rounded-lg bg-slate-50 px-2.5 py-2 text-[9px] font-medium text-slate-500 dark:bg-slate-900 dark:text-slate-400;
+  .header-controls::-webkit-scrollbar {
+    display: none;
   }
 
-  .studio-editor-region .widget-inspector-section {
-    @apply border-0 border-b border-slate-100 px-3 py-3 dark:border-slate-800;
+  .header-control-group {
+    display: flex;
+    height: 36px;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--color-ec-border);
+    border-radius: 11px;
+    background: var(--color-ec-chrome-raised);
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.025) inset;
   }
 
-  .studio-editor-region .widget-inspector-section legend {
-    @apply mb-2 text-[10px] font-semibold text-slate-700 dark:text-slate-200;
+  .header-document-group {
+    padding-inline: 5px 3px;
   }
 
-  .studio-editor-region .widget-inspector-field {
-    @apply mb-2 grid gap-1 text-[9px] font-medium text-slate-500 dark:text-slate-400;
+  .header-control-icon {
+    display: grid;
+    width: 24px;
+    height: 24px;
+    place-items: center;
+    color: var(--color-ec-text-faint);
   }
 
-  .studio-editor-region .widget-inspector-field input:not([type="checkbox"]),
-  .studio-editor-region .widget-inspector-field select,
-  .studio-editor-region .widget-inspector-field textarea {
-    @apply min-h-8 w-full rounded-lg border border-slate-200 bg-white px-2 text-[10px] text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200;
+  .header-divider {
+    width: 1px;
+    height: 16px;
+    background: var(--color-ec-border);
   }
 
-  .studio-editor-region .widget-inspector-field small,
-  .studio-editor-region .widget-inspector-empty {
-    @apply text-[9px] leading-4 text-slate-400;
+  .header-control-group .ec-control {
+    background: transparent;
   }
 
-  .studio-editor-region .widget-inspector-empty {
-    @apply p-4;
+  .header-zoom-output {
+    min-width: 44px;
+    padding: 0 3px;
+    color: var(--color-ec-text);
+    font-size: 10px;
+    font-weight: 750;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
   }
 
-  /* Retheme the existing project theme editor instead of duplicating its state. */
+  .header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+  }
+
+  .header-action-secondary,
+  .header-action-primary {
+    display: inline-flex;
+    min-height: 34px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: 10px;
+    padding: 0 11px;
+    font-size: 10px;
+    font-weight: 760;
+  }
+
+  .header-action-secondary {
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--color-ec-text-muted);
+  }
+
+  .header-action-secondary:hover,
+  .header-action-secondary[aria-pressed="true"] {
+    border-color: var(--color-ec-border);
+    background: var(--color-ec-surface-muted);
+    color: var(--color-ec-text);
+  }
+
+  .header-action-primary {
+    border: 1px solid rgb(49 198 188 / 0.32);
+    background: linear-gradient(135deg, var(--color-ec-teal-600), #248fca 118%);
+    color: #031310;
+    box-shadow: 0 8px 20px rgb(24 170 162 / 0.18), 0 1px 0 rgb(255 255 255 / 0.18) inset;
+  }
+
+  .header-action-primary:hover {
+    filter: brightness(1.07);
+    box-shadow: 0 10px 26px rgb(24 170 162 / 0.25), 0 1px 0 rgb(255 255 255 / 0.2) inset;
+  }
+
+  /* Main Bento shell */
+  .production-studio {
+    gap: 8px;
+    padding: 0;
+    border: 0;
+    background: transparent !important;
+  }
+
+  .studio-rail {
+    overflow: visible;
+    border: 1px solid var(--color-ec-border) !important;
+    border-radius: var(--ec-radius-xl);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.025), transparent 55%), var(--color-ec-chrome) !important;
+    box-shadow: var(--ec-shadow-panel);
+    animation: ec-nav-enter var(--ec-motion-slow) var(--ec-ease-spring);
+  }
+
+  .studio-rail nav button,
+  .studio-rail summary,
+  .studio-rail > div:first-child button {
+    transition:
+      transform var(--ec-motion-fast) var(--ec-ease-spring),
+      background-color var(--ec-motion-fast) var(--ec-ease-standard),
+      color var(--ec-motion-fast) var(--ec-ease-standard),
+      box-shadow var(--ec-motion-fast) var(--ec-ease-standard);
+  }
+
+  .studio-rail nav button:hover,
+  .studio-rail summary:hover,
+  .studio-rail > div:first-child button:hover {
+    transform: translateX(2px);
+  }
+
+  .studio-rail nav button[data-active="true"] {
+    background: linear-gradient(90deg, rgb(49 198 188 / 0.16), rgb(49 198 188 / 0.05)) !important;
+    color: var(--color-ec-accent) !important;
+    box-shadow: 0 0 0 1px rgb(49 198 188 / 0.08) inset;
+  }
+
+  .studio-rail nav button[data-active="true"] svg {
+    color: var(--color-ec-accent);
+    animation: ec-active-pulse 2s ease-in-out infinite;
+  }
+
+  .studio-workspace-frame {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-ec-border);
+    border-radius: var(--ec-radius-xl);
+    background: var(--color-ec-surface-subtle);
+    box-shadow: var(--ec-shadow-panel);
+  }
+
+  .studio-context-bar {
+    min-height: 42px;
+    border-bottom: 1px solid var(--color-ec-border);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.02), transparent), var(--color-ec-surface);
+  }
+
+  /* Widget library is a dense Bento palette instead of a flat sidebar. */
+  .studio-library {
+    margin: 8px 0 8px 8px;
+    overflow: hidden;
+    border: 1px solid var(--color-ec-border) !important;
+    border-radius: var(--ec-radius-lg);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.02), transparent 56%), var(--color-ec-surface) !important;
+    box-shadow: var(--ec-shadow-panel);
+  }
+
+  .studio-library button {
+    transition:
+      transform var(--ec-motion-fast) var(--ec-ease-spring),
+      border-color var(--ec-motion-fast) var(--ec-ease-standard),
+      background-color var(--ec-motion-fast) var(--ec-ease-standard),
+      color var(--ec-motion-fast) var(--ec-ease-standard),
+      box-shadow var(--ec-motion-fast) var(--ec-ease-standard);
+  }
+
+  .studio-library button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 7px 16px rgb(0 0 0 / 0.16);
+  }
+
+  .studio-editor-region {
+    gap: 8px;
+    padding: 8px;
+    background: transparent !important;
+  }
+
+  /* Generated site themes remain product functionality, not editor UI themes. */
   .project-theme-controls {
-    @apply rounded-xl border border-slate-200 bg-white p-4 text-slate-700 shadow-sm shadow-slate-900/[.02] dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200;
+    border: 1px solid var(--color-ec-border);
+    border-radius: var(--ec-radius-lg);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.025), transparent), var(--color-ec-surface);
+    padding: 14px;
+    color: var(--color-ec-text);
+    box-shadow: var(--ec-shadow-panel);
   }
 
   .project-theme-controls h3 {
-    @apply text-[13px] font-semibold text-slate-900 dark:text-white;
+    color: var(--color-ec-text);
+    font-size: 13px;
+    font-weight: 760;
   }
 
   .project-theme-controls p,
   .project-theme-origin,
   .project-theme-package-status {
-    @apply text-[10px] leading-4 text-slate-500 dark:text-slate-400;
+    color: var(--color-ec-text-muted);
+    font-size: 10px;
+    line-height: 1.55;
   }
 
   .project-theme-controls-eyebrow {
-    @apply text-[9px] font-semibold uppercase tracking-[.14em] text-blue-600 dark:text-blue-400;
+    color: var(--color-ec-accent);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
 
   .project-theme-controls select,
   .project-theme-controls input,
-  .project-theme-controls textarea {
-    @apply rounded-lg border border-slate-200 bg-white px-2 text-[10px] text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200;
+  .project-theme-controls textarea,
+  .project-theme-controls button {
+    border: 1px solid var(--color-ec-border);
+    border-radius: var(--ec-radius-md);
+    background: var(--color-ec-surface-subtle);
+    color: var(--color-ec-text);
   }
 
   .project-theme-controls button {
-    @apply rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[10px] font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800;
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 10px;
+    font-weight: 700;
+    transition: transform var(--ec-motion-fast) var(--ec-ease-spring), background-color var(--ec-motion-fast) var(--ec-ease-standard);
+  }
+
+  .project-theme-controls button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background: var(--color-ec-surface-muted);
   }
 
   .project-theme-preview {
-    @apply overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700;
+    overflow: hidden;
+    border: 1px solid var(--color-ec-border);
+    border-radius: var(--ec-radius-lg);
+  }
+}
+
+@media (max-width: 1180px) {
+  .app-header.bento-topbar {
+    grid-template-columns: minmax(176px, 220px) minmax(0, 1fr) auto;
+  }
+
+  .project-mode {
+    display: none;
   }
 }
 
 @media (max-width: 1024px) {
   .studio-builder-workspace {
-    @apply flex-col;
+    flex-direction: column;
   }
 
   .studio-library {
-    @apply h-[168px] w-full border-b border-r-0;
+    width: auto !important;
+    height: 158px;
+    flex: 0 0 auto;
+    margin: 8px 8px 0;
+    border-right: 1px solid var(--color-ec-border) !important;
   }
 
   .studio-library > div:last-child {
-    @apply flex gap-3 overflow-x-auto overflow-y-hidden;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
   .studio-library section {
-    @apply min-w-[250px];
+    min-width: 238px;
+  }
+
+  .studio-editor-region {
+    min-height: 0;
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 960px) {
+  .electrocms-app {
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .app-header.bento-topbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 54px;
+    padding: 6px;
+  }
+
+  .header-project {
+    min-width: 0;
+  }
+
+  .header-controls {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: flex-start;
+    order: 3;
+    width: 100%;
+    padding-top: 2px;
+  }
+
+  .app-header.bento-topbar {
+    grid-auto-rows: auto;
+  }
+
+  .production-studio {
+    min-height: 0;
+  }
+
+  .production-studio > [role="presentation"] > [role="dialog"] {
+    padding: 6px;
+    animation: ec-nav-enter var(--ec-motion-slow) var(--ec-ease-spring);
+  }
+
+  .production-studio > [role="presentation"] .studio-rail {
+    width: min(88vw, 292px) !important;
   }
 }
 
 @media (max-width: 720px) {
   .electrocms-app {
     min-height: 100dvh;
+    padding: 4px;
   }
 
-  .app-header {
-    @apply min-h-[52px] px-2;
+  .app-header.bento-topbar {
+    gap: 4px;
+    border-radius: var(--ec-radius-lg);
+  }
+
+  .brand-mark {
+    width: 32px;
+    height: 32px;
+  }
+
+  .project-name {
+    max-width: 36vw;
+  }
+
+  .save-state {
+    font-size: 9px;
   }
 
   .header-controls {
-    max-width: calc(100vw - 184px);
+    margin-top: 1px;
+    padding-bottom: 1px;
   }
 
-  .studio-editor-region .editor-canvas {
-    @apply grid-cols-1;
+  .header-control-group {
+    height: 44px;
   }
 
-  .studio-editor-region .canvas-command-bar {
-    @apply col-span-1;
+  .header-action-secondary,
+  .header-action-primary {
+    min-width: 44px;
+    min-height: 44px;
+    padding-inline: 10px;
   }
 
-  .studio-editor-region .editor-canvas > div:last-child {
-    @apply border-l-0 border-t border-slate-200 dark:border-slate-800;
+  .studio-workspace-frame,
+  .studio-rail {
+    border-radius: var(--ec-radius-lg);
   }
 
-  .studio-editor-region .editor-canvas-layers {
-    @apply p-4;
+  .studio-library {
+    height: 148px;
+    margin: 6px 6px 0;
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
+  .studio-editor-region {
+    gap: 6px;
+    padding: 0 6px 6px;
   }
 }

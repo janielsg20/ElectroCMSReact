@@ -44,17 +44,22 @@ describe('ElectroCMS editor shell', () => {
     expect(screen.getByLabelText('Zoom level')).toHaveTextContent('110%');
   });
 
-  it('persists editor theme mode through the workspace preference repository', async () => {
-    const user = userEvent.setup();
+  it('uses one permanent Bento Density application theme without appearance selectors', () => {
     const preferencesRepository = new MemoryWorkspacePreferencesRepository();
     const { container } = render(
       <App initialProject={makeProject()} preferencesRepository={preferencesRepository} />,
     );
 
-    await user.selectOptions(screen.getByLabelText('Editor theme mode'), 'dark');
-
-    expect(container.querySelector('.electrocms-app')).toHaveAttribute('data-theme', 'dark');
-    expect(preferencesRepository.load().editorThemeMode).toBe('dark');
+    const app = container.querySelector('.electrocms-app');
+    expect(app).toHaveAttribute('data-ui-theme', 'bento-density');
+    expect(app).toHaveAttribute('data-density', 'compact');
+    expect(app).not.toHaveAttribute('data-theme');
+    expect(app).not.toHaveAttribute('data-theme-mode');
+    expect(app).not.toHaveAttribute('data-editor-preset');
+    expect(screen.queryByLabelText('Editor theme mode')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Editor theme preset')).not.toBeInTheDocument();
+    expect(preferencesRepository.load()).not.toHaveProperty('editorThemeMode');
+    expect(preferencesRepository.load()).not.toHaveProperty('editorThemePresetId');
   });
 
   it('activates undo and redo after a reversible document command', async () => {

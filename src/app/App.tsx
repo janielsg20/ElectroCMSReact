@@ -10,8 +10,6 @@ import { ProductionStudio } from './studio/ProductionStudio';
 import { ProjectThemeRegistryProvider } from './themes/ProjectThemeRegistryProvider';
 import { EditorWidgetRegistryProvider } from './widgets/EditorWidgetRegistryProvider';
 import type { EditorWidgetRegistry } from './widgets/editor-widget-registry';
-import { useResolvedEditorTheme } from './workspace/editor-theme';
-import './workspace/editor-theme-presets.css';
 import { WorkspacePreferencesProvider } from './workspace/workspace-preferences-context';
 import type { WorkspacePreferencesRepository } from './workspace/workspace-preferences-repository';
 import { useWorkspacePreferences } from './workspace/workspace-preferences-store';
@@ -45,7 +43,6 @@ function useCompactStudioLayout(): boolean {
 function EditorApplicationShell() {
   const route = useWorkspaceRoute();
   const { preferences, setLastWorkspace } = useWorkspacePreferences();
-  const resolvedTheme = useResolvedEditorTheme(preferences.editorThemeMode);
   const activeWorkspace: WorkspaceId = route.workspaceId ?? preferences.lastWorkspace;
   const activeEditorModule = route.editorModuleId ?? 'builder';
   const compactLayout = useCompactStudioLayout();
@@ -73,10 +70,8 @@ function EditorApplicationShell() {
   return (
     <div
       className="electrocms-app"
-      data-theme={resolvedTheme}
-      data-theme-mode={preferences.editorThemeMode}
-      data-editor-preset={preferences.editorThemePresetId}
-      data-density={preferences.density}
+      data-ui-theme="bento-density"
+      data-density="compact"
       data-navigation-position={preferences.navigationPosition}
     >
       <a className="skip-link" href="#workspace-main">Skip to workspace</a>
