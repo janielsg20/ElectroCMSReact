@@ -3,7 +3,6 @@ export * from './taxonomy';
 export * from './field-type-definition';
 export * from './field-type-registry';
 export * from './builtin-field-types';
-export * from './advanced-field-constants';
 export * from './advanced-field-runtime';
 export * from './advanced-field-types';
 export {
