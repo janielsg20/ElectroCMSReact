@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
+  createContentRecord as createCanonicalContentRecord,
   createContentType as createCanonicalContentType,
   createFieldGroup as createCanonicalFieldGroup,
   createTaxonomy as createCanonicalTaxonomy,
+  removeContentRecord as removeCanonicalContentRecord,
   removeContentType as removeCanonicalContentType,
   removeFieldGroup as removeCanonicalFieldGroup,
   removeTaxonomy as removeCanonicalTaxonomy,
+  updateContentRecord as updateCanonicalContentRecord,
   updateContentType as updateCanonicalContentType,
   updateFieldGroup as updateCanonicalFieldGroup,
   updateTaxonomy as updateCanonicalTaxonomy,
@@ -37,6 +40,7 @@ import {
 } from './editor-project-persistence';
 import {
   ProjectSessionContext,
+  type ContentRecordSessionMutationResult,
   type ContentTypeSessionMutationResult,
   type FieldGroupSessionMutationResult,
   type ProjectSaveState,
@@ -401,6 +405,50 @@ export function ProjectSessionProvider({
     [commitProject, queueAutosave],
   );
 
+  const createContentRecord = useCallback(
+    (input: unknown): ContentRecordSessionMutationResult => {
+      const result = createCanonicalContentRecord(projectRef.current, input);
+      if (!result.ok) {
+        return { ok: false, code: result.error.code, message: result.error.message };
+      }
+      commitProject(result.project);
+      queueAutosave(result.project);
+      return { ok: true, value: result.value, changed: true };
+    },
+    [commitProject, queueAutosave],
+  );
+
+  const updateContentRecord = useCallback(
+    (id: string, input: unknown): ContentRecordSessionMutationResult => {
+      const result = updateCanonicalContentRecord(projectRef.current, id, input);
+      if (!result.ok) {
+        return { ok: false, code: result.error.code, message: result.error.message };
+      }
+      const before = projectRef.current.records[id];
+      const after = result.project.records[id];
+      const changed = JSON.stringify(before) !== JSON.stringify(after);
+      if (changed) {
+        commitProject(result.project);
+        queueAutosave(result.project);
+      }
+      return { ok: true, value: result.value, changed };
+    },
+    [commitProject, queueAutosave],
+  );
+
+  const removeContentRecord = useCallback(
+    (id: string): ContentRecordSessionMutationResult => {
+      const result = removeCanonicalContentRecord(projectRef.current, id);
+      if (!result.ok) {
+        return { ok: false, code: result.error.code, message: result.error.message };
+      }
+      commitProject(result.project);
+      queueAutosave(result.project);
+      return { ok: true, value: result.value, changed: true };
+    },
+    [commitProject, queueAutosave],
+  );
+
   const executeDocumentCommand = useCallback(
     (command: DocumentCommand): boolean => {
       const currentProject = projectRef.current;
@@ -482,6 +530,9 @@ export function ProjectSessionProvider({
       createFieldGroup,
       updateFieldGroup,
       removeFieldGroup,
+      createContentRecord,
+      updateContentRecord,
+      removeContentRecord,
       executeDocumentCommand,
       undo,
       redo,
@@ -492,12 +543,14 @@ export function ProjectSessionProvider({
       applyThemePackageResources,
       canRedo,
       canUndo,
+      createContentRecord,
       createContentType,
       createFieldGroup,
       createTaxonomy,
       executeDocumentCommand,
       project,
       redo,
+      removeContentRecord,
       removeContentType,
       removeFieldGroup,
       removeTaxonomy,
@@ -507,6 +560,7 @@ export function ProjectSessionProvider({
       setProjectTheme,
       setZoom,
       undo,
+      updateContentRecord,
       updateContentType,
       updateFieldGroup,
       updateTaxonomy,
