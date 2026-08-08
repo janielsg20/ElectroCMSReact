@@ -4,6 +4,7 @@ import { validateAdvancedContentRecordDefinition } from './advanced-content-reco
 import {
   listAdvancedFieldGroupDefinitions,
   updateAdvancedFieldGroup,
+  validateAdvancedFieldGroupDefinition,
 } from './advanced-field-group';
 import { advancedFieldGroupReference } from './advanced-field-runtime';
 import { createContentFieldTypeRegistry } from './advanced-field-types';
@@ -48,6 +49,24 @@ export function updateFieldGroupWithRecordIntegrity(
 ): FieldGroupMutationResult {
   const updated = updateAdvancedFieldGroup(project, id, input, registry);
   if (!updated.ok) return updated;
+
+  // Updating a child schema can invalidate ancestor groups even when the candidate itself is valid.
+  // Revalidate the complete reusable-schema graph before exposing the candidate project.
+  for (const [groupId, raw] of Object.entries(updated.project.fieldGroups)) {
+    const validation = validateAdvancedFieldGroupDefinition(updated.project, raw, registry);
+    if (!validation.ok) {
+      const firstIssue = validation.issues[0];
+      return {
+        ok: false,
+        error: {
+          code: 'FIELD_GROUP_IN_USE',
+          message: firstIssue
+            ? `Field group ${id} cannot be updated because Field Group ${groupId} would become invalid: ${firstIssue.message}`
+            : `Field group ${id} cannot be updated because Field Group ${groupId} would become invalid.`,
+        },
+      };
+    }
+  }
 
   const groups = new Map(
     listAdvancedFieldGroupDefinitions(updated.project, registry).map((group) => [group.id, group]),
