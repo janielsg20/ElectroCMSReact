@@ -17,11 +17,18 @@
 - Added framework-neutral `ProjectThemeRegistry` with portable JSON token validation.
 - Added 8 built-in frontend themes and 7 built-in backend themes.
 - Added independent frontend/backend theme selection, token previews, autosave and reload persistence.
-- Added versioned `electrocms-theme-package` import/export format with 256 KB limit.
-- Added local imported-theme library at `electrocms:project-theme-packages:v1`, defensive validation and collision rejection.
-- Added accessible package Import/Export controls and E2E coverage for install → select → reload → export.
-- Disabled automatic Vercel Git deployments; preview deployment is now manual-only by explicit user request.
-- Functional F04 quality evidence: runs #424, #434, #446, #456, #479, #505, #529, #568, #600 and #622.
+- Added built-in duplication into collision-safe editable local themes with automatic version increments.
+- Added local token editor for theme metadata, semantic colors, radius and spacing.
+- Added versioned `electrocms-theme-package` format with 256 KB limit and optional project resources.
+- Added selective export/import for pages/templates, content models, queries/forms/filters, roles/backend and optional demo records.
+- Added two-step import review so choosing a file never mutates project state.
+- Added demo-data opt-in with default OFF.
+- Added non-destructive merge that preserves existing IDs/keys and reports conflicts instead of overwriting them.
+- Added local imported-theme library at `electrocms:project-theme-packages:v1` with validation and collision handling.
+- Excluded user-account state and media binaries from the F04 package boundary.
+- Fixed structural Grid preview leaking editor-only props to DOM.
+- Disabled automatic Vercel Git deployments; preview deployment is manual-only by explicit user request.
+- Definitive F04 quality evidence: runs #424, #434, #446, #456, #479, #505, #529, #568, #662 and #688.
 
 ### F03 — Canvas, nodos, DnD e historial
 - Added immutable canonical document tree engine with derived parent/depth/traversal indexes and structural validation.
