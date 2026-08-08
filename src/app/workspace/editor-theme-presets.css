@@ -71,7 +71,6 @@
 .electrocms-app[data-editor-preset] .app-header,
 .electrocms-app[data-editor-preset] .workspace-navigation,
 .electrocms-app[data-editor-preset] .widget-inspector,
-.electrocms-app[data-editor-preset] .stage-document,
 .electrocms-app[data-editor-preset] .canvas-command-bar {
   border-radius: var(--preset-radius);
   box-shadow: var(--preset-panel-shadow);
@@ -83,13 +82,10 @@
   min-height: var(--preset-control-height);
 }
 
-.electrocms-app[data-editor-preset="bento-grid"] .workspace-surface,
-.electrocms-app[data-editor-preset="bento-grid"] .editor-canvas,
-.electrocms-app[data-editor-preset="saas-dashboard"] .workspace-surface {
+.electrocms-app[data-editor-preset="bento-grid"] .editor-canvas {
   gap: var(--preset-panel-gap);
 }
 
-.electrocms-app[data-editor-preset="minimal-clean"] .stage-document,
 .electrocms-app[data-editor-preset="minimal-clean"] .widget-inspector,
 .electrocms-app[data-editor-preset="minimal-clean"] .canvas-command-bar {
   box-shadow: none;
@@ -121,7 +117,6 @@
 }
 
 .electrocms-app[data-editor-preset="developer-console"] .project-name,
-.electrocms-app[data-editor-preset="developer-console"] .surface-eyebrow,
 .electrocms-app[data-editor-preset="developer-console"] code,
 .electrocms-app[data-editor-preset="developer-console"] .widget-inspector {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
