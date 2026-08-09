@@ -9,7 +9,7 @@ test('inherits a style from the nearest wider breakpoint and follows later sourc
   await headingNode.locator('.canvas-node-label').click();
 
   const inspector = page.getByRole('complementary', { name: 'Widget inspector' });
-  await inspector.getByRole('tab', { name: 'Style' }).click();
+  await inspector.getByRole('tab', { name: 'Design' }).click();
   const desktopFontSize = inspector.getByLabel('Style Font size');
   await desktopFontSize.fill('40');
   await desktopFontSize.blur();
