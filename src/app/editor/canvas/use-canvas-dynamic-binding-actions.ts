@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useContext } from 'react';
 import {
   updateDocumentNode,
   validateDynamicBindings,
@@ -6,7 +6,7 @@ import {
   type DynamicBindingIssue,
 } from '../../../core/project';
 import { createDocumentCommand } from '../../project/document-command-history';
-import { useProjectSession } from '../../project/project-session-context';
+import { ProjectSessionContext } from '../../project/project-session-context';
 
 export interface CanvasBindingEditResult {
   applied: boolean;
@@ -18,13 +18,16 @@ export interface CanvasDynamicBindingActions {
 }
 
 export function useCanvasDynamicBindingActions(): CanvasDynamicBindingActions {
-  const session = useProjectSession();
-  const activeDocumentId = session.activeDocumentId;
-  const documents = session.project.documents;
-  const executeDocumentCommand = session.executeDocumentCommand;
+  const session = useContext(ProjectSessionContext);
 
   const setBindings = useCallback((nodeId: string, bindings: readonly DynamicBinding[]): CanvasBindingEditResult => {
-    const document = documents[activeDocumentId];
+    if (!session) {
+      return {
+        applied: false,
+        issues: [{ code: 'SESSION_UNAVAILABLE', path: '$', message: 'Project session is unavailable.' }],
+      };
+    }
+    const document = session.project.documents[session.activeDocumentId];
     const node = document?.nodes[nodeId];
     if (!document || !node) {
       return {
@@ -37,13 +40,14 @@ export function useCanvasDynamicBindingActions(): CanvasDynamicBindingActions {
     if (!validation.ok) return { applied: false, issues: validation.issues };
 
     try {
-      const nextDocument = updateDocumentNode(document, nodeId, (current) => ({
-        ...current,
-        ...(validation.value.length === 0
-          ? { bindings: undefined }
-          : { bindings: structuredClone(validation.value) }),
-      }));
-      const applied = executeDocumentCommand(createDocumentCommand('Update dynamic bindings', document, nextDocument));
+      const nextDocument = updateDocumentNode(document, nodeId, (current) => {
+        if (validation.value.length === 0) {
+          const { bindings: _removed, ...withoutBindings } = current;
+          return withoutBindings;
+        }
+        return { ...current, bindings: structuredClone(validation.value) };
+      });
+      const applied = session.executeDocumentCommand(createDocumentCommand('Update dynamic bindings', document, nextDocument));
       return { applied, issues: [] };
     } catch (error) {
       return {
@@ -55,7 +59,7 @@ export function useCanvasDynamicBindingActions(): CanvasDynamicBindingActions {
         }],
       };
     }
-  }, [activeDocumentId, documents, executeDocumentCommand]);
+  }, [session]);
 
   return { setBindings };
 }
