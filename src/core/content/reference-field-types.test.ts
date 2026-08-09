@@ -52,6 +52,11 @@ describe('MF-043 reference field types', () => {
     expect(registry.resolve('core/relation', 2).availability).toBe('available');
     expect(registry.resolve('core/user', 2).availability).toBe('available');
     expect(registry.resolve('core/taxonomy', 2).availability).toBe('available');
+    expect(registry.resolve('core/relation', 2).configSchema).toEqual({
+      relationId: 'relation-id',
+      side: 'relation-side',
+    });
+    expect(registry.resolve('core/taxonomy', 2).configSchema).toEqual({ taxonomyId: 'taxonomy-id' });
 
     const field = createDefaultCustomFieldDefinition(registry, 'core/relation', 'brand', 'Brand');
     expect(field.typeVersion).toBe(2);
