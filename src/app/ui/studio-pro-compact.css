@@ -1,0 +1,41 @@
+/* Studio Pro compact-shell refinements.
+ * Tablet keeps responsive editing controls visible; phone remains intentionally
+ * minimal so the canvas stays dominant. This file is part of the same Studio
+ * Pro visual system, not an alternate theme.
+ */
+
+@media (min-width: 641px) and (max-width: 960px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls {
+    display: flex;
+    min-width: 0;
+    justify-content: center;
+    gap: 6px;
+    overflow: hidden;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > div:first-child {
+    display: flex !important;
+    width: auto;
+    min-width: 0;
+    flex: 0 1 auto;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"]
+    .header-controls > div:first-child .breakpoint-field {
+    display: block !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .zoom-control {
+    display: flex !important;
+    flex: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .history-control,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .theme-field {
+    display: none !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls select {
+    font-size: 10px;
+  }
+}
