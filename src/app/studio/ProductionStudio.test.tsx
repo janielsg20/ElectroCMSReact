@@ -162,7 +162,8 @@ describe('ProductionStudio', () => {
     expect(within(studio).getByRole('complementary', { name: 'Content type editor' })).toHaveTextContent('Products');
 
     await user.click(within(studio).getByRole('tab', { name: /Relations/i }));
-    expect(within(studio).getByText('No relations')).toBeInTheDocument();
+    expect(within(studio).getByLabelText('Relations CRUD enabled')).toBeInTheDocument();
+    expect(within(studio).getByText('No relations yet')).toBeInTheDocument();
 
     await user.click(within(modules).getByRole('button', { name: 'Queries' }));
     const queryStudio = screen.getByRole('region', { name: 'Dynamic Content Studio' });
