@@ -13,6 +13,7 @@ test('Studio Pro desktop builder keeps the supplied flat visual-builder geometry
   const inspectorDock = page.locator('.canvas-inspector-dock');
   const contextBar = page.locator('.studio-context-bar');
   const documentBar = page.locator('.builder-document-bar');
+  const appearance = page.getByRole('group', { name: 'Editor appearance' });
 
   await expect(rail).toBeVisible();
   await expect(navigator).toBeVisible();
@@ -23,6 +24,8 @@ test('Studio Pro desktop builder keeps the supplied flat visual-builder geometry
   await expect(canvasToolbar).toBeVisible();
   await expect(canvasStage).toBeVisible();
   await expect(inspectorDock).toBeVisible();
+  await expect(appearance).toBeVisible();
+  await expect(appearance.getByRole('button')).toHaveCount(3);
 
   const geometry = await page.evaluate(() => {
     const rect = (selector: string) => {
@@ -44,14 +47,19 @@ test('Studio Pro desktop builder keeps the supplied flat visual-builder geometry
     });
     const firstRailButton = railButtons[0];
     const stage = document.querySelector<HTMLElement>('.canvas-stage-v2');
-    const publish = document.querySelector<HTMLElement>('.header-actions button:last-child');
+    const publish = document.querySelector<HTMLElement>('.header-publish-button');
     const insert = document.querySelector<HTMLElement>('.canvas-command-primary');
     const navigatorElement = document.querySelector<HTMLElement>('.builder-context-panel');
+    const appearanceButtons = [...document.querySelectorAll<HTMLElement>('.appearance-toggle-button')];
 
     return {
       viewportWidth: document.documentElement.clientWidth,
       rootScrollWidth: document.documentElement.scrollWidth,
       header: rect('.app-header'),
+      headerProject: rect('.header-project'),
+      documentGroup: rect('.header-document-group'),
+      appearance: rect('.appearance-toggle'),
+      publish: rect('.header-publish-button'),
       rail: rect('.workspace-navigation[data-studio-rail="true"]'),
       navigator: rect('.builder-context-panel'),
       navigatorTabs: rect('.builder-context-tabs'),
@@ -68,8 +76,9 @@ test('Studio Pro desktop builder keeps the supplied flat visual-builder geometry
       stageBackgroundImage: stage ? getComputedStyle(stage).backgroundImage : '',
       publishBackground: publish ? getComputedStyle(publish).backgroundColor : '',
       insertBackground: insert ? getComputedStyle(insert).backgroundColor : '',
+      appearanceBackgrounds: appearanceButtons.map((button) => getComputedStyle(button).backgroundColor),
       railButtonRadius: radius('.studio-rail-button'),
-      headerControlRadius: radius('.header-controls > div'),
+      headerControlRadius: radius('.header-document-group'),
       pageRowRadius: radius('.builder-page-row'),
       canvasDocumentRadius: radius('.canvas-scaled-document'),
       inspectorDockRadius: radius('.canvas-inspector-dock'),
@@ -79,6 +88,13 @@ test('Studio Pro desktop builder keeps the supplied flat visual-builder geometry
   expect(geometry.rootScrollWidth).toBe(geometry.viewportWidth);
   expect(geometry.header?.height ?? 0).toBeGreaterThanOrEqual(60);
   expect(geometry.header?.height ?? 0).toBeLessThanOrEqual(65);
+  expect(geometry.headerProject?.width ?? 0).toBeGreaterThan(180);
+  expect(geometry.documentGroup?.height ?? 0).toBeGreaterThanOrEqual(33);
+  expect(geometry.documentGroup?.height ?? 0).toBeLessThanOrEqual(35);
+  expect(geometry.appearance?.height ?? 0).toBeGreaterThanOrEqual(33);
+  expect(geometry.appearance?.height ?? 0).toBeLessThanOrEqual(35);
+  expect(geometry.publish?.height ?? 0).toBeGreaterThanOrEqual(33);
+  expect(geometry.publish?.height ?? 0).toBeLessThanOrEqual(35);
   expect(geometry.rail?.width ?? 0).toBeGreaterThanOrEqual(58);
   expect(geometry.rail?.width ?? 0).toBeLessThanOrEqual(62);
   expect(geometry.navigator?.width ?? 0).toBeGreaterThanOrEqual(298);
@@ -101,6 +117,7 @@ test('Studio Pro desktop builder keeps the supplied flat visual-builder geometry
   expect(geometry.stageBackgroundImage).toContain('radial-gradient');
   expect(geometry.publishBackground).toBe('rgb(37, 99, 235)');
   expect(geometry.insertBackground).toBe('rgb(37, 99, 235)');
+  expect(geometry.appearanceBackgrounds.every((background) => background !== 'rgb(37, 99, 235)')).toBe(true);
   expect(geometry.railButtonRadius ?? 99).toBeLessThanOrEqual(4.5);
   expect(geometry.headerControlRadius ?? 99).toBeLessThanOrEqual(4.5);
   expect(geometry.pageRowRadius ?? 99).toBeLessThanOrEqual(3.5);
