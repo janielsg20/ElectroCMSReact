@@ -19,12 +19,11 @@ const saveLabels = {
   error: 'Save error',
 } as const;
 
-type AppearanceMode = 'light' | 'dark' | 'auto';
+type AppearanceMode = 'light' | 'dark';
 
 const appearanceModes: readonly { id: AppearanceMode; label: string; icon: IconName }[] = [
   { id: 'light', label: 'Light', icon: 'sun' },
   { id: 'dark', label: 'Dark', icon: 'moon' },
-  { id: 'auto', label: 'System', icon: 'system' },
 ];
 
 const iconButtonClass = 'header-icon-button ec-focus-ring group inline-grid size-8 shrink-0 place-items-center text-[var(--color-ec-text-muted)] hover:text-[var(--color-ec-text)] max-[720px]:size-11';
@@ -231,7 +230,7 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
           {appearanceModes.map((mode) => (
             <button
               key={mode.id}
-              className={`appearance-toggle-button ${mode.id === 'auto' ? 'appearance-system' : ''}`}
+              className="appearance-toggle-button"
               type="button"
               aria-label={`Use ${mode.label.toLowerCase()} appearance`}
               aria-pressed={preferences.editorThemeMode === mode.id}
