@@ -25,8 +25,8 @@ test('geometry controls snap position and resize per breakpoint with undo suppor
   await expect(node).toHaveAttribute('data-geometry-width', '');
   await expect(node).toHaveAttribute('data-geometry-x', '16');
 
-  await chooseBreakpoint(page, 'mobile-large');
-  await expect(page.getByTestId('canvas-renderer')).toHaveAttribute('data-breakpoint-id', 'mobile-large');
+  await chooseBreakpoint(page, 'mobile-small');
+  await expect(page.getByTestId('canvas-renderer')).toHaveAttribute('data-breakpoint-id', 'mobile-small');
   await expect(node).toHaveAttribute('data-geometry-x', '0');
   await page.getByLabel('X position').fill('9');
   await expect(node).toHaveAttribute('data-geometry-x', '8');
