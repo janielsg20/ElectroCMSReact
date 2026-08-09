@@ -26,8 +26,8 @@ describe('GlobalSystemsWorkspace', () => {
     expect(within(studio).getByText('Global Test')).toBeInTheDocument();
 
     await user.click(within(studio).getByRole('tab', { name: 'Themes' }));
-    expect(within(studio).getByRole('region', { name: 'Frontend theme controls' })).toBeInTheDocument();
-    expect(within(studio).getByRole('region', { name: 'Backend theme controls' })).toBeInTheDocument();
+    expect(within(studio).getByRole('region', { name: 'Frontend theme settings' })).toBeInTheDocument();
+    expect(within(studio).getByRole('region', { name: 'Backend theme settings' })).toBeInTheDocument();
   });
 
   it('keeps blueprint capability honest while exposing the catalog', async () => {
