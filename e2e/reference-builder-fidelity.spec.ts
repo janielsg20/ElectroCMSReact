@@ -27,7 +27,7 @@ test('Studio Pro desktop builder keeps the supplied flat visual-builder geometry
   await expect(canvasStage).toBeVisible();
   await expect(inspectorDock).toBeVisible();
   await expect(appearance).toBeVisible();
-  await expect(appearance.getByRole('button')).toHaveCount(3);
+  await expect(appearance.getByRole('button')).toHaveCount(2);
   await expect(pagePicker).toBeVisible();
   await expect(pagePicker).toHaveAttribute('aria-haspopup', 'listbox');
   await expect(page.locator('.header-document-group select')).toHaveCount(0);
