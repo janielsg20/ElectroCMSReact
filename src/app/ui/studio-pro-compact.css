@@ -1,8 +1,155 @@
-/* Studio Pro compact-shell refinements.
- * Tablet keeps responsive editing controls visible; phone remains intentionally
- * minimal so the canvas stays dominant. This file is part of the same Studio
- * Pro visual system, not an alternate theme.
+/* Studio Pro reference + compact-shell refinements.
+ *
+ * The supplied builder reference is predominantly neutral. Keep icons, menus,
+ * secondary controls and component tiles monochrome; reserve saturated color
+ * for primary actions and precise selection/current-state indicators. Tablet
+ * keeps responsive editing controls visible while phone remains canvas-first.
  */
+
+/* Monochrome chrome --------------------------------------------------------- */
+.electrocms-app[data-editor-preset="studio-pro"] .brand-mark {
+  border-color: var(--ec-studio-line);
+  background: var(--color-ec-surface);
+  color: var(--color-ec-text);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .brand-mark svg {
+  filter: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .breakpoint-field,
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-eyebrow {
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .theme-field {
+  border-color: var(--ec-studio-line);
+  background: var(--color-ec-surface);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions button:first-child {
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions button:first-child:hover {
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+}
+
+/* Rail: one neutral icon language. Active state keeps only the thin blue edge. */
+.electrocms-app[data-editor-preset="studio-pro"]
+  .studio-rail[data-studio-rail="true"] .studio-rail-button {
+  --rail-tone: var(--color-ec-text-muted);
+  --rail-soft: var(--color-ec-surface-muted);
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .studio-rail[data-studio-rail="true"] .studio-rail-button .studio-rail-icon {
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .studio-rail[data-studio-rail="true"] .studio-rail-button:hover {
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .studio-rail[data-studio-rail="true"] .studio-rail-button:hover .studio-rail-icon,
+.electrocms-app[data-editor-preset="studio-pro"]
+  .studio-rail[data-studio-rail="true"] .studio-rail-button[data-active="true"] .studio-rail-icon {
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .studio-rail[data-studio-rail="true"] .studio-rail-button[data-active="true"] {
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .studio-rail[data-studio-rail="true"] .studio-rail-button[data-active="true"]::before {
+  background: var(--ec-ref-blue);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .workspace-settings > summary:hover {
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .workspace-settings[open] > summary svg {
+  color: currentColor;
+}
+
+/* Builder navigator and component library ---------------------------------- */
+.electrocms-app[data-editor-preset="studio-pro"] .builder-pages-section > header span {
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .builder-components-panel section button[aria-label^="Add "] > span:first-child {
+  background: var(--color-ec-surface-muted) !important;
+  color: var(--color-ec-text-muted) !important;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .builder-components-panel section button[aria-label^="Add "]:hover {
+  border-color: var(--ec-studio-line-strong) !important;
+  background: var(--color-ec-surface-subtle) !important;
+  box-shadow: 0 4px 12px rgb(15 23 42 / .05) !important;
+}
+
+/* Secondary canvas controls stay neutral; primary Insert remains solid blue. */
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-layers-trigger[aria-pressed="true"] {
+  border-color: var(--ec-studio-line-strong);
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-layer-row[data-selected="true"] {
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+  box-shadow: inset 2px 0 0 var(--ec-ref-blue);
+}
+
+/* Mobile dock: same neutral icon treatment as desktop. */
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button {
+  --dock-tone: var(--color-ec-text-muted) !important;
+  --dock-soft: var(--color-ec-surface-muted) !important;
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button svg {
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button:hover,
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button[aria-pressed="true"] {
+  border-color: var(--ec-studio-line-strong);
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .mobile-builder-dock button[aria-pressed="true"] svg,
+.electrocms-app[data-editor-preset="studio-pro"]
+  .mobile-builder-dock button:hover svg {
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-sheet-header button:hover {
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .header-project button[aria-label="Open navigation"] {
+  color: var(--color-ec-text-muted);
+}
 
 @media (min-width: 641px) and (max-width: 960px) {
   .electrocms-app[data-editor-preset="studio-pro"] .header-controls {
