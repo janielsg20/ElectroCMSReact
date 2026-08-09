@@ -14,6 +14,8 @@ test('Studio Pro desktop builder keeps the supplied flat visual-builder geometry
   const contextBar = page.locator('.studio-context-bar');
   const documentBar = page.locator('.builder-document-bar');
   const appearance = page.getByRole('group', { name: 'Editor appearance' });
+  const pagePicker = page.getByRole('button', { name: 'Active document' });
+  const breakpointPicker = page.getByRole('group', { name: 'Preview breakpoint' });
 
   await expect(rail).toBeVisible();
   await expect(navigator).toBeVisible();
@@ -26,6 +28,24 @@ test('Studio Pro desktop builder keeps the supplied flat visual-builder geometry
   await expect(inspectorDock).toBeVisible();
   await expect(appearance).toBeVisible();
   await expect(appearance.getByRole('button')).toHaveCount(3);
+  await expect(pagePicker).toBeVisible();
+  await expect(pagePicker).toHaveAttribute('aria-haspopup', 'listbox');
+  await expect(page.locator('.header-document-group select')).toHaveCount(0);
+  await expect(breakpointPicker).toBeVisible();
+  expect(await breakpointPicker.getByRole('button').count()).toBeGreaterThanOrEqual(2);
+
+  await pagePicker.click();
+  const pageList = page.getByRole('listbox', { name: 'Pages' });
+  await expect(pageList).toBeVisible();
+  await expect(pageList.getByRole('option').first()).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(pageList).toHaveCount(0);
+
+  const breakpointButtons = breakpointPicker.getByRole('button');
+  const breakpointCount = await breakpointButtons.count();
+  for (let index = 0; index < breakpointCount; index += 1) {
+    await expect(breakpointButtons.nth(index)).toHaveAttribute('aria-pressed', /true|false/);
+  }
 
   const geometry = await page.evaluate(() => {
     const rect = (selector: string) => {
@@ -58,6 +78,8 @@ test('Studio Pro desktop builder keeps the supplied flat visual-builder geometry
       header: rect('.app-header'),
       headerProject: rect('.header-project'),
       documentGroup: rect('.header-document-group'),
+      pageTrigger: rect('.header-page-trigger'),
+      breakpointPicker: rect('.header-breakpoint-picker'),
       appearance: rect('.appearance-toggle'),
       publish: rect('.header-publish-button'),
       rail: rect('.workspace-navigation[data-studio-rail="true"]'),
@@ -91,6 +113,8 @@ test('Studio Pro desktop builder keeps the supplied flat visual-builder geometry
   expect(geometry.headerProject?.width ?? 0).toBeGreaterThan(180);
   expect(geometry.documentGroup?.height ?? 0).toBeGreaterThanOrEqual(33);
   expect(geometry.documentGroup?.height ?? 0).toBeLessThanOrEqual(35);
+  expect(geometry.pageTrigger?.height ?? 0).toBeGreaterThanOrEqual(27);
+  expect(geometry.breakpointPicker?.height ?? 0).toBeGreaterThanOrEqual(27);
   expect(geometry.appearance?.height ?? 0).toBeGreaterThanOrEqual(33);
   expect(geometry.appearance?.height ?? 0).toBeLessThanOrEqual(35);
   expect(geometry.publish?.height ?? 0).toBeGreaterThanOrEqual(33);
