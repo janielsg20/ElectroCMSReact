@@ -15,9 +15,14 @@ test.describe('Studio Pro mobile builder', () => {
     const lightAppearance = appearance.getByRole('button', { name: 'Use light appearance' });
     const darkAppearance = appearance.getByRole('button', { name: 'Use dark appearance' });
     await expect(appearance).toBeVisible();
+    await expect(appearance.getByRole('button')).toHaveCount(2);
     await expect(lightAppearance).toBeVisible();
     await expect(darkAppearance).toBeVisible();
-    await expect(appearance.getByRole('button', { name: 'Use system appearance' })).toBeHidden();
+
+    const activeDocument = page.getByRole('button', { name: 'Active document' });
+    await expect(activeDocument).toBeVisible();
+    await expect(activeDocument).toHaveAttribute('aria-haspopup', 'listbox');
+    await expect(page.locator('.header-document-group select')).toHaveCount(0);
 
     const stage = page.locator('.canvas-stage-v2');
     await expect(stage).toBeVisible();
