@@ -32,7 +32,13 @@ test('Studio Pro desktop builder keeps the supplied flat visual-builder geometry
   await expect(pagePicker).toHaveAttribute('aria-haspopup', 'listbox');
   await expect(page.locator('.header-document-group select')).toHaveCount(0);
   await expect(breakpointPicker).toBeVisible();
-  expect(await breakpointPicker.getByRole('button').count()).toBeGreaterThanOrEqual(2);
+
+  const breakpointButtons = breakpointPicker.getByRole('button');
+  await expect(breakpointButtons).toHaveCount(3);
+  await expect(breakpointPicker.locator('.header-breakpoint-width')).toHaveCount(0);
+  await expect(breakpointPicker.locator('[data-breakpoint-device="desktop"]')).toBeVisible();
+  await expect(breakpointPicker.locator('[data-breakpoint-device="tablet"]')).toBeVisible();
+  await expect(breakpointPicker.locator('[data-breakpoint-device="mobile"]')).toBeVisible();
 
   await pagePicker.click();
   const pageList = page.getByRole('listbox', { name: 'Pages' });
@@ -41,10 +47,10 @@ test('Studio Pro desktop builder keeps the supplied flat visual-builder geometry
   await page.keyboard.press('Escape');
   await expect(pageList).toHaveCount(0);
 
-  const breakpointButtons = breakpointPicker.getByRole('button');
   const breakpointCount = await breakpointButtons.count();
   for (let index = 0; index < breakpointCount; index += 1) {
     await expect(breakpointButtons.nth(index)).toHaveAttribute('aria-pressed', /true|false/);
+    await expect(breakpointButtons.nth(index).locator('svg')).toHaveCount(1);
   }
 
   const geometry = await page.evaluate(() => {
