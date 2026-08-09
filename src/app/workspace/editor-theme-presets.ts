@@ -1,4 +1,4 @@
-export const EDITOR_THEME_PRESET_IDS = ['bento-high-density'] as const;
+export const EDITOR_THEME_PRESET_IDS = ['studio-pro'] as const;
 
 export type EditorThemePresetId = (typeof EDITOR_THEME_PRESET_IDS)[number];
 
@@ -6,25 +6,25 @@ export interface EditorThemePreset {
   id: EditorThemePresetId;
   label: string;
   description: string;
-  character: 'dense';
+  character: 'professional';
 }
 
 /**
- * ElectroCMS intentionally exposes one editor visual language.
- * Light/dark/auto remain appearance modes of the same Bento High Density theme;
- * generated frontend/backend project themes stay independent.
+ * ElectroCMS exposes one editor visual language: Studio Pro.
+ * Light/dark/auto are appearance modes of the same authoring system;
+ * generated frontend/backend project themes remain independent.
  */
 export const EDITOR_THEME_PRESETS: readonly EditorThemePreset[] = [
   {
-    id: 'bento-high-density',
-    label: 'Bento High Density',
-    description: 'Compact modular authoring surfaces, strong hierarchy, accessible motion and professional information density.',
-    character: 'dense',
+    id: 'studio-pro',
+    label: 'Studio Pro',
+    description: 'Professional canvas-first visual builder with compact desktop chrome and touch-first mobile sheets.',
+    character: 'professional',
   },
 ];
 
 export function isEditorThemePresetId(value: unknown): value is EditorThemePresetId {
-  return value === 'bento-high-density';
+  return value === 'studio-pro';
 }
 
 export function getEditorThemePreset(id: EditorThemePresetId): EditorThemePreset {
