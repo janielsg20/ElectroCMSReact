@@ -39,7 +39,7 @@ export function createDefaultWorkspacePreferences(): WorkspacePreferences {
     density: 'compact',
     lastWorkspace: 'editor',
     editorThemeMode: 'auto',
-    editorThemePresetId: 'high-density',
+    editorThemePresetId: 'studio-pro',
   };
 }
 

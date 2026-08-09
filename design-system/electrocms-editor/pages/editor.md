@@ -1,83 +1,105 @@
-# Editor workspace override
+# Editor workspace override — Studio Pro
 
-This file overrides `../MASTER.md` only for the main visual editor workspace.
+This file specializes `../MASTER.md` for the visual Builder.
 
 ## Primary task
-Build and manipulate a page visually while preserving exact canonical structure and responsive behavior.
+Build and manipulate a page visually while preserving canonical structure, responsive behavior and a practical canvas viewport at every editor size.
 
-## Visual hierarchy
-1. Canvas/document is the dominant surface.
-2. Current selection is the strongest local signal.
-3. Contextual commands and inspector are secondary to the selected object.
-4. Navigation and global project controls remain visually quieter than editing state.
-
-## Desktop composition target
-Use the mental model of professional no-code tools such as visual website/page builders:
+## Desktop composition
 
 ```text
-┌───────────────────────────────────────────────────────────┐
-│ Global header / project / breakpoint / history / preview │
-├──────────┬───────────────────────────────┬────────────────┤
-│ Nav /    │                               │ Inspector      │
-│ Insert   │        Visual canvas          │ properties     │
-│ library  │                               │ styles         │
-│ / layers │                               │ responsive     │
-├──────────┴───────────────────────────────┴────────────────┤
-│ Optional status / context surfaces                       │
-└───────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│ App toolbar                                                      │
+├──────┬────────────────┬────────────────────────┬─────────────────┤
+│ Rail │ Pages /        │ Canvas toolbar         │ Properties      │
+│      │ Components     ├────────────────────────┤ inspector       │
+│      │ + Widget Tree  │ Visual canvas          │                 │
+└──────┴────────────────┴────────────────────────┴─────────────────┘
 ```
 
-The exact panel system may evolve by phase, but do not turn the editor into a generic dashboard of cards. It is an **authoring environment**.
+Target geometry:
+- app toolbar ≈60px;
+- global rail ≈60px;
+- navigator ≈276–304px;
+- inspector ≈318–344px;
+- canvas receives all remaining width.
 
-## Canvas rules
-- Preserve a neutral workspace around the document so project design is not confused with editor chrome.
-- Document boundary must remain obvious at every zoom level.
-- Grid/guides/snapping are functional overlays, never persisted decoration.
-- Selection outline must remain legible over light, dark and colorful content.
-- Locked and hidden states require text/icon/shape signals beyond opacity.
-- Empty state should teach the next action without consuming excessive canvas area.
+Pages/Components tabs, canvas toolbar and inspector align to one top edge. No negative toolbar offsets or redundant Builder rows are allowed.
 
-## DnD rules
-- While dragging, valid insertion zones become visible before pointer entry.
-- Root/sibling insertion zones receive larger hit areas than idle layout spacers.
-- Drag source receives reduced-emphasis styling but remains identifiable.
-- Do not animate hit-area geometry during precision drag.
-- Exact target index remains expressed by semantic `parentId + index`, never DOM position inference.
+## Compact/mobile composition
+Compact mode (`<=960px`) is not a stacked desktop layout.
 
-## Command bar
-- Prioritize high-frequency structural actions.
-- Group commands by meaning: insert, clipboard, grouping, visibility/lock, geometry.
-- Use dividers sparingly.
-- Horizontal local scrolling is acceptable when necessary; never cause document-root overflow.
-- On touch layouts, expand primary buttons to at least 44px height/width where applicable.
+```text
+┌──────────────────────────┐
+│ Menu | Document | Actions│
+├──────────────────────────┤
+│                          │
+│      Visual canvas       │
+│                          │
+│                          │
+├──────────────────────────┤
+│ Pages | Add | Layers |   │
+│              Properties  │
+└──────────────────────────┘
+```
 
-## Inspector
-- Prefer a persistent right-side panel on wide desktop when the layout phase supports it.
-- On narrower layouts, use a drawer/sheet/panel that does not cover primary commands.
-- Common fields should stay visible; advanced groups may collapse.
-- Keep responsive source/inherited/unset state adjacent to each responsive property.
-- A failed validation never silently mutates the canonical node.
+The four bottom destinations open temporary sheets. Only the requested sheet occupies space; the canvas remains the default workspace.
 
-## Information density
-Dense does not mean cramped.
-- Use 8px default gaps, 12px panel padding, 32–36px rows.
-- Reduce repeated headings before reducing interaction hit areas.
-- Use icon + tooltip/accessible name for well-known actions, but do not hide uncommon actions behind unexplained icons.
-- Prefer progressive disclosure over showing every advanced property simultaneously.
+### Pages
+Opens page navigation + canonical Widget Tree.
 
-## Motion
-- Selection: immediate or ≤100ms.
-- Hover/press feedback: 80–120ms.
-- Panel reveal: 120–200ms.
-- DnD insertion feedback: immediate; no delayed hover prerequisite.
-- Respect reduced-motion.
+### Add
+Opens component search/categories. Successful insertion closes the sheet and returns focus/context to the canvas workflow.
+
+### Layers
+Opens the existing Layers navigator as a modal sheet, without creating parallel hierarchy state.
+
+### Properties
+Opens the existing schema-driven inspector as a modal sheet. If nothing is selected, the normal empty inspector state is shown.
+
+## Mobile accessibility
+- dock controls >=48px;
+- sheet Close controls >=48px;
+- sheets use dialog semantics and `aria-modal`;
+- Close receives initial focus;
+- Escape dismisses the current sheet;
+- backdrop provides an additional dismissal path;
+- gesture-only dismissal is forbidden;
+- hidden panels are not left as hidden focusable DOM regions;
+- root horizontal overflow is forbidden;
+- safe-area bottom inset is respected by the dock.
+
+## Canvas
+- neutral/dotted workspace remains distinct from authored content;
+- stable top-center scaling origin;
+- local overscroll containment;
+- browser zoom remains enabled;
+- compact mode reserves bottom canvas padding for the dock;
+- contextual command bar is hidden when there is no selection on compact layouts;
+- when visible on touch layouts, contextual controls use >=48px targets and local horizontal scrolling.
+
+## Header on phone
+The phone header becomes a single 60px row:
+- 48px navigation trigger;
+- flexible active-document selector;
+- touch-safe primary action(s).
+
+Desktop-only secondary controls may leave the phone header to protect the canvas; they must remain available through another explicit UI path when they are required for mobile authoring.
+
+## DnD and canonical behavior
+- valid insertion zones are visible during drag;
+- hit-area geometry does not animate;
+- target semantics remain `parentId + index`;
+- all structural changes use canonical commands;
+- DOM placement is never project structure source of truth;
+- mobile sheets only change presentation, never project data architecture.
 
 ## Acceptance signals
-A professional user should be able to answer instantly:
-- What document am I editing?
-- What breakpoint am I viewing?
+A professional user can immediately answer:
+- What document is open?
 - What is selected?
-- Where will this dragged node be inserted?
-- Is this element locked or hidden?
-- Are changes saved?
-- Can I undo this operation?
+- Where are Pages, Add, Layers and Properties?
+- Can I close the active panel without knowing a gesture?
+- Is the canvas still large enough to work on a phone/tablet?
+- Can I navigate with keyboard/touch without horizontal page overflow?
+- Are changes still using the same canonical undoable commands as desktop?

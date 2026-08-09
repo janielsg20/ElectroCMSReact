@@ -11,7 +11,6 @@ import { ProjectThemeRegistryProvider } from './themes/ProjectThemeRegistryProvi
 import { EditorWidgetRegistryProvider } from './widgets/EditorWidgetRegistryProvider';
 import type { EditorWidgetRegistry } from './widgets/editor-widget-registry';
 import { useResolvedEditorTheme } from './workspace/editor-theme';
-import './workspace/editor-theme-presets.css';
 import { WorkspacePreferencesProvider } from './workspace/workspace-preferences-context';
 import type { WorkspacePreferencesRepository } from './workspace/workspace-preferences-repository';
 import { useWorkspacePreferences } from './workspace/workspace-preferences-store';

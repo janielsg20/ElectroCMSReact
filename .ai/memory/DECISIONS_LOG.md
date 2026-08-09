@@ -12,9 +12,13 @@ This compact log mirrors durable architectural decisions from `DECISIONS.md` for
 - ADR-020: inspector is schema-generated and writes validated reversible commands.
 - ADR-021: responsive visual styles remain in `ResponsiveStyleSet`; no parallel style store.
 - ADR-022: DnD uses stable hit areas and no React structural rerender during native `dragstart`; ephemeral data attributes may drive paint-only feedback.
-- ADR-023: editor mode, editor preset, frontend theme and backend theme are separate concerns.
+- ADR-023: editor appearance, editor visual system, frontend theme and backend theme are separate concerns.
 - ADR-024: project theme definitions live in an extensible framework-neutral registry; project stores selected IDs.
 - ADR-025: imported theme definitions are local editor-library data, not duplicated inside canonical projects.
 - ADR-026: theme package format is versioned, max 256 KB, deep portable JSON validated and collision-safe.
-- ADR-027: adapt UX/design-system principles from `nextlevelbuilder/ui-ux-pro-max-skill`; do not force Tailwind/shadcn migration.
+- ADR-027: adapt professional UX/design-system principles without forcing an unrelated framework rewrite.
 - ADR-028: Vercel Git auto-deploy is disabled; previews deploy only on explicit user request.
+
+## Studio UI
+- ADR-029 (superseded): the first unified editor system used `bento-high-density` after selectable UI presets were retired.
+- ADR-030: `studio-pro` supersedes Bento as the only editor visual system. It is Tailwind-first, preserves light/dark/auto as appearance modes, keeps project themes independent, and uses persistent desktop panels but a canvas-first mobile dock with accessible Pages/Add/Layers/Properties sheets. Legacy Bento preference IDs normalize to `studio-pro` without a workspace schema bump.

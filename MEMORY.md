@@ -1,182 +1,116 @@
 # MEMORY.md — Memoria técnica durable
 
-## Proyecto
-ElectroCMS es un CMS visual local-first construido en React + TypeScript. El proyecto se desarrolla por fases y ninguna fase se considera cerrada con quality gates rojos.
-
-## Toolchain confirmado
-- React 19 + TypeScript strict + Vite.
-- Vitest para unit/integration.
-- Playwright para E2E en navegador real.
-- GitHub Actions como entorno oficial de instalación/test/build porque el sandbox de ChatGPT no alcanza el registry npm público.
-- `package-lock.json` versionado; CI usa `npm ci` y permisos `contents: read`.
-- Vercel está disponible solo para previews manuales bajo petición explícita. `vercel.json` usa `git.deploymentEnabled=false`; no desplegar por push/PR.
+## Proyecto y quality contract
+ElectroCMS es un CMS visual local-first construido en React 19 + TypeScript strict + Vite. Tailwind CSS v4 está disponible para el Studio. Vitest cubre unit/integration y Playwright cubre E2E. GitHub Actions es el entorno oficial de verificación. No cerrar ni mergear trabajo con verify/lint/types/tests/coverage/E2E/build en rojo.
 
 ## Arquitectura durable
-- Dependencias: Domain → Application → Infrastructure → Presentation.
-- El modelo canónico no depende de React ni del DOM.
-- UI/editor, renderer y exporters permanecen desacoplados.
-- Persistencia se consume mediante contratos; componentes no acceden directamente a IndexedDB.
-- Registries explícitos resuelven widgets/themes; el core del editor no debe crecer mediante `switch` por cada tipo.
-
-## Estado del modelo
+- Domain → Application → Infrastructure → Presentation.
 - `CanonicalProject.schemaVersion = 1`.
-- `DocumentNode.version = 1`.
-- Proyecto inicial crea una página Home con nodo `core/root`.
-- Breakpoints iniciales: desktop, laptop, tablet landscape, tablet portrait, mobile large y mobile small.
-- Responsive distingue explícitamente `explicit`, `inherited` y `unset`.
-- Capacidades de fases futuras existen solo como mapas JSON portables hasta que sus módulos especializados sean implementados.
+- El modelo canónico no depende de React/DOM.
+- Canvas/renderer es proyección, nunca fuente de verdad.
+- Persistencia se consume mediante contratos; IndexedDB es el adapter web principal.
+- Widgets y project themes se resuelven por registries explícitos.
+- Mutaciones estructurales/props/styles pasan por comandos canónicos reversibles.
 
-## Persistencia
-- Web primary adapter: IndexedDB nativo.
-- DB v1: stores `projects` y `recoverySnapshots`.
-- `ProjectRepository` tiene adapters IndexedDB e in-memory.
-- `create` duplicado produce `CONFLICT`; `save` es upsert validado.
-- `load` pasa siempre por hydration/migration antes de exponer datos editables.
-- Versionado IndexedDB y `CanonicalProject.schemaVersion` son independientes.
+## Routing y shell
+- Workspaces: Editor, Preview, Backend, Export.
+- Studio modules tienen deep links.
+- `ProjectSessionProvider` permanece por encima del outlet lógico.
+- El shell compacto se activa a 960px y es independiente de los breakpoints del proyecto generado.
+- Desktop usa rail persistente; compact usa drawer accesible.
+- Root horizontal overflow está prohibido.
 
-## Migraciones
-- Registry puro y secuencial N→N+1.
-- Rechaza schemas futuros.
-- Clona input antes de migrar.
-- F01 soporta legacy v0 del scaffold inicial y lo transforma a canonical v1.
-- Errores de migración/validación se conservan; persistencia no los oculta.
+## Editor visual system vigente — Studio Pro
+Desde 2026-08-08/09, ElectroCMS usa un único visual system para el editor: **`studio-pro`**.
 
-## Autosave y recovery
-- Autosave debounced y serializado.
-- Incrementa `historyMetadata.revision` y `lastSavedAt`.
-- Guarda recovery snapshot antes del proyecto principal.
-- Recovery snapshots son limitados por configuración.
-- F03 integra autosave al `ProjectSession`: commands/undo/redo encolan cambios y el header muestra `dirty/saving/saved/error` real.
-- F04 usa el mismo autosave para `frontendThemeId`, `backendThemeId` y merges selectivos de recursos.
-- `EditorProjectPersistence` elige al hidratar el candidato más fresco entre project store y recovery por revision + `updatedAt`.
-- Revisiones permanecen monotónicas incluso si un payload pendiente trae metadata stale.
-- Un callback de save fusiona metadata; nunca reemplaza contenido editor más nuevo.
+- El anterior `bento-high-density` está retirado.
+- No existen hojas `bento-high-density.css`, `bento-modern-polish.css` ni las capas `reference-builder-*` anteriores en el bundle.
+- `EDITOR_THEME_PRESET_IDS` contiene únicamente `studio-pro`.
+- Workspace preferences legacy con Bento u otros preset IDs normalizan automáticamente a `studio-pro` sin cambiar `WorkspacePreferences.schemaVersion = 1`.
+- No existe selector de visual preset en UI.
+- `light` / `dark` / `auto` son modos de apariencia del mismo Studio Pro.
+- Frontend/backend project themes siguen siendo independientes y exportables.
 
-## Editor shell F02
-- Routing interno usa History API + `useSyncExternalStore`, sin dependencia de router externa.
-- Rutas estables: `/editor`, `/preview`, `/backend`, `/export`.
-- `ProjectSessionProvider` vive por encima del outlet lógico; cambiar workspace no remonta proyecto, documento activo, breakpoint ni zoom.
-- El header superior está conectado al estado real de proyecto/documento/breakpoint/zoom y al routing Preview/Export.
+## Implementación visual
+Fuente de verdad:
+- `design-system/electrocms-editor/MASTER.md`.
+- `design-system/electrocms-editor/pages/editor.md`.
+- `src/app/ui/studio-pro-tailwind.css` como única capa visual final de Studio Pro.
 
-## Workspace preferences
-- `WorkspacePreferences.schemaVersion = 1`.
-- Se persisten en `electrocms:workspace-preferences:v1`, separadas de `CanonicalProject`.
-- Incluyen posición, ancho, collapse, icon/text mode, orden, density, last workspace, editor theme mode y editor theme preset.
-- La separación es no negociable: apariencia/layout del editor no altera el frontend o backend generado.
+Studio Pro es **Tailwind-first**: layout/spacing/typography/states usan utilities y `@apply`; custom properties quedan para roles semánticos, canvas/elevation y casos que no deben convertirse en clases ad-hoc. No acumular nuevas hojas “polish/fix/fidelity”; corregir el sistema o componente fuente.
 
-## Responsive shell
-- El threshold compacto del shell es `960px`; es una decisión de layout del editor y NO un breakpoint canónico del proyecto generado.
-- Desktop usa navegación lateral simultánea.
-- Tablet/móvil usan drawer accesible; funciones principales permanecen disponibles.
-- En móvil, la segunda fila del header conserva controles mediante scroll horizontal local.
-- `contain: inline-size paint` impide que ese scroll interno cree overflow del documento raíz.
+## Desktop Builder
+Composición objetivo inspirada en constructores visuales profesionales:
+- app toolbar ≈60px;
+- icon rail ≈60px;
+- Pages/Components navigator ≈276–304px;
+- canvas flexible/dominante;
+- Properties inspector ≈318–344px.
 
-## Canvas y árbol F03/F04
-- `CanonicalDocument.nodes + children` es la única fuente estructural persistente.
-- `parentId`, depth y traversals se derivan runtime; no se persisten.
-- Validator y tree engine rechazan missing/duplicate children, multiple parents, root-parent, cycles y orphans.
-- `CanvasRenderer` es una proyección recursiva; overlays y drop targets no son datos del proyecto.
-- DnD usa `{nodeId,parentId,index}` y operaciones puras; nunca reordena DOM como fuente de verdad.
-- Regla F04: no usar React state que provoque re-render durante `dragstart`; el feedback efímero de drag puede usar `data-*` DOM transitorio mientras la estructura sigue siendo canónica.
-- Drop hit areas permanecen geométricamente estables durante el gesto; durante drag cambia pintura, no layout.
+Pages/Components tabs, canvas toolbar e inspector comparten origen vertical. `studio-context-bar` y `builder-document-bar` se ocultan en desktop Builder porque duplican contexto. El toolbar V2 neutraliza offsets legacy del canvas.
 
-## Selección e historial F03
-- Selección simple/múltiple es estado transitorio y accesible por teclado.
-- `DocumentCommand` guarda before/after de `CanonicalDocument`, nunca snapshots DOM.
-- History es por documento; ejecutar un nuevo command limpia redo.
-- Undo/Redo del header y shortcuts están conectados al command engine real.
-- Copy/Cut/Paste, Group/Ungroup, Lock/Hide y geometry edits son reversibles.
-- Paste remapea IDs de todos los nodos copiados antes de insertar.
+## Compact/mobile Builder — canvas-first
+En `compactLayout` no se renderizan persistentemente Pages/Components ni Inspector.
 
-## Geometría F03
-- X/Y/W/H usan `ResponsiveStyleSet` existente con keys `layout.x/y/width/height`.
-- No existe un modelo geométrico paralelo.
-- Ediciones se escriben explícitamente en el breakpoint activo.
-- Grid snapping por defecto: 8px; threshold: 4px.
-- Viewport edges/center tienen prioridad sobre grid si ambos están dentro del threshold.
-- Guides son transitorias y viven en overlay.
+Vista default:
+- header compacto;
+- canvas ocupando el workspace;
+- contextual command bar solo cuando hay selección;
+- bottom dock: **Pages / Add / Layers / Properties**.
 
-## Widget system F04
-- `WidgetRegistry` core es framework-neutral y resuelve `type@version`.
-- Cada definición incluye metadata, factory, props validation/schema, inspector schema, child policy, capabilities, preview renderer id y migrations.
-- Binding React vive en `EditorWidgetRegistry`; el core no importa React.
-- Un plugin/widget externo puede registrar definición + preview sin editar `CanvasRenderer` por tipo.
-- F04 registra 10 widgets estructurales, 16 básicos/contenido y 19 contratos dynamic/commerce/form/filter.
-- Widgets de datos/forms/filters permanecen explícitamente `modeled`; comportamiento real corresponde a F05/F06.
+Panels:
+- Pages → sheet con documentos + Widget Tree canónico.
+- Add → sheet con búsqueda/categorías/widget insertion; se cierra tras insertar.
+- Layers → sheet reutilizando `LayersNavigator` canónico.
+- Properties → sheet reutilizando `WidgetInspector` schema-driven.
 
-## Inspector F04
-- `WidgetInspector` se genera desde schema; no mantiene una copia persistente de props.
-- Patch de props → nodo candidato → validación registry → `DocumentCommand` reversible.
-- Campos soportados: text, number, boolean, select, JSON y descriptors normalizados.
-- Errores aparecen junto al control y no mutan silenciosamente el modelo.
-- Inspector UI es transitorio y no entra a `CanonicalProject`.
+Los sheets usan `role=dialog`, `aria-modal`, Close visible, `Escape`, backdrop dismissal y autofocus en Close. Hidden desktop panels no quedan focusables en móvil. Touch targets compactos usan floor 48px y el dock respeta `env(safe-area-inset-bottom)`.
 
-## Style + breakpoint engine F04
-- `DocumentNode.styles` sigue siendo la única fuente de estilo responsive.
-- Style engine generaliza propiedades con slots `explicit`, `inherited`, `unset` por breakpoint.
-- Renderer convierte solo un subconjunto seguro a `CSSProperties`.
-- Breakpoint engine ordena/valida los seis breakpoints, resuelve wider/narrower e inheritance chain nearest-first.
-- Heredar desde breakpoint superior es una relación dinámica; cambios futuros de la fuente se reflejan en el descendiente.
-- Geometría `layout.*` y estilos visuales comparten `ResponsiveStyleSet` pero conservan responsabilidades claras.
+A <=720px el header se reduce a una sola fila de ~60px: navegación + documento + primary action area. Secondary desktop chrome puede ocultarse para proteger el canvas siempre que no se convierta en la única ruta a una función crítica.
 
-## Editor design system F04
-- Fuentes de verdad: `design-system/electrocms-editor/MASTER.md` y `pages/editor.md`.
-- Referencias seleccionadas de `nextlevelbuilder/ui-ux-pro-max-skill`: `ui-ux-pro-max`, `design-system`, `ui-styling`.
-- Arquetipo del editor: Productivity Tool + Design System tooling + Data-Dense SaaS.
-- Lenguaje base: Minimal/Swiss + Flat + Data-Dense + Accessible, con micro-interacciones funcionales.
-- Editor = entorno de autoría no-code, no un dashboard genérico de cards.
-- Anatomía objetivo: header global, navegación/insert/layers lateral, canvas dominante y inspector contextual derecho.
-- Ritmo: micro-grid 4px, base 8px; desktop denso, touch crítico >=44px.
-- Tokens siguen primitive → semantic → component.
-- No forzar Tailwind/shadcn; adaptar principios al stack React/CSS existente salvo decisión futura explícita.
+## Canvas
+- `CanonicalDocument.nodes + children` es la única estructura persistente.
+- DnD usa `{nodeId,parentId,index}`.
+- Hit areas permanecen geométricamente estables durante drag.
+- Stage tiene scroll local, overscroll containment y stable top-center transform origin.
+- Browser zoom permanece habilitado.
+- Grid/guides/snapping son overlays transitorios.
+- Compact stage reserva padding inferior para el dock.
+- Compact command bar se oculta cuando `data-selection-count=0`; cuando aparece, controles touch son >=48px y el strip puede scrollear localmente.
 
-## Sistemas de theme F04
-Hay tres conceptos separados:
-1. **Editor theme mode** (`light`/`dark`/`auto`) — workspace preference.
-2. **Editor theme preset** — workspace preference que modifica solo tokens/composición del chrome de ElectroCMS.
-3. **Project themes frontend/backend** — IDs persistidos en `CanonicalProject`.
+## Inspector / Layers / Widgets
+- Widget registry core es framework-neutral.
+- Inspector se genera desde schema; no duplica props persistentes.
+- Layers search/rename/lock/hide/reorder ejecutan acciones canónicas.
+- Mobile sheets solo cambian presentación, no introducen estado persistente paralelo.
 
-Nunca mezclar estos tres niveles.
+## Responsive styles y breakpoints
+- `DocumentNode.styles` es la única fuente responsive.
+- Estados: `explicit`, `inherited`, `unset`.
+- Breakpoint inheritance nearest-first.
+- Geometría X/Y/W/H usa el mismo `ResponsiveStyleSet` sin mezclar responsabilidades.
+- Breakpoints del proyecto y breakpoint del shell del editor son conceptos separados.
 
-### Editor presets
-- Presets disponibles incluyen High Density, Bento, Minimal, Material Expressive, SaaS, Enterprise, Glass, Sophisticated Dark, Monochrome y Developer Console.
-- Un preset puede cambiar color/elevación/radius/énfasis/density dentro de límites, pero no comportamiento canónico, accesibilidad ni funciones.
+## Project themes frontend/backend
+- `frontendThemeId` / `backendThemeId` permanecen en `CanonicalProject`.
+- ProjectThemeRegistry valida scope/id/version/tokens.
+- Built-ins son inmutables; se duplican para editar.
+- Theme packages siguen schema portable y no incluyen credenciales/usuarios/binarios.
+- Nunca usar editor appearance/Studio Pro para mutar output themes.
 
-### ProjectThemeRegistry
-- Framework-neutral.
-- Valida ID por scope (`frontend.*` / `backend.*`), versión positiva, metadata y tokens JSON portables.
-- Rechaza objetos con prototipos no JSON (`Date`, `Map`, class instances), incluso anidados.
-- Built-ins al cierre F04: 8 frontend + 7 backend.
-- Built-ins son inmutables; se duplican antes de editar.
-- Copias locales usan IDs collision-safe y empiezan en v1.
-- `ProjectThemeTokenEditor` edita metadata y semantic tokens; cada save crea vN+1.
-- `ProjectSession.setProjectTheme()` valida scope, actualiza solo el ID correspondiente y encola autosave.
+## Accesibilidad durable
+- WCAG AA baseline.
+- focus-visible en controles keyboard-operable.
+- icon-only controls con accessible names.
+- no hover-only functionality.
+- no gesture-only dismissal.
+- touch targets compactos >=48px.
+- reduced motion / increased contrast / forced colors soportados.
+- browser zoom habilitado.
+- no root horizontal overflow.
+- E2E debe cubrir dock/sheets/drawer y geometría desktop.
 
-### Theme package library
-- Formato: `kind=electrocms-theme-package`, `schemaVersion=1`.
-- Tamaño máximo: 256 KB.
-- Parse valida envelope, theme definition y recursos opcionales.
-- Imports se guardan localmente en `electrocms:project-theme-packages:v1`, fuera de `CanonicalProject`.
-- El proyecto guarda solo el ID activo; el catálogo local resuelve la definición.
-- IDs importados no pueden colisionar con built-ins o paquetes ya instalados.
-- Export genera `*.electrocms-theme.json` versionado.
+## Trabajo actual
+Rama: `agent/unified-bento-high-density-ui` / draft PR #36 (nombre histórico de rama; el producto ya no usa Bento).
 
-### Recursos transferibles y merge
-- Recursos opcionales: documents/templates, content models, queries/forms/filters, roles/dashboards/backend y records demo.
-- Demo data está desactivada por defecto tanto en export selection como en import review.
-- Importar es dos pasos: elegir archivo solo valida y muestra review; `Apply selected import` realiza mutaciones.
-- Cada categoría puede desactivarse antes de importar.
-- Merge es no destructivo: si un ID/key ya existe en el proyecto, el valor existente se preserva y el conflicto se contabiliza.
-- Usuarios, credenciales y media binaries quedan fuera del formato F04.
-- El merge resultante vuelve a pasar `validateCanonicalProject` antes de commit/autosave.
-
-## Evidencia F04
-- MF-034 definitiva: run #568 PASS.
-- MF-035 definitiva, incluyendo duplicate/edit/version: run #662 PASS.
-- MF-036 definitiva, incluyendo selective import/demo option/non-destructive merge: run #688 PASS.
-
-## Última fase cerrada funcionalmente
-F04 — Widgets, inspector, responsive y themes. Evidencia funcional definitiva: GitHub Actions run #688 PASS. Falta un único gate de cierre sobre código + documentación final antes del merge.
-
-## Siguiente trabajo
-Después de integrar PR #5 a `main`, leer el contrato exacto de F05 y comenzar en una rama nueva. No iniciar F05 desde la rama F04 antes del merge.
+Objetivo actual: reemplazar completamente la UI Bento por Studio Pro Tailwind, mantener el desktop similar a la referencia de visual builder y convertir móvil/tablet en canvas-first con dock y sheets accesibles. Antes de mergear, el quality gate del último head debe quedar completamente verde.

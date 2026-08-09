@@ -7,6 +7,7 @@ import {
   type NodeGeometryPatch,
   type SnapGuide,
 } from '../../../core/project';
+import { Icon } from '../../components/Icon';
 import { WidgetInspector } from '../inspector/WidgetInspector';
 import { useEditorWidgetRegistry } from '../../widgets/editor-widget-registry-context';
 import { CanvasOverlayLayer } from './CanvasOverlayLayer';
@@ -17,6 +18,8 @@ import { useCanvasSelection } from './use-canvas-selection';
 
 const INSERT_CATEGORY_ORDER = ['structural', 'basic', 'content', 'dynamic', 'commerce', 'form', 'filter'] as const;
 
+export type CanvasMobilePanel = 'layers' | 'properties' | null;
+
 export interface EditorCanvasProps {
   document: CanonicalDocument;
   breakpointId: string;
@@ -24,6 +27,9 @@ export interface EditorCanvasProps {
   viewportWidth: number;
   zoom: number;
   actions?: CanvasDocumentActions;
+  compactLayout?: boolean;
+  mobilePanel?: CanvasMobilePanel;
+  onMobilePanelChange?(panel: CanvasMobilePanel): void;
 }
 
 export function EditorCanvas({
@@ -33,13 +39,16 @@ export function EditorCanvas({
   viewportWidth,
   zoom,
   actions,
+  compactLayout = false,
+  mobilePanel = null,
+  onMobilePanelChange,
 }: EditorCanvasProps) {
   const widgetRegistry = useEditorWidgetRegistry();
   const selection = useCanvasSelection(Object.keys(document.nodes));
   const clearSelection = selection.clearSelection;
   const [clipboard, setClipboard] = useState<DocumentClipboardPayload | null>(null);
   const [guides, setGuides] = useState<readonly SnapGuide[]>([]);
-  const [layersOpen, setLayersOpen] = useState(false);
+  const [desktopLayersOpen, setDesktopLayersOpen] = useState(false);
   const insertableWidgets = useMemo(
     () =>
       widgetRegistry.core.listLatest().sort((left, right) => {
@@ -67,18 +76,22 @@ export function EditorCanvas({
   const canUngroup = selectedNodes.length === 1 && primaryNode?.type === 'core/group';
   const canEditGeometry = selectedNodes.length === 1 && primaryNode?.locked !== true;
   const canInsertSelectedWidget = widgetRegistry.has(insertWidgetType);
+  const layersOpen = compactLayout ? mobilePanel === 'layers' : desktopLayersOpen;
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        clearSelection();
-        setGuides([]);
-        setLayersOpen(false);
+      if (event.key !== 'Escape') return;
+      if (compactLayout && mobilePanel !== null) {
+        onMobilePanelChange?.(null);
+        return;
       }
+      clearSelection();
+      setGuides([]);
+      setDesktopLayersOpen(false);
     };
     globalThis.addEventListener('keydown', handleKeyDown);
     return () => globalThis.removeEventListener('keydown', handleKeyDown);
-  }, [clearSelection]);
+  }, [clearSelection, compactLayout, mobilePanel, onMobilePanelChange]);
 
   const stopToolbarPropagation = (event: MouseEvent<HTMLElement>) => event.stopPropagation();
 
@@ -135,6 +148,14 @@ export function EditorCanvas({
     actions.setHidden(selection.selectedNodeIds, !allHidden);
   };
 
+  const toggleLayers = () => {
+    if (compactLayout) {
+      onMobilePanelChange?.(layersOpen ? null : 'layers');
+      return;
+    }
+    setDesktopLayersOpen((current) => !current);
+  };
+
   const applyGeometry = (patch: NodeGeometryPatch) => {
     if (!actions || !primaryNode || !canEditGeometry) return;
     const result = actions.setGeometry(primaryNode.id, patch, viewportWidth);
@@ -148,12 +169,42 @@ export function EditorCanvas({
     applyGeometry({ [key]: value });
   };
 
+  const inspector = (
+    <WidgetInspector
+      node={selectedNodes.length === 1 ? primaryNode : null}
+      breakpointId={breakpointId}
+      breakpoints={breakpoints}
+      {...(actions
+        ? {
+            onSetProps: actions.setProps,
+            onSetStyle: actions.setStyle,
+            onUnsetStyle: actions.unsetStyle,
+            onInheritStyle: actions.inheritStyle,
+          }
+        : {})}
+    />
+  );
+
+  const layersNavigator = actions ? (
+    <LayersNavigator
+      document={document}
+      selectedNodeIds={selection.selectedNodeIds}
+      onSelectNode={selectNode}
+      onRenameNode={actions.renameNode}
+      onSetLocked={actions.setLocked}
+      onSetHidden={actions.setHidden}
+      onMoveNode={(nodeId, parentId, index) => actions.moveNode(nodeId, parentId, index)}
+      onClose={() => compactLayout ? onMobilePanelChange?.(null) : setDesktopLayersOpen(false)}
+    />
+  ) : null;
+
   return (
     <section
       className="editor-canvas editor-canvas-v2"
       aria-label="Visual document canvas"
       data-testid="editor-canvas"
       data-selection-count={selectedNodes.length}
+      data-compact={compactLayout ? 'true' : 'false'}
       onClick={() => {
         clearSelection();
         setGuides([]);
@@ -174,7 +225,7 @@ export function EditorCanvas({
             </label>
             <button type="button" className="canvas-command-primary" disabled={!canInsertSelectedWidget} onClick={() => actions.insertWidget(insertWidgetType)}>Insert widget</button>
             <button type="button" onClick={() => actions.insertContainer()}>Insert container</button>
-            <button type="button" className="canvas-layers-trigger" aria-pressed={layersOpen} onClick={() => setLayersOpen((current) => !current)}>Layers</button>
+            <button type="button" className="canvas-layers-trigger" aria-pressed={layersOpen} onClick={toggleLayers}>Layers</button>
           </div>
 
           <div className="canvas-command-cluster canvas-command-cluster--selection" aria-label="Selection commands">
@@ -208,18 +259,7 @@ export function EditorCanvas({
       ) : null}
 
       <div className="editor-canvas-layers canvas-stage-v2">
-        {layersOpen && actions ? (
-          <LayersNavigator
-            document={document}
-            selectedNodeIds={selection.selectedNodeIds}
-            onSelectNode={selectNode}
-            onRenameNode={actions.renameNode}
-            onSetLocked={actions.setLocked}
-            onSetHidden={actions.setHidden}
-            onMoveNode={(nodeId, parentId, index) => actions.moveNode(nodeId, parentId, index)}
-            onClose={() => setLayersOpen(false)}
-          />
-        ) : null}
+        {!compactLayout && layersOpen ? layersNavigator : null}
         <CanvasRenderer
           document={document}
           breakpointId={breakpointId}
@@ -232,21 +272,25 @@ export function EditorCanvas({
         <CanvasOverlayLayer viewportWidth={viewportWidth} zoom={zoom} selectedNodeIds={selection.selectedNodeIds} guides={guides} />
       </div>
 
-      <div className="canvas-inspector-dock" onClick={stopToolbarPropagation}>
-        <WidgetInspector
-          node={selectedNodes.length === 1 ? primaryNode : null}
-          breakpointId={breakpointId}
-          breakpoints={breakpoints}
-          {...(actions
-            ? {
-                onSetProps: actions.setProps,
-                onSetStyle: actions.setStyle,
-                onUnsetStyle: actions.unsetStyle,
-                onInheritStyle: actions.inheritStyle,
-              }
-            : {})}
-        />
-      </div>
+      {!compactLayout ? <div className="canvas-inspector-dock" onClick={stopToolbarPropagation}>{inspector}</div> : null}
+
+      {compactLayout && mobilePanel === 'layers' && layersNavigator ? (
+        <div className="mobile-canvas-sheet" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) onMobilePanelChange?.(null); }}>
+          <section className="mobile-canvas-sheet-panel" role="dialog" aria-modal="true" aria-label="Layers panel" onClick={stopToolbarPropagation}>
+            <header className="mobile-sheet-header"><span className="mobile-sheet-handle" aria-hidden="true" /><div><strong>Layers</strong><small>Document structure</small></div><button type="button" autoFocus aria-label="Close layers" onClick={() => onMobilePanelChange?.(null)}><Icon name="close" size={17} /></button></header>
+            <div className="mobile-sheet-content mobile-layers-content">{layersNavigator}</div>
+          </section>
+        </div>
+      ) : null}
+
+      {compactLayout && mobilePanel === 'properties' ? (
+        <div className="mobile-canvas-sheet" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) onMobilePanelChange?.(null); }}>
+          <section className="mobile-canvas-sheet-panel" role="dialog" aria-modal="true" aria-label="Properties panel" onClick={stopToolbarPropagation}>
+            <header className="mobile-sheet-header"><span className="mobile-sheet-handle" aria-hidden="true" /><div><strong>Properties</strong><small>{selectedNodes.length === 1 ? primaryNode?.name ?? 'Selected element' : 'Select one element to edit'}</small></div><button type="button" autoFocus aria-label="Close properties" onClick={() => onMobilePanelChange?.(null)}><Icon name="close" size={17} /></button></header>
+            <div className="canvas-inspector-dock mobile-inspector-content">{inspector}</div>
+          </section>
+        </div>
+      ) : null}
     </section>
   );
 }

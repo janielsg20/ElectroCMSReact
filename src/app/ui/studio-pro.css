@@ -1,0 +1,33 @@
+@import "./studio-pro-tailwind.css";
+@reference "../studio/studio.css";
+
+@layer components {
+  .electrocms-app[data-editor-preset="studio-pro"] .app-header {
+    height: 60px;
+    min-height: 60px;
+  }
+}
+
+/* Legacy canvas styles predate Tailwind cascade layers. Keep these narrow
+ * compatibility resets unlayered so the single Studio Pro entrypoint wins
+ * over old unlayered geometry/display declarations without adding a patch
+ * stylesheet or changing canonical editor behavior. */
+.electrocms-app[data-editor-preset="studio-pro"]
+  .editor-canvas-v2 > .canvas-command-bar-v2 {
+  position: relative;
+  top: auto;
+  margin: 0;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .mobile-layers-content
+  .canvas-layers-popover > header button[aria-label="Close layers"] {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .app-header {
+    height: 60px;
+    min-height: 60px;
+  }
+}

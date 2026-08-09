@@ -1,0 +1,716 @@
+/*
+ * ElectroCMS Studio Pro
+ * Single Tailwind-first authoring system rebuilt from scratch from the visual
+ * builder reference. Project frontend/backend themes remain independent.
+ */
+
+@layer components {
+  .electrocms-app[data-editor-preset="studio-pro"] {
+    --color-ec-app: #f3f5f8;
+    --color-ec-surface: #ffffff;
+    --color-ec-surface-subtle: #f8fafc;
+    --color-ec-surface-muted: #eef2f6;
+    --color-ec-border: #dfe4eb;
+    --color-ec-text: #151922;
+    --color-ec-text-muted: #687181;
+    --color-ec-accent: #2864f0;
+    --color-ec-accent-soft: #edf3ff;
+    --color-ec-chrome: #ffffff;
+    --color-ec-chrome-raised: #f7f9fc;
+    --ec-studio-line: #dfe4eb;
+    --ec-studio-line-strong: #cbd3df;
+    --ec-studio-canvas: #f5f6f8;
+    --ec-studio-dot: rgb(100 116 139 / .25);
+    --ec-studio-shadow: 0 1px 2px rgb(15 23 42 / .05), 0 8px 22px rgb(15 23 42 / .05);
+    --ec-studio-float: 0 18px 60px rgb(15 23 42 / .18);
+    @apply isolate flex h-dvh min-h-[560px] min-w-0 flex-col overflow-hidden font-sans antialiased;
+    background: var(--color-ec-app);
+    color: var(--color-ec-text);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"][data-theme="dark"] {
+    --color-ec-app: #13171e;
+    --color-ec-surface: #1b2028;
+    --color-ec-surface-subtle: #212730;
+    --color-ec-surface-muted: #29313c;
+    --color-ec-border: #343d49;
+    --color-ec-text: #f4f7fb;
+    --color-ec-text-muted: #a6afbd;
+    --color-ec-accent: #6f95ff;
+    --color-ec-accent-soft: #25375f;
+    --color-ec-chrome: #1b2028;
+    --color-ec-chrome-raised: #212730;
+    --ec-studio-line: #343d49;
+    --ec-studio-line-strong: #46515f;
+    --ec-studio-canvas: #151a21;
+    --ec-studio-dot: rgb(148 163 184 / .25);
+    --ec-studio-shadow: 0 1px 2px rgb(0 0 0 / .22), 0 10px 28px rgb(0 0 0 / .16);
+    --ec-studio-float: 0 20px 64px rgb(0 0 0 / .4);
+  }
+
+  /* Global header ------------------------------------------------------- */
+  .electrocms-app[data-editor-preset="studio-pro"] .app-header {
+    @apply z-40 grid min-h-[60px] shrink-0 grid-cols-[minmax(200px,auto)_minmax(0,1fr)_auto] items-center gap-2 border-0 border-b px-3 py-1.5 shadow-none;
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .brand-mark {
+    @apply size-9 rounded-lg border-0 text-white shadow-none;
+    background: var(--color-ec-accent);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .project-name {
+    @apply text-xs font-semibold tracking-[-.015em];
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .save-state {
+    @apply text-[9px] font-medium;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls {
+    @apply w-full gap-1.5 overflow-x-auto py-1 [scrollbar-width:none];
+    overscroll-behavior-inline: contain;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls::-webkit-scrollbar {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > div,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > label {
+    @apply rounded-lg border shadow-none;
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface-subtle);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions {
+    @apply gap-1;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions button {
+    @apply min-h-9 rounded-lg;
+  }
+
+  /* Continuous studio shell ------------------------------------------- */
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio {
+    @apply gap-0 p-0;
+    background: var(--color-ec-app);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio-main {
+    @apply min-w-0 overflow-hidden border-0 rounded-none shadow-none;
+    background: var(--color-ec-surface);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-context-bar,
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-document-bar {
+    @apply shrink-0 border-b;
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface);
+  }
+
+  /* Desktop rail ------------------------------------------------------- */
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-rail[data-studio-rail="true"] {
+    @apply w-[60px] min-w-[60px] max-w-[60px] overflow-hidden border-0 border-r p-0 shadow-none;
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-rail[data-studio-rail="true"][data-position="right"] {
+    @apply border-r-0 border-l;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-rail[data-studio-rail="true"] .studio-rail-header {
+    @apply h-[58px] px-2;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-rail[data-studio-rail="true"] .studio-rail-brand {
+    @apply size-9;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-rail[data-studio-rail="true"] .studio-rail-button,
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-rail[data-studio-rail="true"] .workspace-settings > summary {
+    @apply mx-auto size-11 min-h-11 w-11 justify-center gap-0 p-0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[data-active="true"] {
+    @apply font-semibold;
+    background: var(--color-ec-accent-soft);
+    color: var(--color-ec-accent);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[data-active="true"]::before {
+    content: '';
+    @apply absolute inset-y-2 left-[-8px] w-0.5 rounded-r-full;
+    background: var(--color-ec-accent);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-rail[data-position="right"] .studio-rail-button[data-active="true"]::before {
+    @apply right-[-8px] left-auto rounded-r-none rounded-l-full;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .workspace-settings-popover {
+    border-color: var(--ec-studio-line);
+    box-shadow: var(--ec-studio-float);
+  }
+
+  /* Builder desktop ---------------------------------------------------- */
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder {
+    @apply min-h-0 flex-1 gap-0 overflow-hidden p-0;
+    background: var(--color-ec-surface);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-context-panel {
+    @apply w-[288px] min-w-[288px] border-0 border-r shadow-none;
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-context-tabs {
+    @apply h-[52px] min-h-[52px] gap-1 border-b p-1.5;
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-context-tabs button {
+    @apply inline-flex min-h-10 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 text-[11px] font-semibold transition-colors;
+    color: var(--color-ec-text-muted);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-context-tabs button:hover {
+    background: var(--color-ec-surface-subtle);
+    color: var(--color-ec-text);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-context-tabs button[data-active="true"] {
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface-subtle);
+    color: var(--color-ec-accent);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-pages-section {
+    @apply border-b;
+    border-color: var(--ec-studio-line);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-pages-section > header {
+    @apply flex min-h-11 items-center justify-between px-3 text-[11px];
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-pages-section > header strong {
+    @apply font-semibold;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-pages-section > header span {
+    @apply rounded-full px-2 py-0.5 text-[9px] tabular-nums;
+    background: var(--color-ec-surface-muted);
+    color: var(--color-ec-text-muted);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-page-list {
+    @apply grid gap-0.5 px-2 pb-2.5;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-page-row {
+    @apply min-h-10 gap-2 rounded-md px-2.5 text-[11px] transition-colors;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-page-row[data-active="true"] {
+    @apply font-semibold;
+    background: var(--color-ec-surface-muted);
+    color: var(--color-ec-text);
+    box-shadow: inset 2px 0 0 var(--color-ec-accent);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-widget-tree {
+    @apply px-1.5 pb-3;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-tree-row {
+    @apply min-h-8 gap-1.5 rounded-md text-[10px];
+    color: var(--color-ec-text-muted);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-tree-row:hover {
+    background: var(--color-ec-surface-subtle);
+    color: var(--color-ec-text);
+  }
+
+  /* Canvas -------------------------------------------------------------- */
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-editor-region {
+    @apply min-h-0 overflow-hidden border-0 rounded-none shadow-none;
+    background: var(--ec-studio-canvas);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .editor-canvas-v2 {
+    @apply min-h-0 min-w-0 overflow-hidden;
+    background: var(--ec-studio-canvas);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .editor-canvas-v2 > .canvas-command-bar-v2 {
+    @apply relative top-auto m-0 h-[52px] min-h-[52px] w-auto max-w-none justify-self-stretch rounded-none border-0 border-r border-b px-2 py-1.5 shadow-none;
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .canvas-command-bar-v2 button,
+  .electrocms-app[data-editor-preset="studio-pro"] .canvas-command-bar-v2 select,
+  .electrocms-app[data-editor-preset="studio-pro"] .canvas-geometry-controls input {
+    @apply h-8 min-h-8 rounded-md border px-2 text-[10px] font-semibold shadow-none;
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface-subtle);
+    color: var(--color-ec-text);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .canvas-command-bar-v2 button:hover:not(:disabled),
+  .electrocms-app[data-editor-preset="studio-pro"] .canvas-command-bar-v2 select:hover:not(:disabled) {
+    background: var(--color-ec-surface-muted);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .canvas-command-primary {
+    border-color: var(--color-ec-accent) !important;
+    background: var(--color-ec-accent) !important;
+    color: white !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .canvas-stage-v2 {
+    @apply min-h-0 min-w-0 overflow-auto;
+    overscroll-behavior: contain;
+    touch-action: pan-x pan-y pinch-zoom;
+    scrollbar-gutter: stable both-edges;
+    padding: clamp(26px, 3.5vw, 50px) clamp(20px, 4vw, 64px) 96px;
+    background-color: var(--ec-studio-canvas);
+    background-image: radial-gradient(var(--ec-studio-dot) .7px, transparent .7px);
+    background-size: 16px 16px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .canvas-scaled-document {
+    @apply max-w-none flex-none rounded-lg border;
+    transform-origin: top center;
+    border-color: var(--ec-studio-line-strong);
+    box-shadow: 0 22px 64px rgb(15 23 42 / .14), 0 2px 7px rgb(15 23 42 / .07);
+  }
+
+  /* Inspector ----------------------------------------------------------- */
+  .electrocms-app[data-editor-preset="studio-pro"] .canvas-inspector-dock {
+    @apply min-h-0 min-w-0 overflow-hidden border-0 border-l shadow-none;
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-v2 {
+    @apply h-full w-full rounded-none border-0 p-0 shadow-none;
+    background: var(--color-ec-surface);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-header-v2 {
+    @apply min-h-[58px] border-b px-3 py-2.5;
+    border-color: var(--ec-studio-line);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-header-v2 strong {
+    @apply text-xs font-semibold;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-tabs {
+    @apply m-0 min-h-12 gap-1 rounded-none border-0 border-b px-2 py-1.5;
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-tabs button {
+    @apply min-h-9 rounded-md border border-transparent text-[10px] font-semibold;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-tabs button[data-active="true"] {
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface-subtle);
+    color: var(--color-ec-accent);
+    box-shadow: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-scroll {
+    @apply px-3 pb-6 pt-1;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-section,
+  .electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-disclosure {
+    @apply rounded-none border-0 border-b bg-transparent py-3 shadow-none;
+    border-color: var(--ec-studio-line);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-disclosure-trigger {
+    @apply min-h-9 rounded-md px-1 text-[10px] font-semibold;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-disclosure-trigger:hover {
+    background: var(--color-ec-surface-muted);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-field {
+    @apply grid grid-cols-1 gap-1.5 text-[10px];
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-field input:not([type="checkbox"]),
+  .electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-field select,
+  .electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-field textarea {
+    @apply min-h-9 w-full rounded-md border px-2.5 text-[11px];
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface-subtle);
+    color: var(--color-ec-text);
+  }
+
+  /* Common workspace surfaces ----------------------------------------- */
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio [role="tablist"] {
+    @apply max-w-full overflow-x-auto [scrollbar-width:none];
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio [role="tab"] {
+    @apply min-h-9 rounded-md border border-transparent;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio [role="tab"][aria-selected="true"] {
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface);
+    color: var(--color-ec-text);
+    box-shadow: 0 1px 2px rgb(15 23 42 / .06);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .project-theme-controls,
+  .electrocms-app[data-editor-preset="studio-pro"] .ec-panel {
+    @apply rounded-xl border shadow-none;
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface);
+  }
+
+  /* Mobile builder dock and sheets ------------------------------------ */
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock {
+    @apply absolute right-2 bottom-2 left-2 z-30 grid grid-cols-4 gap-1 rounded-2xl border p-1.5;
+    padding-bottom: max(.375rem, env(safe-area-inset-bottom));
+    border-color: var(--ec-studio-line);
+    background: color-mix(in srgb, var(--color-ec-surface) 96%, transparent);
+    box-shadow: 0 12px 38px rgb(15 23 42 / .16);
+    backdrop-filter: blur(16px) saturate(1.08);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button {
+    @apply flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl border border-transparent px-1 text-[9px] font-semibold transition-colors;
+    color: var(--color-ec-text-muted);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button[aria-pressed="true"] {
+    border-color: color-mix(in srgb, var(--color-ec-accent) 22%, var(--ec-studio-line));
+    background: var(--color-ec-accent-soft);
+    color: var(--color-ec-accent);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-canvas-sheet {
+    @apply absolute inset-0 z-40 flex items-end justify-center bg-slate-950/30;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-panel,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-canvas-sheet-panel {
+    @apply flex w-full max-w-[760px] flex-col overflow-hidden rounded-t-2xl border border-b-0 shadow-2xl;
+    max-height: min(76dvh, 680px);
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface);
+    box-shadow: var(--ec-studio-float);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-sheet-header {
+    @apply relative flex min-h-16 shrink-0 items-center gap-3 border-b px-4 py-2;
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-sheet-handle {
+    @apply absolute top-1.5 left-1/2 h-1 w-10 -translate-x-1/2 rounded-full;
+    background: var(--color-ec-border);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-sheet-header > div {
+    @apply min-w-0 flex-1 pt-1;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-sheet-header strong {
+    @apply block truncate text-sm font-semibold;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-sheet-header small {
+    @apply mt-0.5 block truncate text-[10px];
+    color: var(--color-ec-text-muted);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-sheet-header button {
+    @apply grid size-12 shrink-0 place-items-center rounded-xl border transition-colors;
+    border-color: var(--ec-studio-line);
+    color: var(--color-ec-text-muted);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-sheet-header button:hover {
+    background: var(--color-ec-surface-muted);
+    color: var(--color-ec-text);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-content,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-sheet-content,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-inspector-content {
+    @apply min-h-0 flex-1 overflow-hidden;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-content .builder-context-panel {
+    @apply h-full w-full min-w-0 border-0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-content .builder-context-tabs button,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-content .builder-page-row {
+    @apply min-h-12;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-layers-content .canvas-layers-popover {
+    @apply static h-full w-full max-w-none rounded-none border-0 shadow-none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-layers-content .canvas-layers-tree {
+    max-height: none;
+    height: calc(100% - 58px);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-inspector-content {
+    @apply border-0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-inspector-content .widget-inspector-tabs button,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-inspector-content .widget-inspector-disclosure-trigger,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-inspector-content .widget-inspector-field input:not([type="checkbox"]),
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-inspector-content .widget-inspector-field select {
+    @apply min-h-12;
+  }
+}
+
+/* Desktop builder geometry: reference-like rail / navigator / canvas / inspector. */
+@media (min-width: 961px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .studio-context-bar,
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .builder-document-bar {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .studio-pro-builder {
+    display: grid;
+    grid-template-columns: clamp(276px, 20vw, 304px) minmax(0, 1fr);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .builder-context-panel {
+    grid-column: 1;
+    width: auto;
+    min-width: 0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .studio-editor-region {
+    grid-column: 2;
+    min-width: 0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .editor-canvas-v2 {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(318px, 23vw, 344px);
+    grid-template-rows: 52px minmax(0, 1fr);
+    height: 100%;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .canvas-command-bar-v2 {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .canvas-stage-v2 {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .canvas-inspector-dock {
+    grid-column: 2;
+    grid-row: 1 / 3;
+  }
+}
+
+/* Compact shell: canvas-first. Pages/Add/Layers/Properties become sheets. */
+@media (max-width: 960px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder--mobile {
+    @apply block;
+    background: var(--ec-studio-canvas);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder--mobile > .studio-editor-region {
+    @apply h-full w-full;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .studio-context-bar {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder--mobile .editor-canvas-v2 {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100%;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder--mobile .canvas-command-bar-v2 {
+    grid-column: 1;
+    grid-row: 1;
+    @apply overflow-x-auto border-r-0 [scrollbar-width:none];
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder--mobile .canvas-stage-v2 {
+    grid-column: 1;
+    grid-row: 2;
+    scrollbar-gutter: auto;
+    padding: 18px 12px 112px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder--mobile .canvas-command-cluster--insert {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder--mobile .canvas-command-bar-v2 button,
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder--mobile .canvas-command-bar-v2 select,
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder--mobile .canvas-geometry-controls input {
+    @apply h-12 min-h-12;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder--mobile .editor-canvas-v2[data-selection-count="0"] > .canvas-command-bar-v2 {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-navigation-drawer .studio-rail {
+    @apply h-full w-full min-w-0 max-w-none border-0 p-0;
+    background: var(--color-ec-surface);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-navigation-drawer .studio-rail-button {
+    @apply min-h-12;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-compact="true"] .workspace-settings-popover {
+    @apply absolute right-2 bottom-14 left-2 m-0 w-auto overflow-y-auto;
+    max-height: min(60dvh, 480px);
+  }
+}
+
+/* Phone header: one simple row, not a squeezed desktop toolbar. */
+@media (max-width: 720px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .app-header {
+    @apply grid h-[60px] min-h-[60px] grid-cols-[48px_minmax(0,1fr)_auto] grid-rows-1 gap-1 px-1.5 py-1.5;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-project {
+    @apply contents;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-project > button[aria-label="Open navigation"] {
+    @apply col-start-1 row-start-1 size-12;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-project .brand-mark,
+  .electrocms-app[data-editor-preset="studio-pro"] .project-identity {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls {
+    @apply col-start-2 row-start-1 min-h-12 w-full overflow-hidden p-0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > div:first-child {
+    @apply h-12 min-h-12 w-full flex-1 border-0 bg-transparent p-0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > div:first-child > span,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls .breakpoint-field,
+  .electrocms-app[data-editor-preset="studio-pro"] .zoom-control,
+  .electrocms-app[data-editor-preset="studio-pro"] .history-control,
+  .electrocms-app[data-editor-preset="studio-pro"] .theme-field {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls .compact-field,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls .compact-field select {
+    @apply h-12 w-full min-w-0 max-w-none rounded-lg border-0 bg-transparent px-2 text-xs;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions {
+    @apply col-start-3 row-start-1 ml-0 gap-0.5;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions button {
+    @apply size-12 min-h-12 px-0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-document-bar {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock {
+    @apply right-1.5 bottom-1.5 left-1.5;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button {
+    min-height: 52px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder--mobile .canvas-stage-v2 {
+    padding: 10px 6px 112px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-panel,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-canvas-sheet-panel {
+    max-height: min(78dvh, 680px);
+  }
+}
+
+@media (max-width: 420px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions button:first-child {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-sheet-header {
+    @apply px-3;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .electrocms-app[data-editor-preset="studio-pro"] :where(button, summary):hover:not(:disabled) svg {
+    transform: translateY(-1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .electrocms-app[data-editor-preset="studio-pro"] *,
+  .electrocms-app[data-editor-preset="studio-pro"] *::before,
+  .electrocms-app[data-editor-preset="studio-pro"] *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .electrocms-app[data-editor-preset="studio-pro"] {
+    --ec-studio-line: var(--color-ec-text-muted);
+    --ec-studio-line-strong: var(--color-ec-text);
+  }
+}
+
+@media (forced-colors: active) {
+  .electrocms-app[data-editor-preset="studio-pro"] :where(button, summary, input, select, textarea, [role="tab"]) {
+    border: 1px solid ButtonText;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] :where(button, summary, a, input, select, textarea):focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
