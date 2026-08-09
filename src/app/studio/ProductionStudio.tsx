@@ -253,10 +253,6 @@ function BuilderWorkspace({ compactLayout }: { compactLayout: boolean }) {
   const breakpoint = session.project.breakpoints.find((candidate) => candidate.id === session.activeBreakpointId);
 
   useEffect(() => {
-    if (!compactLayout) setMobilePanel(null);
-  }, [compactLayout]);
-
-  useEffect(() => {
     if (!compactLayout || mobilePanel === null) return undefined;
     const closeOnEscape = (event: globalThis.KeyboardEvent) => {
       if (event.key === 'Escape') setMobilePanel(null);
@@ -297,7 +293,7 @@ function BuilderWorkspace({ compactLayout }: { compactLayout: boolean }) {
 }
 
 function EditorModuleWorkspace({ module, onOpenBuilder, compactLayout }: { module: EditorModuleId; onOpenBuilder(): void; compactLayout: boolean }) {
-  if (module === 'builder') return <BuilderWorkspace compactLayout={compactLayout} />;
+  if (module === 'builder') return <BuilderWorkspace key={compactLayout ? 'compact-builder' : 'desktop-builder'} compactLayout={compactLayout} />;
   if (module === 'pages') return <PagesAssetsWorkspace key="pages" initialView="pages" onOpenBuilder={onOpenBuilder} />;
   if (module === 'media') return <PagesAssetsWorkspace key="media" initialView="assets" onOpenBuilder={onOpenBuilder} />;
   if (module === 'content') return <DynamicContentWorkspace key="content" initialResource="content-types" />;
