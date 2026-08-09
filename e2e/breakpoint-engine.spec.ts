@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
-async function chooseBreakpoint(page: Parameters<typeof test>[0] extends never ? never : any, id: string) {
+async function chooseBreakpoint(page: Page, id: string) {
   await page.locator(`.header-breakpoint-button[data-breakpoint-id="${id}"]`).click();
 }
 
