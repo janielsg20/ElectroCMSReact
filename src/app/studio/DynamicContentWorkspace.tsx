@@ -4,6 +4,7 @@ import { Icon, type IconName } from '../components/Icon';
 import { useProjectSession } from '../project/project-session-context';
 import { CapabilityStatus } from './CapabilityStatus';
 import { ContentTypesCrudPanel } from './ContentTypesCrudPanel';
+import { FieldGroupsCrudPanel } from './FieldGroupsCrudPanel';
 import { TaxonomiesCrudPanel } from './TaxonomiesCrudPanel';
 
 type DynamicResourceKind =
@@ -77,7 +78,7 @@ export function DynamicContentWorkspace({ initialResource = 'content-types' }: D
 
   const definition = resources.find((candidate) => candidate.id === resource) ?? resources[0]!;
   const entries = useMemo(() => {
-    if (resource === 'content-types' || resource === 'taxonomies') return [];
+    if (resource === 'content-types' || resource === 'taxonomies' || resource === 'field-groups') return [];
     const normalized = query.trim().toLowerCase();
     return Object.entries(source)
       .map(([id, value]) => ({ id, value, name: asDisplayName(id, value) }))
@@ -94,7 +95,9 @@ export function DynamicContentWorkspace({ initialResource = 'content-types' }: D
     ? { aria: 'Content Types CRUD enabled', icon: 'database' as IconName }
     : resource === 'taxonomies'
       ? { aria: 'Taxonomies CRUD enabled', icon: 'filter' as IconName }
-      : null;
+      : resource === 'field-groups'
+        ? { aria: 'Field Groups CRUD enabled', icon: 'form' as IconName }
+        : null;
 
   return (
     <section className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-ec-app)]" aria-label="Dynamic Content Studio">
@@ -129,6 +132,8 @@ export function DynamicContentWorkspace({ initialResource = 'content-types' }: D
             <ContentTypesCrudPanel query={query} />
           ) : resource === 'taxonomies' ? (
             <TaxonomiesCrudPanel query={query} />
+          ) : resource === 'field-groups' ? (
+            <FieldGroupsCrudPanel query={query} />
           ) : (
             <div className="grid min-h-0 h-full gap-3 lg:grid-cols-[minmax(0,1fr)_340px]">
               <div className="min-h-0 overflow-y-auto">
