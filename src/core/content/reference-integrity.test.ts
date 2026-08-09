@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createCanonicalProject } from '../project';
+import { createCanonicalProject, type CanonicalProject } from '../project';
 import {
   createContentFieldTypeRegistry,
   createContentRecord,
@@ -16,7 +16,6 @@ import {
   removeRelation,
   updateRelation,
   validateContentRecordDefinition,
-  type CanonicalProject,
 } from './index';
 
 const NOW = '2026-08-08T12:00:00.000Z';
