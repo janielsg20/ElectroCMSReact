@@ -41,6 +41,7 @@ export type IconName =
   | 'list'
   | 'code'
   | 'check'
+  | 'trash'
   | 'more';
 
 const paths: Record<IconName, React.ReactNode> = {
@@ -84,6 +85,7 @@ const paths: Record<IconName, React.ReactNode> = {
   list: <><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></>,
   code: <path d="m8 9-4 3 4 3M16 9l4 3-4 3M14 5l-4 14" />,
   check: <path d="m5 12 4 4L19 6" />,
+  trash: <><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13"/><path d="M10 11v5M14 11v5"/></>,
   more: <path d="M5 12h.01M12 12h.01M19 12h.01" />,
 };
 
