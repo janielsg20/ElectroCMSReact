@@ -63,14 +63,14 @@ function projectWithRecords(): CanonicalProject {
   return project;
 }
 
-function node(bindings: DocumentNode['bindings']): DocumentNode {
+function node(bindings?: DocumentNode['bindings']): DocumentNode {
   return {
     id: 'node_heading',
     type: 'core/heading',
     version: 1,
     props: { text: 'Static heading', href: '#', src: '', items: [] },
     styles: {},
-    bindings,
+    ...(bindings === undefined ? {} : { bindings }),
     children: [],
   };
 }
