@@ -3,14 +3,17 @@ import {
   createContentRecord as createCanonicalContentRecord,
   createContentType as createCanonicalContentType,
   createFieldGroup as createCanonicalFieldGroup,
+  createRelation as createCanonicalRelation,
   createTaxonomy as createCanonicalTaxonomy,
   removeContentRecord as removeCanonicalContentRecord,
   removeContentType as removeCanonicalContentType,
   removeFieldGroup as removeCanonicalFieldGroup,
+  removeRelation as removeCanonicalRelation,
   removeTaxonomy as removeCanonicalTaxonomy,
   updateContentRecord as updateCanonicalContentRecord,
   updateContentType as updateCanonicalContentType,
   updateFieldGroup as updateCanonicalFieldGroup,
+  updateRelation as updateCanonicalRelation,
   updateTaxonomy as updateCanonicalTaxonomy,
 } from '../../core/content';
 import {
@@ -46,6 +49,7 @@ import {
   type ProjectSaveState,
   type ProjectSessionState,
   type ProjectThemeResourceApplyResult,
+  type RelationSessionMutationResult,
   type TaxonomySessionMutationResult,
 } from './project-session-context';
 
@@ -127,16 +131,9 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
 
     const unsubscribe = resolvedPersistence.subscribe((event) => {
       if (cancelled) return;
-      if (event.state === 'saving') {
-        setSaveState('saving');
-        return;
-      }
-      if (event.state === 'error') {
-        setSaveState('error');
-        return;
-      }
+      if (event.state === 'saving') { setSaveState('saving'); return; }
+      if (event.state === 'error') { setSaveState('error'); return; }
       if (!event.project) return;
-
       const current = projectRef.current;
       const contentWasSaved = projectContentFingerprint(current) === projectContentFingerprint(event.project);
       const merged = mergeSavedMetadata(current, event.project);
@@ -144,26 +141,21 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
       setSaveState(contentWasSaved ? 'saved' : 'dirty');
     });
 
-    void resolvedPersistence
-      .hydrate(initialSessionProject)
-      .then((hydrated) => {
-        if (cancelled) return;
-        commitProject(hydrated);
-        setActiveDocumentIdState(hydrated.documentOrder[0] ?? '');
-        setActiveBreakpointIdState(hydrated.breakpoints[0]?.id ?? 'desktop');
-        setHistoryByDocument({});
-        setSaveState('saved');
-      })
-      .catch(() => {
-        if (!cancelled) setSaveState('error');
-      });
+    void resolvedPersistence.hydrate(initialSessionProject).then((hydrated) => {
+      if (cancelled) return;
+      commitProject(hydrated);
+      setActiveDocumentIdState(hydrated.documentOrder[0] ?? '');
+      setActiveBreakpointIdState(hydrated.breakpoints[0]?.id ?? 'desktop');
+      setHistoryByDocument({});
+      setSaveState('saved');
+    }).catch(() => {
+      if (!cancelled) setSaveState('error');
+    });
 
     const flushIfHidden = () => {
       if (document.visibilityState === 'hidden') void resolvedPersistence.flush();
     };
-    const flushOnPageHide = () => {
-      void resolvedPersistence.flush();
-    };
+    const flushOnPageHide = () => { void resolvedPersistence.flush(); };
     document.addEventListener('visibilitychange', flushIfHidden);
     globalThis.addEventListener('pagehide', flushOnPageHide);
 
@@ -208,18 +200,14 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
   const applyThemePackageResources = useCallback((resources: ProjectThemePackageResources | undefined, selection: ThemePackageResourceSelection): ProjectThemeResourceApplyResult => {
     const result = mergeThemePackageResources(projectRef.current, resources, selection);
     if (!result.ok) return { ok: false, message: result.message };
-    if (result.changed) {
-      commitProject(result.project);
-      queueAutosave(result.project);
-    }
+    if (result.changed) { commitProject(result.project); queueAutosave(result.project); }
     return { ok: true, report: result.report, changed: result.changed };
   }, [commitProject, queueAutosave]);
 
   const createContentType = useCallback((input: unknown): ContentTypeSessionMutationResult => {
     const result = createCanonicalContentType(projectRef.current, input);
     if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
-    commitProject(result.project);
-    queueAutosave(result.project);
+    commitProject(result.project); queueAutosave(result.project);
     return { ok: true, value: result.value, changed: true };
   }, [commitProject, queueAutosave]);
 
@@ -227,26 +215,21 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
     const result = updateCanonicalContentType(projectRef.current, id, input);
     if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
     const changed = JSON.stringify(projectRef.current.contentTypes[id]) !== JSON.stringify(result.project.contentTypes[id]);
-    if (changed) {
-      commitProject(result.project);
-      queueAutosave(result.project);
-    }
+    if (changed) { commitProject(result.project); queueAutosave(result.project); }
     return { ok: true, value: result.value, changed };
   }, [commitProject, queueAutosave]);
 
   const removeContentType = useCallback((id: string): ContentTypeSessionMutationResult => {
     const result = removeCanonicalContentType(projectRef.current, id);
     if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
-    commitProject(result.project);
-    queueAutosave(result.project);
+    commitProject(result.project); queueAutosave(result.project);
     return { ok: true, value: result.value, changed: true };
   }, [commitProject, queueAutosave]);
 
   const createTaxonomy = useCallback((input: unknown): TaxonomySessionMutationResult => {
     const result = createCanonicalTaxonomy(projectRef.current, input);
     if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
-    commitProject(result.project);
-    queueAutosave(result.project);
+    commitProject(result.project); queueAutosave(result.project);
     return { ok: true, value: result.value, changed: true };
   }, [commitProject, queueAutosave]);
 
@@ -254,26 +237,43 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
     const result = updateCanonicalTaxonomy(projectRef.current, id, input);
     if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
     const changed = JSON.stringify(projectRef.current.taxonomies[id]) !== JSON.stringify(result.project.taxonomies[id]);
-    if (changed) {
-      commitProject(result.project);
-      queueAutosave(result.project);
-    }
+    if (changed) { commitProject(result.project); queueAutosave(result.project); }
     return { ok: true, value: result.value, changed };
   }, [commitProject, queueAutosave]);
 
   const removeTaxonomy = useCallback((id: string): TaxonomySessionMutationResult => {
     const result = removeCanonicalTaxonomy(projectRef.current, id);
     if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
-    commitProject(result.project);
-    queueAutosave(result.project);
+    commitProject(result.project); queueAutosave(result.project);
+    return { ok: true, value: result.value, changed: true };
+  }, [commitProject, queueAutosave]);
+
+  const createRelation = useCallback((input: unknown): RelationSessionMutationResult => {
+    const result = createCanonicalRelation(projectRef.current, input);
+    if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
+    commitProject(result.project); queueAutosave(result.project);
+    return { ok: true, value: result.value, changed: true };
+  }, [commitProject, queueAutosave]);
+
+  const updateRelation = useCallback((id: string, input: unknown): RelationSessionMutationResult => {
+    const result = updateCanonicalRelation(projectRef.current, id, input);
+    if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
+    const changed = JSON.stringify(projectRef.current.relations[id]) !== JSON.stringify(result.project.relations[id]);
+    if (changed) { commitProject(result.project); queueAutosave(result.project); }
+    return { ok: true, value: result.value, changed };
+  }, [commitProject, queueAutosave]);
+
+  const removeRelation = useCallback((id: string): RelationSessionMutationResult => {
+    const result = removeCanonicalRelation(projectRef.current, id);
+    if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
+    commitProject(result.project); queueAutosave(result.project);
     return { ok: true, value: result.value, changed: true };
   }, [commitProject, queueAutosave]);
 
   const createFieldGroup = useCallback((input: unknown): FieldGroupSessionMutationResult => {
     const result = createCanonicalFieldGroup(projectRef.current, input);
     if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
-    commitProject(result.project);
-    queueAutosave(result.project);
+    commitProject(result.project); queueAutosave(result.project);
     return { ok: true, value: result.value, changed: true };
   }, [commitProject, queueAutosave]);
 
@@ -281,26 +281,21 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
     const result = updateCanonicalFieldGroup(projectRef.current, id, input);
     if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
     const changed = JSON.stringify(projectRef.current.fieldGroups[id]) !== JSON.stringify(result.project.fieldGroups[id]);
-    if (changed) {
-      commitProject(result.project);
-      queueAutosave(result.project);
-    }
+    if (changed) { commitProject(result.project); queueAutosave(result.project); }
     return { ok: true, value: result.value, changed };
   }, [commitProject, queueAutosave]);
 
   const removeFieldGroup = useCallback((id: string): FieldGroupSessionMutationResult => {
     const result = removeCanonicalFieldGroup(projectRef.current, id);
     if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
-    commitProject(result.project);
-    queueAutosave(result.project);
+    commitProject(result.project); queueAutosave(result.project);
     return { ok: true, value: result.value, changed: true };
   }, [commitProject, queueAutosave]);
 
   const createContentRecord = useCallback((input: unknown): ContentRecordSessionMutationResult => {
     const result = createCanonicalContentRecord(projectRef.current, input);
     if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
-    commitProject(result.project);
-    queueAutosave(result.project);
+    commitProject(result.project); queueAutosave(result.project);
     return { ok: true, value: result.value, changed: true };
   }, [commitProject, queueAutosave]);
 
@@ -308,18 +303,14 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
     const result = updateCanonicalContentRecord(projectRef.current, id, input);
     if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
     const changed = JSON.stringify(projectRef.current.records[id]) !== JSON.stringify(result.project.records[id]);
-    if (changed) {
-      commitProject(result.project);
-      queueAutosave(result.project);
-    }
+    if (changed) { commitProject(result.project); queueAutosave(result.project); }
     return { ok: true, value: result.value, changed };
   }, [commitProject, queueAutosave]);
 
   const removeContentRecord = useCallback((id: string): ContentRecordSessionMutationResult => {
     const result = removeCanonicalContentRecord(projectRef.current, id);
     if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
-    commitProject(result.project);
-    queueAutosave(result.project);
+    commitProject(result.project); queueAutosave(result.project);
     return { ok: true, value: result.value, changed: true };
   }, [commitProject, queueAutosave]);
 
@@ -385,6 +376,9 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
     createTaxonomy,
     updateTaxonomy,
     removeTaxonomy,
+    createRelation,
+    updateRelation,
+    removeRelation,
     createFieldGroup,
     updateFieldGroup,
     removeFieldGroup,
@@ -403,6 +397,7 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
     createContentRecord,
     createContentType,
     createFieldGroup,
+    createRelation,
     createTaxonomy,
     executeDocumentCommand,
     project,
@@ -410,6 +405,7 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
     removeContentRecord,
     removeContentType,
     removeFieldGroup,
+    removeRelation,
     removeTaxonomy,
     saveState,
     setActiveBreakpointId,
@@ -420,6 +416,7 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
     updateContentRecord,
     updateContentType,
     updateFieldGroup,
+    updateRelation,
     updateTaxonomy,
     zoom,
   ]);
