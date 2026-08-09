@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { useProjectSession } from '../project/project-session-context';
 import { useDocumentHistoryShortcuts } from '../project/use-document-history-shortcuts';
 import type { WorkspaceId } from '../routing/workspaces';
@@ -26,15 +27,60 @@ const appearanceModes: readonly { id: AppearanceMode; label: string; icon: IconN
   { id: 'auto', label: 'System', icon: 'system' },
 ];
 
-const selectClass = 'header-select min-w-0 bg-transparent px-2 text-[11px] font-semibold text-[var(--color-ec-text)] outline-none';
 const iconButtonClass = 'header-icon-button ec-focus-ring group inline-grid size-8 shrink-0 place-items-center text-[var(--color-ec-text-muted)] hover:text-[var(--color-ec-text)] max-[720px]:size-11';
 const segmentButtonClass = 'header-segment-button ec-focus-ring group grid size-7 place-items-center text-[var(--color-ec-text-muted)] transition-colors hover:bg-[var(--color-ec-surface-muted)] hover:text-[var(--color-ec-text)] disabled:cursor-not-allowed disabled:opacity-30';
+
+function breakpointIcon(width: number): IconName {
+  if (width >= 1100) return 'desktop';
+  if (width >= 700) return 'tablet';
+  return 'mobile';
+}
 
 export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, onNavigate }: AppHeaderProps) {
   const session = useProjectSession();
   const { preferences, setEditorThemeMode } = useWorkspacePreferences();
+  const [pageMenuOpen, setPageMenuOpen] = useState(false);
+  const pageMenuRef = useRef<HTMLDivElement>(null);
+  const pageTriggerRef = useRef<HTMLButtonElement>(null);
   const activeDocument = session.project.documents[session.activeDocumentId];
   useDocumentHistoryShortcuts(session.undo, session.redo);
+
+  useEffect(() => {
+    if (!pageMenuOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Node && !pageMenuRef.current?.contains(target)) {
+        setPageMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      setPageMenuOpen(false);
+      pageTriggerRef.current?.focus();
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [pageMenuOpen]);
+
+  const focusPageOption = (index: number) => {
+    const options = [...(pageMenuRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? [])];
+    if (options.length === 0) return;
+    const nextIndex = (index + options.length) % options.length;
+    options[nextIndex]?.focus();
+  };
+
+  const openPageMenuAndFocus = (index: number) => {
+    setPageMenuOpen(true);
+    requestAnimationFrame(() => focusPageOption(index));
+  };
 
   return (
     <header className="app-header" data-testid="app-header">
@@ -66,37 +112,97 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
 
       <div className="header-controls" role="toolbar" aria-label="Editor controls">
         <div className="header-document-group" role="group" aria-label="Document and breakpoint">
-          <span className="header-control-icon" aria-hidden="true"><Icon name="pages" size={14} /></span>
-          <label className="compact-field header-document-field">
-            <span className="sr-only">Active document</span>
-            <select
-              className={`${selectClass} header-document-select`}
+          <div className="header-page-picker" ref={pageMenuRef}>
+            <button
+              ref={pageTriggerRef}
+              className="header-page-trigger ec-focus-ring"
+              type="button"
               aria-label="Active document"
-              value={session.activeDocumentId}
-              onChange={(event) => session.setActiveDocumentId(event.target.value)}
+              aria-haspopup="listbox"
+              aria-expanded={pageMenuOpen}
+              aria-controls="header-page-menu"
+              onClick={() => setPageMenuOpen((open) => !open)}
+              onKeyDown={(event) => {
+                if (event.key === 'ArrowDown') {
+                  event.preventDefault();
+                  openPageMenuAndFocus(0);
+                }
+                if (event.key === 'ArrowUp') {
+                  event.preventDefault();
+                  openPageMenuAndFocus(-1);
+                }
+              }}
             >
-              {session.project.documentOrder.map((documentId) => {
-                const document = session.project.documents[documentId];
-                return document ? <option key={document.id} value={document.id}>{document.name}</option> : null;
-              })}
-            </select>
-          </label>
+              <span className="header-control-icon" aria-hidden="true"><Icon name="pages" size={14} /></span>
+              <span className="header-page-name">{activeDocument?.name ?? 'No page'}</span>
+              <Icon name="arrow-down" size={12} className="header-page-chevron" />
+            </button>
+
+            {pageMenuOpen ? (
+              <div id="header-page-menu" className="header-page-menu" role="listbox" aria-label="Pages">
+                <div className="header-menu-label">Pages</div>
+                <div className="header-page-options">
+                  {session.project.documentOrder.map((documentId, index) => {
+                    const document = session.project.documents[documentId];
+                    if (!document) return null;
+                    const selected = document.id === session.activeDocumentId;
+                    return (
+                      <button
+                        key={document.id}
+                        className="header-page-option ec-focus-ring"
+                        type="button"
+                        role="option"
+                        aria-selected={selected}
+                        onClick={() => {
+                          session.setActiveDocumentId(document.id);
+                          setPageMenuOpen(false);
+                          pageTriggerRef.current?.focus();
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === 'ArrowDown') {
+                            event.preventDefault();
+                            focusPageOption(index + 1);
+                          } else if (event.key === 'ArrowUp') {
+                            event.preventDefault();
+                            focusPageOption(index - 1);
+                          } else if (event.key === 'Home') {
+                            event.preventDefault();
+                            focusPageOption(0);
+                          } else if (event.key === 'End') {
+                            event.preventDefault();
+                            focusPageOption(session.project.documentOrder.length - 1);
+                          }
+                        }}
+                      >
+                        <span className="header-page-option-icon" aria-hidden="true"><Icon name="pages" size={13} /></span>
+                        <span className="header-page-option-name">{document.name}</span>
+                        {selected ? <Icon name="check" size={13} className="header-page-option-check" /> : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+          </div>
 
           <span className="header-control-divider" aria-hidden="true" />
 
-          <label className="compact-field breakpoint-field">
-            <span className="sr-only">Preview breakpoint</span>
-            <select
-              className={`${selectClass} header-breakpoint-select`}
-              aria-label="Preview breakpoint"
-              value={session.activeBreakpointId}
-              onChange={(event) => session.setActiveBreakpointId(event.target.value)}
-            >
-              {session.project.breakpoints.map((breakpoint) => (
-                <option key={breakpoint.id} value={breakpoint.id}>{breakpoint.label} · {breakpoint.width}px</option>
-              ))}
-            </select>
-          </label>
+          <div className="header-breakpoint-picker" role="group" aria-label="Preview breakpoint">
+            {session.project.breakpoints.map((breakpoint) => (
+              <button
+                key={breakpoint.id}
+                className="header-breakpoint-button ec-focus-ring"
+                type="button"
+                aria-label={`${breakpoint.label} breakpoint ${breakpoint.width}px`}
+                aria-pressed={session.activeBreakpointId === breakpoint.id}
+                title={`${breakpoint.label} · ${breakpoint.width}px`}
+                onClick={() => session.setActiveBreakpointId(breakpoint.id)}
+              >
+                <Icon name={breakpointIcon(breakpoint.width)} size={14} />
+                <span className="header-breakpoint-width">{breakpoint.width}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="segmented-control zoom-control" role="group" aria-label="Canvas zoom">
