@@ -1,0 +1,399 @@
+/* App header fidelity layer -------------------------------------------------
+ * Matches the supplied editor reference: one continuous top bar, compact flat
+ * controls, monochrome utilities, and one saturated primary action.
+ */
+
+.electrocms-app[data-editor-preset="studio-pro"] .app-header {
+  position: relative;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: minmax(210px, 248px) minmax(420px, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 64px;
+  min-height: 64px;
+  padding: 0 12px;
+  border: 0;
+  border-bottom: 1px solid var(--ec-studio-line);
+  border-radius: 0;
+  background: var(--color-ec-surface);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-project {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .brand-mark {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--ec-studio-line);
+  border-radius: 4px;
+  background: var(--color-ec-surface);
+  color: var(--color-ec-text);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .project-identity {
+  min-width: 0;
+  line-height: 1.1;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .project-title-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .project-name {
+  display: block;
+  overflow: hidden;
+  max-width: 170px;
+  color: var(--color-ec-text);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: -.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .project-local-label {
+  color: var(--color-ec-text-muted);
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .save-state {
+  display: flex;
+  margin-top: 4px;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-ec-text-muted);
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .save-dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-controls {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 0;
+  scrollbar-width: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-controls::-webkit-scrollbar {
+  display: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-document-group,
+.electrocms-app[data-editor-preset="studio-pro"] .segmented-control,
+.electrocms-app[data-editor-preset="studio-pro"] .appearance-toggle {
+  display: flex;
+  height: 34px;
+  min-height: 34px;
+  flex: none;
+  align-items: center;
+  border: 1px solid var(--ec-studio-line);
+  border-radius: 4px;
+  background: var(--color-ec-surface);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-document-group {
+  min-width: 300px;
+  max-width: 430px;
+  flex: 0 1 430px;
+  padding: 0 3px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-control-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  place-items: center;
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-document-field {
+  min-width: 0;
+  flex: 1 1 170px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-select {
+  height: 30px;
+  min-height: 30px;
+  border: 0;
+  border-radius: 3px;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-document-select {
+  width: 100%;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-select {
+  width: 148px;
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-control-divider,
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions-divider {
+  width: 1px;
+  height: 18px;
+  flex: none;
+  background: var(--ec-studio-line);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .segmented-control {
+  padding: 2px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-segment-button {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-zoom-output {
+  min-width: 40px;
+  padding: 0 4px;
+  color: var(--color-ec-text);
+  font-size: 10px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .appearance-toggle {
+  gap: 1px;
+  padding: 2px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions .appearance-toggle .appearance-toggle-button {
+  display: grid !important;
+  width: 28px !important;
+  min-width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  place-items: center;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 3px !important;
+  background: transparent !important;
+  color: var(--color-ec-text-muted) !important;
+  box-shadow: none !important;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .appearance-toggle-button span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions .appearance-toggle .appearance-toggle-button:hover {
+  background: var(--color-ec-surface-subtle) !important;
+  color: var(--color-ec-text) !important;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions .appearance-toggle .appearance-toggle-button[aria-pressed="true"] {
+  background: var(--color-ec-surface-muted) !important;
+  color: var(--color-ec-text) !important;
+  box-shadow: inset 0 0 0 1px var(--ec-studio-line-strong) !important;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-preview-button,
+.electrocms-app[data-editor-preset="studio-pro"] .header-publish-button {
+  display: inline-flex;
+  height: 34px;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-preview-button {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-ec-text-muted);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-preview-button:hover {
+  border-color: var(--ec-studio-line);
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-publish-button,
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions .header-publish-button:last-child {
+  border: 1px solid #1f57cf;
+  background: #2563eb;
+  color: #fff;
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-publish-button:hover,
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions .header-publish-button:last-child:hover {
+  background: #1f59d7;
+  color: #fff;
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-icon-button {
+  border: 1px solid var(--ec-studio-line);
+  border-radius: 4px;
+  background: var(--color-ec-surface);
+  box-shadow: none;
+}
+
+@media (max-width: 1180px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .app-header {
+    grid-template-columns: minmax(190px, 220px) minmax(330px, 1fr) auto;
+    gap: 8px;
+    padding-inline: 9px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-document-group {
+    min-width: 270px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-select {
+    width: 132px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .project-local-label {
+    display: none;
+  }
+}
+
+@media (max-width: 960px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .app-header {
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    gap: 6px;
+    height: 60px;
+    min-height: 60px;
+    padding: 0 8px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-project {
+    width: 48px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-document-group {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    height: 40px;
+    min-height: 40px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .appearance-toggle {
+    height: 40px;
+    min-height: 40px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions .appearance-toggle .appearance-toggle-button {
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-preview-button,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-publish-button {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-preview-button span,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-publish-button span {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions-divider {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .header-preview-button {
+    display: none !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .appearance-toggle .appearance-system {
+    display: none !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions .appearance-toggle > button:first-child {
+    display: grid !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .appearance-toggle {
+    width: 76px;
+    justify-content: center;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions {
+    gap: 5px;
+  }
+}
+
+@media (max-width: 420px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .appearance-toggle {
+    width: 68px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions .appearance-toggle .appearance-toggle-button {
+    width: 30px !important;
+    min-width: 30px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+  }
+}
