@@ -1,0 +1,91 @@
+/*
+ * ElectroCMS — reference builder geometry corrections
+ * Keeps the single Bento High Density theme aligned to the visual-builder
+ * reference after legacy/global style layers have been applied.
+ */
+
+/* Desktop authoring geometry: the navigator and editor must share one origin. */
+@media (min-width: 961px) {
+  .electrocms-app[data-editor-preset="bento-high-density"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"]
+    .reference-builder-workspace {
+    display: grid;
+    grid-template-columns: var(--ec-builder-panel) minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"]
+    .reference-builder-workspace > .builder-context-panel,
+  .electrocms-app[data-editor-preset="bento-high-density"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"]
+    .reference-builder-workspace > .studio-editor-region {
+    grid-row: 1;
+    align-self: stretch;
+    min-height: 0;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    transform: none;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"]
+    .reference-builder-workspace > .builder-context-panel {
+    grid-column: 1;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"]
+    .reference-builder-workspace > .studio-editor-region {
+    grid-column: 2;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"]
+    .studio-context-bar,
+  .electrocms-app[data-editor-preset="bento-high-density"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"]
+    .builder-document-bar {
+    display: none !important;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"]
+    .studio-editor-region > .editor-canvas-v2 {
+    flex: 1 1 auto;
+    align-self: stretch;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* Compact Builder: a 44px target needs enough parent height after padding. */
+@media (max-width: 720px) {
+  .electrocms-app[data-editor-preset="bento-high-density"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"]
+    .builder-context-tabs {
+    height: 56px;
+    min-height: 56px;
+    padding: 6px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"]
+    .builder-context-tabs > button[role="tab"] {
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .electrocms-app[data-editor-preset="bento-high-density"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"]
+    .canvas-command-bar-v2 :is(button, select) {
+    height: 44px;
+    min-height: 44px;
+  }
+}
