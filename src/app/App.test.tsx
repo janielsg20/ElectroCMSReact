@@ -110,7 +110,13 @@ describe('ElectroCMS editor shell', () => {
     await user.click(screen.getByRole('button', { name: 'Insert container' }));
     expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
 
-    await waitFor(() => expect(persistence.flushNow()).resolves.toBeUndefined());
-    expect(screen.getByText('Saved locally')).toBeInTheDocument();
+    await persistence.flush();
+    await waitFor(() => expect(screen.getByText('Saved locally')).toBeInTheDocument());
+
+    const saved = await projects.load(project.id);
+    const document = saved?.documents[saved.documentOrder[0] ?? ''];
+    expect(Object.values(document?.nodes ?? {}).some((node) => node.type === 'core/container')).toBe(true);
+    expect(saved?.historyMetadata.revision).toBe(1);
+    expect((await recovery.list(project.id))).toHaveLength(1);
   });
 });
