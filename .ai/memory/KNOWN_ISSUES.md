@@ -1,7 +1,7 @@
 # KNOWN_ISSUES.md
 
 ## Blocking
-Ningún defecto funcional conocido bloquea el `main` actual después de MF-041. Último gate funcional completo: GitHub Actions #1528 PASS.
+Ningún defecto funcional conocido bloquea el `main` actual después de MF-042. Último gate funcional completo: GitHub Actions #1533 PASS.
 
 ## Environment
 - GitHub Actions es la autoridad para `npm ci`, lint, types, tests, coverage, build y Playwright.
@@ -10,19 +10,20 @@ Ningún defecto funcional conocido bloquea el `main` actual después de MF-041. 
 - Un runner cancelado no cuenta como evidencia verde.
 
 ## Current F05 scope boundaries
-- MF-037 Content Types, MF-038 Taxonomies, MF-039 Field Type Registry, MF-040 Custom Field Groups y MF-041 Records CRUD están integrados en Studio Pro.
-- MF-042 Advanced Fields es el próximo trabajo.
-- MF-043 Relations/reference fields sigue bloqueada hasta que MF-042 pase gate y merge.
-- No promover Relation/User/Taxonomy reference behavior durante MF-042 si el contrato histórico lo reserva a MF-043.
-- Dynamic Bindings MF-044 sigue bloqueado por MF-042/MF-043.
+- MF-037 a MF-042 están integrados en Studio Pro.
+- MF-043 Relations/reference fields es el próximo trabajo.
+- `core/relation`, `core/user` y `core/taxonomy` siguen modeled en el head actual; no presentarlos como funcionales hasta MF-043.
+- MF-044 Dynamic Bindings sigue bloqueado hasta que Relations esté verde e integrado.
 - Widgets dynamic/commerce/form/filter de F04 conservan estado modeled donde sus motores aún no existen.
 - Preview/Backend/Export deben mantener estados honestos para capacidades no implementadas.
 
-## Data integrity boundaries
-- Content Type deletion está bloqueado mientras Records o Taxonomies lo referencien.
-- Field Group deletion está bloqueado mientras Records o Taxonomies lo referencien.
-- Records solo pueden persistir valores de Field Groups seleccionados y campos conocidos; validation delega al FieldTypeRegistry.
-- El E2E de MF-041 verifica persistencia real en IndexedDB, no solo estado visual.
+## Advanced Field safety/integrity
+- Group/Repeater/Calculated/Conditional runtime usa v2; v1 histórico permanece modeled.
+- Profundidad reusable/nested máxima 8 y Repeater máximo 100 filas.
+- Calculated no ejecuta código; usa parser aritmético limitado.
+- Field Group deletion se bloquea por Taxonomy, Record o advanced group reference.
+- Field Group update se bloquea si invalida ancestors reusable o Records existentes directos/anidados.
+- E2E MF-042 verifica persistencia real en IndexedDB y rechazo atómico de cambio destructivo.
 
 ## Studio Pro
 - `studio-pro` es el único sistema visual del editor.
