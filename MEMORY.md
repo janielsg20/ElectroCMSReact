@@ -1,95 +1,71 @@
 # MEMORY.md — Memoria técnica durable
 
 ## Proyecto y quality contract
-ElectroCMS es un CMS visual local-first construido en React 19 + TypeScript strict + Vite. Tailwind CSS v4 está disponible para Studio Pro. Vitest cubre unit/integration y Playwright cubre E2E. GitHub Actions es el entorno oficial de verificación. No cerrar ni mergear trabajo con verify/lint/types/tests/coverage/E2E/build en rojo.
+ElectroCMS es un CMS visual local-first en React 19 + TypeScript strict + Vite. Studio Pro usa Tailwind CSS v4 donde corresponde. Vitest cubre unit/integration y Playwright E2E. GitHub Actions es la autoridad: no cerrar ni mergear con verify/lint/types/tests/coverage/E2E/build en rojo.
 
 ## Arquitectura durable
 - Domain → Application → Infrastructure → Presentation.
-- `CanonicalProject.schemaVersion = 1`.
-- El modelo canónico no depende de React/DOM.
-- Canvas/renderer es proyección, nunca fuente de verdad.
-- IndexedDB es el adapter web principal de persistencia local-first.
-- Widgets, project themes y Field Types se resuelven mediante registries explícitos y versionados.
-- Mutaciones de documentos usan comandos reversibles; mutaciones F05 usan APIs públicas de core expuestas por `ProjectSession`.
-- No crear stores paralelos para colecciones canónicas del proyecto.
+- `CanonicalProject.schemaVersion = 1`; modelo canónico independiente de React/DOM.
+- IndexedDB es el adapter web principal local-first.
+- Widgets, themes y Field Types se resuelven mediante registries explícitos/versionados.
+- Document edits usan comandos reversibles; recursos F05 usan APIs públicas de core a través de `ProjectSession`.
+- Colecciones canónicas del proyecto nunca tienen stores paralelos.
 
-## Routing y shell
-- Workspaces: Editor, Preview, Backend, Export.
-- `ProjectSessionProvider` permanece por encima del routing lógico.
-- El shell compacto se activa a 960px y es independiente de los breakpoints del proyecto generado.
-- Root horizontal overflow está prohibido.
-
-## Editor visual system vigente — Studio Pro
-ElectroCMS usa un único sistema visual para el editor: **`studio-pro`**.
-
-- `light` / `dark` / `auto` son modos de apariencia del mismo Studio Pro.
-- Frontend/backend project themes siguen siendo independientes y exportables.
-- Desktop: toolbar, rail compacto, Pages/Components, canvas dominante e inspector Properties/Design.
-- Compact/mobile: canvas-first con dock Pages/Add/Layers/Properties y sheets accesibles.
-- Browser zoom permanece habilitado.
-- UI legacy Bento/F05 no debe reintroducirse.
-
-## Canvas e inspector
-- `CanonicalDocument.nodes + children` es la única estructura persistente del canvas.
-- DnD hit geometry permanece estable durante el gesto.
-- Selection, guides, sheets y clipboard UI son transitorios.
-- Inspector es schema-driven y no duplica estado persistente.
-- `DocumentNode.styles` es la fuente responsive; herencia de breakpoints es nearest-first.
+## Studio Pro
+- Único sistema visual del editor: `studio-pro`.
+- `light`/`dark`/`auto` son modos del mismo Studio Pro; frontend/backend project themes son independientes.
+- Desktop conserva toolbar + rail + navegador + canvas + inspector; compact/mobile es canvas-first con dock/sheets accesibles.
+- No importar Bento ni UI/CSS histórica F05.
 
 ## F05 — Dynamic Content
-La fase actual se integra microfase por microfase sobre el `main` moderno. `agent/f05-dynamic-content` es solo fuente histórica de contratos/tests.
+`agent/f05-dynamic-content` es fuente histórica de contratos/tests, nunca base de merge.
 
 ### MF-037 Content Types — DONE
-- Canonical `project.contentTypes` es la única fuente.
-- CRUD validado por core y expuesto por `ProjectSession`.
-- Studio Pro CRUD + autosave + IndexedDB reload E2E.
-- PR #34; Quality Gate #1515 PASS; merge `748c6e61af114640a176665903b5f3bc0336ca07`.
+PR #34; Gate #1515; merge `748c6e61af114640a176665903b5f3bc0336ca07`.
 
 ### MF-038 Taxonomies — DONE
-- Taxonomy v1: id/labels/slug/description/hierarchy, Content Type associations, optional Field Groups/archive template.
-- Referencias validadas antes de mutar; IDs inmutables; duplicate IDs/slugs rechazados.
-- Studio Pro CRUD + autosave/reload E2E.
-- PR #41; Quality Gate #1517 PASS; merge `7cf28bb23d2825fd6174f90720fd80cbe0314666`.
+PR #41; Gate #1517; merge `7cf28bb23d2825fd6174f90720fd80cbe0314666`.
 
 ### MF-039 Field Type Registry — DONE
-- Core React-free por `type@version` con clones defensivos y migraciones explícitas.
-- 27 contratos builtin; 20 `available`, 7 `modeled` para runtime posterior.
-- Plugins externos pueden registrar tipos sin modificar el registry.
-- PR #42; Quality Gate #1519 PASS; merge `0db52d1c8db88b70a6ce5c6275f14803397c9691`.
+- Registry React-free por `type@version`, migraciones explícitas, plugins externos.
+- 27 built-ins: 20 `available`, 7 `modeled` antes de microfases avanzadas.
+- PR #42; Gate #1519; merge `0db52d1c8db88b70a6ce5c6275f14803397c9691`.
 
 ### MF-040 Custom Field Groups — DONE
-- `FieldGroupDefinition`/`CustomFieldDefinition` versionados y portables.
-- Orden de campos explícito; IDs y storage names únicos; Group ID inmutable.
-- Config/default values validados por el registry MF-039 usando `type@version`.
-- Solo los 20 tipos `available` son instanciables en MF-040; los 7 `modeled` siguen bloqueados.
-- Borrado bloqueado si una Taxonomy referencia el Field Group.
-- `ProjectSession` concentra create/update/remove y autosave.
-- Studio Pro `FieldGroupsCrudPanel` permite CRUD, ordenar campos, elegir tipos, editar metadatos/config/defaults y muestra límites de tipos modeled.
-- E2E demuestra persistencia completa entre recargas.
-- PR #44; Quality Gate #1524 PASS; merge `dcef1c3302c2520a1911884624fb059eef09f4c0`.
+- Field Groups/Custom Fields versionados, portables, ordenados y registry-driven.
+- Group ID inmutable; field IDs/storage names únicos.
+- Borrado bloqueado por Taxonomy.
+- Studio Pro CRUD + autosave/reload.
+- PR #44; Gate #1524; merge `dcef1c3302c2520a1911884624fb059eef09f4c0`.
+
+### MF-041 Records CRUD — DONE
+- `ContentRecordDefinition` v1: Content Type, status draft/published/archived, title/slug/excerpt/content, Field Groups/values, createdAt/updatedAt.
+- Record id y `createdAt` inmutables; slug único dentro del Content Type.
+- Defaults de Field Groups se normalizan; `required` sigue siendo obligatorio.
+- Valores custom se validan por `FieldTypeRegistry` usando `type@version` y config del campo.
+- Payloads de grupos no seleccionados/campos desconocidos se rechazan.
+- Field Group deletion se bloquea tanto por Taxonomy como por Record.
+- `ProjectSession` concentra Records CRUD + autosave.
+- Studio Pro `RecordsCrudPanel`: búsqueda, filtros CPT/status, supports-aware core fields, grupos, value controls y validación.
+- E2E comprueba IndexedDB real a través de create/reload/edit/archive/delete.
+- PR #46; Gate #1528; merge `2aa05132b7c8303071ec33936fff9ca1d1c14fa1`.
 
 ## Invariantes F05
-- Core content siempre React-free.
-- Colecciones de `CanonicalProject` son la única fuente persistente.
-- UI nunca muta directamente maps canónicos.
-- Validación + mutación + autosave deben permanecer atómicos a través de `ProjectSession`.
-- Comportamiento de Field Types se resuelve por `type@version`.
-- `modeled` no significa funcional.
-- No importar UI/CSS histórica de la rama legacy.
-- No avanzar de microfase con un gate rojo.
+- Core content React-free.
+- `CanonicalProject` es la única fuente persistente; UI no muta maps directamente.
+- Mutación + validación + autosave pasan por `ProjectSession`.
+- Field Types resuelven por `type@version`; `modeled` no significa funcional.
+- Content Type deletion se bloquea mientras Records/Taxonomies lo usen.
+- Field Group deletion se bloquea mientras Records/Taxonomies lo usen.
+- No adelantar Relations/reference fields de MF-043 durante MF-042.
+- No avanzar con un gate rojo.
 
 ## Accesibilidad durable
-- WCAG AA baseline.
-- focus-visible en controles keyboard-operable.
-- icon-only controls con accessible names.
-- no hover-only ni gesture-only functionality.
-- touch targets compactos >=48px.
-- reduced motion / increased contrast / forced colors soportados.
-- browser zoom habilitado.
+WCAG AA baseline, focus-visible, nombres accesibles en icon-only controls, sin hover/gesture-only, touch targets compactos >=48px, reduced motion/contrast/forced colors, browser zoom habilitado y sin root horizontal overflow.
 
 ## Trabajo actual
 - Fase: **F05 — Dynamic Content**.
-- Completado en la línea moderna: MF-037, MF-038, MF-039, MF-040.
-- Próxima microfase: **MF-041 — Records CRUD**.
-- Iniciar MF-041 desde un branch fresco de `main`; recuperar únicamente su contrato/tests históricos antes de adaptar la UI a Studio Pro.
-- Deployments de preview continúan siendo manual-only.
+- Integrado: MF-037 a MF-041.
+- Próxima microfase: **MF-042 — Advanced Fields**.
+- Recuperar solo contrato/runtime/tests históricos de MF-042; mantener MF-043 Relations bloqueada.
+- Deployments de preview son manual-only.
