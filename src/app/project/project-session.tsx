@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   createContentType as createCanonicalContentType,
+  createTaxonomy as createCanonicalTaxonomy,
   removeContentType as removeCanonicalContentType,
+  removeTaxonomy as removeCanonicalTaxonomy,
   updateContentType as updateCanonicalContentType,
+  updateTaxonomy as updateCanonicalTaxonomy,
 } from '../../core/content';
 import {
   createCanonicalProject,
@@ -35,13 +38,11 @@ import {
   type ProjectSaveState,
   type ProjectSessionState,
   type ProjectThemeResourceApplyResult,
+  type TaxonomySessionMutationResult,
 } from './project-session-context';
 
 function createDefaultSessionProject(): CanonicalProject {
-  return createCanonicalProject({
-    id: 'project_local_workspace',
-    name: 'Untitled project',
-  });
+  return createCanonicalProject({ id: 'project_local_workspace', name: 'Untitled project' });
 }
 
 function clampZoom(value: number): number {
@@ -49,21 +50,12 @@ function clampZoom(value: number): number {
   return Math.min(200, Math.max(50, stepped));
 }
 
-function replaceProjectDocument(
-  project: CanonicalProject,
-  document: CanonicalDocument,
-): CanonicalProject | null {
+function replaceProjectDocument(project: CanonicalProject, document: CanonicalDocument): CanonicalProject | null {
   if (!(document.id in project.documents)) return null;
   const nextProject: CanonicalProject = {
     ...project,
-    metadata: {
-      ...project.metadata,
-      updatedAt: new Date().toISOString(),
-    },
-    documents: {
-      ...project.documents,
-      [document.id]: structuredClone(document),
-    },
+    metadata: { ...project.metadata, updatedAt: new Date().toISOString() },
+    documents: { ...project.documents, [document.id]: structuredClone(document) },
   };
   const validation = validateCanonicalProject(nextProject);
   return validation.ok ? validation.value : null;
@@ -76,23 +68,15 @@ function projectContentFingerprint(project: CanonicalProject): string {
   return JSON.stringify(clone);
 }
 
-function mergeSavedMetadata(
-  current: CanonicalProject,
-  saved: CanonicalProject,
-): CanonicalProject {
+function mergeSavedMetadata(current: CanonicalProject, saved: CanonicalProject): CanonicalProject {
   if (current.id !== saved.id) return current;
   return {
     ...current,
-    metadata: {
-      ...current.metadata,
-      updatedAt: saved.metadata.updatedAt,
-    },
+    metadata: { ...current.metadata, updatedAt: saved.metadata.updatedAt },
     historyMetadata: {
       ...current.historyMetadata,
       revision: Math.max(current.historyMetadata.revision, saved.historyMetadata.revision),
-      ...(saved.historyMetadata.lastSavedAt === undefined
-        ? {}
-        : { lastSavedAt: saved.historyMetadata.lastSavedAt }),
+      ...(saved.historyMetadata.lastSavedAt === undefined ? {} : { lastSavedAt: saved.historyMetadata.lastSavedAt }),
     },
   };
 }
@@ -103,15 +87,9 @@ export interface ProjectSessionProviderProps {
   persistence?: EditorProjectPersistence | null;
 }
 
-export function ProjectSessionProvider({
-  children,
-  initialProject,
-  persistence,
-}: ProjectSessionProviderProps) {
+export function ProjectSessionProvider({ children, initialProject, persistence }: ProjectSessionProviderProps) {
   const themeRegistry = useProjectThemeRegistry();
-  const [initialSessionProject] = useState<CanonicalProject>(() =>
-    structuredClone(initialProject ?? createDefaultSessionProject()),
-  );
+  const [initialSessionProject] = useState<CanonicalProject>(() => structuredClone(initialProject ?? createDefaultSessionProject()));
   const [resolvedPersistence] = useState<EditorProjectPersistence | null>(() => {
     if (persistence !== undefined) return persistence;
     if (initialProject) return null;
@@ -119,30 +97,21 @@ export function ProjectSessionProvider({
   });
   const [project, setProject] = useState<CanonicalProject>(() => structuredClone(initialSessionProject));
   const projectRef = useRef(project);
-  const [activeDocumentId, setActiveDocumentIdState] = useState(
-    () => project.documentOrder[0] ?? '',
-  );
-  const [activeBreakpointId, setActiveBreakpointIdState] = useState(
-    () => project.breakpoints[0]?.id ?? 'desktop',
-  );
+  const [activeDocumentId, setActiveDocumentIdState] = useState(() => project.documentOrder[0] ?? '');
+  const [activeBreakpointId, setActiveBreakpointIdState] = useState(() => project.breakpoints[0]?.id ?? 'desktop');
   const [zoom, setZoomState] = useState(100);
   const [saveState, setSaveState] = useState<ProjectSaveState>('saved');
-  const [historyByDocument, setHistoryByDocument] = useState<Record<string, DocumentHistoryState>>(
-    {},
-  );
+  const [historyByDocument, setHistoryByDocument] = useState<Record<string, DocumentHistoryState>>({});
 
   const commitProject = useCallback((nextProject: CanonicalProject) => {
     projectRef.current = nextProject;
     setProject(nextProject);
   }, []);
 
-  const queueAutosave = useCallback(
-    (nextProject: CanonicalProject) => {
-      setSaveState('dirty');
-      resolvedPersistence?.queue(nextProject);
-    },
-    [resolvedPersistence],
-  );
+  const queueAutosave = useCallback((nextProject: CanonicalProject) => {
+    setSaveState('dirty');
+    resolvedPersistence?.queue(nextProject);
+  }, [resolvedPersistence]);
 
   useEffect(() => {
     if (!resolvedPersistence) return;
@@ -161,8 +130,7 @@ export function ProjectSessionProvider({
       if (!event.project) return;
 
       const current = projectRef.current;
-      const contentWasSaved =
-        projectContentFingerprint(current) === projectContentFingerprint(event.project);
+      const contentWasSaved = projectContentFingerprint(current) === projectContentFingerprint(event.project);
       const merged = mergeSavedMetadata(current, event.project);
       commitProject(merged);
       setSaveState(contentWasSaved ? 'saved' : 'dirty');
@@ -200,132 +168,122 @@ export function ProjectSessionProvider({
     };
   }, [commitProject, initialSessionProject, resolvedPersistence]);
 
-  const setActiveDocumentId = useCallback(
-    (documentId: string) => {
-      if (!(documentId in project.documents)) return;
-      setActiveDocumentIdState(documentId);
-    },
-    [project.documents],
-  );
+  const setActiveDocumentId = useCallback((documentId: string) => {
+    if (!(documentId in project.documents)) return;
+    setActiveDocumentIdState(documentId);
+  }, [project.documents]);
 
-  const setActiveBreakpointId = useCallback(
-    (breakpointId: string) => {
-      if (!project.breakpoints.some((breakpoint) => breakpoint.id === breakpointId)) return;
-      setActiveBreakpointIdState(breakpointId);
-    },
-    [project.breakpoints],
-  );
+  const setActiveBreakpointId = useCallback((breakpointId: string) => {
+    if (!project.breakpoints.some((breakpoint) => breakpoint.id === breakpointId)) return;
+    setActiveBreakpointIdState(breakpointId);
+  }, [project.breakpoints]);
 
   const setZoom = useCallback((nextZoom: number) => {
     setZoomState(clampZoom(nextZoom));
   }, []);
 
-  const setProjectTheme = useCallback(
-    (scope: ProjectThemeScope, themeId: string): boolean => {
-      if (!themeRegistry.has(themeId, scope)) return false;
-      const currentProject = projectRef.current;
-      const key = scope === 'frontend' ? 'frontendThemeId' : 'backendThemeId';
-      if (currentProject[key] === themeId) return true;
+  const setProjectTheme = useCallback((scope: ProjectThemeScope, themeId: string): boolean => {
+    if (!themeRegistry.has(themeId, scope)) return false;
+    const currentProject = projectRef.current;
+    const key = scope === 'frontend' ? 'frontendThemeId' : 'backendThemeId';
+    if (currentProject[key] === themeId) return true;
 
-      const nextProject: CanonicalProject = {
-        ...currentProject,
-        [key]: themeId,
-        metadata: {
-          ...currentProject.metadata,
-          updatedAt: new Date().toISOString(),
-        },
-      };
-      const validation = validateCanonicalProject(nextProject);
-      if (!validation.ok) return false;
+    const nextProject: CanonicalProject = {
+      ...currentProject,
+      [key]: themeId,
+      metadata: { ...currentProject.metadata, updatedAt: new Date().toISOString() },
+    };
+    const validation = validateCanonicalProject(nextProject);
+    if (!validation.ok) return false;
 
-      commitProject(validation.value);
-      queueAutosave(validation.value);
-      return true;
-    },
-    [commitProject, queueAutosave, themeRegistry],
-  );
+    commitProject(validation.value);
+    queueAutosave(validation.value);
+    return true;
+  }, [commitProject, queueAutosave, themeRegistry]);
 
-  const applyThemePackageResources = useCallback(
-    (
-      resources: ProjectThemePackageResources | undefined,
-      selection: ThemePackageResourceSelection,
-    ): ProjectThemeResourceApplyResult => {
-      const result = mergeThemePackageResources(projectRef.current, resources, selection);
-      if (!result.ok) return { ok: false, message: result.message };
-      if (result.changed) {
-        commitProject(result.project);
-        queueAutosave(result.project);
-      }
-      return { ok: true, report: result.report, changed: result.changed };
-    },
-    [commitProject, queueAutosave],
-  );
-
-  const createContentType = useCallback(
-    (input: unknown): ContentTypeSessionMutationResult => {
-      const result = createCanonicalContentType(projectRef.current, input);
-      if (!result.ok) {
-        return { ok: false, code: result.error.code, message: result.error.message };
-      }
+  const applyThemePackageResources = useCallback((resources: ProjectThemePackageResources | undefined, selection: ThemePackageResourceSelection): ProjectThemeResourceApplyResult => {
+    const result = mergeThemePackageResources(projectRef.current, resources, selection);
+    if (!result.ok) return { ok: false, message: result.message };
+    if (result.changed) {
       commitProject(result.project);
       queueAutosave(result.project);
-      return { ok: true, value: result.value, changed: true };
-    },
-    [commitProject, queueAutosave],
-  );
+    }
+    return { ok: true, report: result.report, changed: result.changed };
+  }, [commitProject, queueAutosave]);
 
-  const updateContentType = useCallback(
-    (id: string, input: unknown): ContentTypeSessionMutationResult => {
-      const result = updateCanonicalContentType(projectRef.current, id, input);
-      if (!result.ok) {
-        return { ok: false, code: result.error.code, message: result.error.message };
-      }
-      const before = projectRef.current.contentTypes[id];
-      const after = result.project.contentTypes[id];
-      const changed = JSON.stringify(before) !== JSON.stringify(after);
-      if (changed) {
-        commitProject(result.project);
-        queueAutosave(result.project);
-      }
-      return { ok: true, value: result.value, changed };
-    },
-    [commitProject, queueAutosave],
-  );
+  const createContentType = useCallback((input: unknown): ContentTypeSessionMutationResult => {
+    const result = createCanonicalContentType(projectRef.current, input);
+    if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
+    commitProject(result.project);
+    queueAutosave(result.project);
+    return { ok: true, value: result.value, changed: true };
+  }, [commitProject, queueAutosave]);
 
-  const removeContentType = useCallback(
-    (id: string): ContentTypeSessionMutationResult => {
-      const result = removeCanonicalContentType(projectRef.current, id);
-      if (!result.ok) {
-        return { ok: false, code: result.error.code, message: result.error.message };
-      }
+  const updateContentType = useCallback((id: string, input: unknown): ContentTypeSessionMutationResult => {
+    const result = updateCanonicalContentType(projectRef.current, id, input);
+    if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
+    const before = projectRef.current.contentTypes[id];
+    const after = result.project.contentTypes[id];
+    const changed = JSON.stringify(before) !== JSON.stringify(after);
+    if (changed) {
       commitProject(result.project);
       queueAutosave(result.project);
-      return { ok: true, value: result.value, changed: true };
-    },
-    [commitProject, queueAutosave],
-  );
+    }
+    return { ok: true, value: result.value, changed };
+  }, [commitProject, queueAutosave]);
 
-  const executeDocumentCommand = useCallback(
-    (command: DocumentCommand): boolean => {
-      const currentProject = projectRef.current;
-      const currentDocument = currentProject.documents[command.documentId];
-      if (!currentDocument || currentDocument.id !== command.before.id) return false;
-      const nextProject = replaceProjectDocument(currentProject, command.after);
-      if (!nextProject) return false;
+  const removeContentType = useCallback((id: string): ContentTypeSessionMutationResult => {
+    const result = removeCanonicalContentType(projectRef.current, id);
+    if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
+    commitProject(result.project);
+    queueAutosave(result.project);
+    return { ok: true, value: result.value, changed: true };
+  }, [commitProject, queueAutosave]);
 
-      commitProject(nextProject);
-      setHistoryByDocument((current) => ({
-        ...current,
-        [command.documentId]: recordDocumentCommand(
-          current[command.documentId] ?? EMPTY_DOCUMENT_HISTORY,
-          command,
-        ),
-      }));
-      queueAutosave(nextProject);
-      return true;
-    },
-    [commitProject, queueAutosave],
-  );
+  const createTaxonomy = useCallback((input: unknown): TaxonomySessionMutationResult => {
+    const result = createCanonicalTaxonomy(projectRef.current, input);
+    if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
+    commitProject(result.project);
+    queueAutosave(result.project);
+    return { ok: true, value: result.value, changed: true };
+  }, [commitProject, queueAutosave]);
+
+  const updateTaxonomy = useCallback((id: string, input: unknown): TaxonomySessionMutationResult => {
+    const result = updateCanonicalTaxonomy(projectRef.current, id, input);
+    if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
+    const before = projectRef.current.taxonomies[id];
+    const after = result.project.taxonomies[id];
+    const changed = JSON.stringify(before) !== JSON.stringify(after);
+    if (changed) {
+      commitProject(result.project);
+      queueAutosave(result.project);
+    }
+    return { ok: true, value: result.value, changed };
+  }, [commitProject, queueAutosave]);
+
+  const removeTaxonomy = useCallback((id: string): TaxonomySessionMutationResult => {
+    const result = removeCanonicalTaxonomy(projectRef.current, id);
+    if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
+    commitProject(result.project);
+    queueAutosave(result.project);
+    return { ok: true, value: result.value, changed: true };
+  }, [commitProject, queueAutosave]);
+
+  const executeDocumentCommand = useCallback((command: DocumentCommand): boolean => {
+    const currentProject = projectRef.current;
+    const currentDocument = currentProject.documents[command.documentId];
+    if (!currentDocument || currentDocument.id !== command.before.id) return false;
+    const nextProject = replaceProjectDocument(currentProject, command.after);
+    if (!nextProject) return false;
+
+    commitProject(nextProject);
+    setHistoryByDocument((current) => ({
+      ...current,
+      [command.documentId]: recordDocumentCommand(current[command.documentId] ?? EMPTY_DOCUMENT_HISTORY, command),
+    }));
+    queueAutosave(nextProject);
+    return true;
+  }, [commitProject, queueAutosave]);
 
   const undo = useCallback((): boolean => {
     const history = historyByDocument[activeDocumentId] ?? EMPTY_DOCUMENT_HISTORY;
@@ -335,10 +293,7 @@ export function ProjectSessionProvider({
     if (!nextProject) return false;
 
     commitProject(nextProject);
-    setHistoryByDocument((current) => ({
-      ...current,
-      [activeDocumentId]: transition.history,
-    }));
+    setHistoryByDocument((current) => ({ ...current, [activeDocumentId]: transition.history }));
     queueAutosave(nextProject);
     return true;
   }, [activeDocumentId, commitProject, historyByDocument, queueAutosave]);
@@ -351,10 +306,7 @@ export function ProjectSessionProvider({
     if (!nextProject) return false;
 
     commitProject(nextProject);
-    setHistoryByDocument((current) => ({
-      ...current,
-      [activeDocumentId]: transition.history,
-    }));
+    setHistoryByDocument((current) => ({ ...current, [activeDocumentId]: transition.history }));
     queueAutosave(nextProject);
     return true;
   }, [activeDocumentId, commitProject, historyByDocument, queueAutosave]);
@@ -363,48 +315,51 @@ export function ProjectSessionProvider({
   const canUndo = activeHistory.past.length > 0;
   const canRedo = activeHistory.future.length > 0;
 
-  const value = useMemo<ProjectSessionState>(
-    () => ({
-      project,
-      activeDocumentId,
-      activeBreakpointId,
-      zoom,
-      saveState,
-      canUndo,
-      canRedo,
-      setActiveDocumentId,
-      setActiveBreakpointId,
-      setZoom,
-      setProjectTheme,
-      applyThemePackageResources,
-      createContentType,
-      updateContentType,
-      removeContentType,
-      executeDocumentCommand,
-      undo,
-      redo,
-    }),
-    [
-      activeBreakpointId,
-      activeDocumentId,
-      applyThemePackageResources,
-      canRedo,
-      canUndo,
-      createContentType,
-      executeDocumentCommand,
-      project,
-      redo,
-      removeContentType,
-      saveState,
-      setActiveBreakpointId,
-      setActiveDocumentId,
-      setProjectTheme,
-      setZoom,
-      undo,
-      updateContentType,
-      zoom,
-    ],
-  );
+  const value = useMemo<ProjectSessionState>(() => ({
+    project,
+    activeDocumentId,
+    activeBreakpointId,
+    zoom,
+    saveState,
+    canUndo,
+    canRedo,
+    setActiveDocumentId,
+    setActiveBreakpointId,
+    setZoom,
+    setProjectTheme,
+    applyThemePackageResources,
+    createContentType,
+    updateContentType,
+    removeContentType,
+    createTaxonomy,
+    updateTaxonomy,
+    removeTaxonomy,
+    executeDocumentCommand,
+    undo,
+    redo,
+  }), [
+    activeBreakpointId,
+    activeDocumentId,
+    applyThemePackageResources,
+    canRedo,
+    canUndo,
+    createContentType,
+    createTaxonomy,
+    executeDocumentCommand,
+    project,
+    redo,
+    removeContentType,
+    removeTaxonomy,
+    saveState,
+    setActiveBreakpointId,
+    setActiveDocumentId,
+    setProjectTheme,
+    setZoom,
+    undo,
+    updateContentType,
+    updateTaxonomy,
+    zoom,
+  ]);
 
   return <ProjectSessionContext.Provider value={value}>{children}</ProjectSessionContext.Provider>;
 }

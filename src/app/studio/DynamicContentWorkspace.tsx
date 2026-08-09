@@ -4,6 +4,7 @@ import { Icon, type IconName } from '../components/Icon';
 import { useProjectSession } from '../project/project-session-context';
 import { CapabilityStatus } from './CapabilityStatus';
 import { ContentTypesCrudPanel } from './ContentTypesCrudPanel';
+import { TaxonomiesCrudPanel } from './TaxonomiesCrudPanel';
 
 type DynamicResourceKind =
   | 'content-types'
@@ -76,7 +77,7 @@ export function DynamicContentWorkspace({ initialResource = 'content-types' }: D
 
   const definition = resources.find((candidate) => candidate.id === resource) ?? resources[0]!;
   const entries = useMemo(() => {
-    if (resource === 'content-types') return [];
+    if (resource === 'content-types' || resource === 'taxonomies') return [];
     const normalized = query.trim().toLowerCase();
     return Object.entries(source)
       .map(([id, value]) => ({ id, value, name: asDisplayName(id, value) }))
@@ -89,6 +90,12 @@ export function DynamicContentWorkspace({ initialResource = 'content-types' }: D
     ? { id: selectedId, value: selectedValue, name: asDisplayName(selectedId, selectedValue) }
     : entries[0] ?? null;
 
+  const crudLabel = resource === 'content-types'
+    ? { aria: 'Content Types CRUD enabled', icon: 'database' as IconName }
+    : resource === 'taxonomies'
+      ? { aria: 'Taxonomies CRUD enabled', icon: 'filter' as IconName }
+      : null;
+
   return (
     <section className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-ec-app)]" aria-label="Dynamic Content Studio">
       <header className="shrink-0 border-b border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] px-4 py-3 md:px-5">
@@ -98,8 +105,8 @@ export function DynamicContentWorkspace({ initialResource = 'content-types' }: D
             <h2 className="mt-1 text-[18px] font-semibold tracking-[-.03em] text-[var(--color-ec-text)]">Dynamic Content Studio</h2>
             <p className="mt-1 text-[9px] text-[var(--color-ec-text-muted)]">Manage validated canonical data capabilities without creating parallel F05 state.</p>
           </div>
-          {resource === 'content-types' ? (
-            <span className="inline-flex min-h-8 items-center gap-1.5 rounded-[var(--ec-radius-md)] border border-[var(--color-ec-success-600)] bg-[var(--color-ec-surface-subtle)] px-2.5 text-[10px] font-semibold text-[var(--color-ec-success-600)]" aria-label="Content Types CRUD enabled"><Icon name="database" size={12} />CRUD enabled</span>
+          {crudLabel ? (
+            <span className="inline-flex min-h-8 items-center gap-1.5 rounded-[var(--ec-radius-md)] border border-[var(--color-ec-success-600)] bg-[var(--color-ec-surface-subtle)] px-2.5 text-[10px] font-semibold text-[var(--color-ec-success-600)]" aria-label={crudLabel.aria}><Icon name={crudLabel.icon} size={12} />CRUD enabled</span>
           ) : (
             <CapabilityStatus label="Read-only data" detail={`${definition.label} mutation commands are not available on main yet; existing canonical resources remain inspectable.`} />
           )}
@@ -120,6 +127,8 @@ export function DynamicContentWorkspace({ initialResource = 'content-types' }: D
         <div className="min-h-0 flex-1 pt-3">
           {resource === 'content-types' ? (
             <ContentTypesCrudPanel query={query} />
+          ) : resource === 'taxonomies' ? (
+            <TaxonomiesCrudPanel query={query} />
           ) : (
             <div className="grid min-h-0 h-full gap-3 lg:grid-cols-[minmax(0,1fr)_340px]">
               <div className="min-h-0 overflow-y-auto">
