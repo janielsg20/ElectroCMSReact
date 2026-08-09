@@ -37,7 +37,7 @@ test.describe('Studio Pro mobile builder', () => {
         transitionDurations: buttons.map((button) => getComputedStyle(button).transitionDuration),
       };
     });
-    expect(new Set(dockVisuals.iconColors).size).toBeGreaterThan(1);
+    expect(new Set(dockVisuals.iconColors).size).toBe(1);
     expect(dockVisuals.transitionDurations.some((value) => !/^0s(?:, 0s)*$/.test(value))).toBe(true);
 
     const menu = page.getByRole('button', { name: 'Open navigation' });
