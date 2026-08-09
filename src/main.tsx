@@ -13,6 +13,7 @@ import './app/ui/bento-high-density.css';
 import './app/ui/bento-modern-polish.css';
 import './app/ui/reference-builder-layout.css';
 import './app/ui/reference-builder-fidelity.css';
+import './app/ui/reference-builder-geometry.css';
 
 const rootElement = document.getElementById('root');
 
