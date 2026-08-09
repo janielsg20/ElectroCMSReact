@@ -1,10 +1,10 @@
 import type { CanonicalProject } from '../project';
 import { advancedFieldGroupReference } from './advanced-field-runtime';
-import { createContentFieldTypeRegistry } from './advanced-field-types';
 import { listAdvancedFieldGroupDefinitions } from './advanced-field-group';
 import { removeFieldGroupWithRecordIntegrity } from './field-group-record-integrity';
 import type { FieldGroupMutationResult } from './field-group';
 import { FieldTypeRegistry } from './field-type-registry';
+import { createContentFieldTypeRegistry } from './reference-field-types';
 
 export function removeFieldGroupWithAdvancedIntegrity(
   project: CanonicalProject,
