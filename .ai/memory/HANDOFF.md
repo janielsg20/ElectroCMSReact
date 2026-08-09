@@ -24,15 +24,21 @@ Desktop target:
 
 The rail must not repeat the application logo. Use restrained 1px separators, modest radii and minimal elevation.
 
-## Color and motion contract
-Color is functional and intentionally limited:
-- blue → navigation/editor selection;
-- violet → creation/publishing;
-- cyan/green → data/actions;
-- amber → settings/state;
-- neutral slate → secondary commands.
+## Monochrome color contract
+The reference is predominantly neutral. The editor must not use a different accent hue per module.
 
-Microinteraction target: 140–180ms, mostly transform/color/opacity. Icon hover may lift/scale slightly; pressed states compress slightly. Active destination icons can use a short one-shot pop. Respect `prefers-reduced-motion` and never animate precision canvas geometry.
+- rail icons are neutral and consistent;
+- component-library icons are neutral;
+- mobile Pages/Add/Layers/Properties dock icons are neutral;
+- Preview, breakpoint, Settings and secondary toolbar actions are neutral;
+- active/current navigation is communicated by neutral surface/weight plus, when useful, one thin blue indicator;
+- saturated blue is reserved mainly for primary actions such as Publish/Export and Insert Widget, plus precise selection/focus indicators;
+- semantic save/error/warning status indicators may retain their status colors because they communicate state, not decoration.
+
+Do not reintroduce violet/cyan/green/amber module icon palettes.
+
+## Motion contract
+Microinteraction target: 140–180ms, mostly transform/color/opacity. Icons may lift/scale slightly on hover; pressed states compress slightly and active destinations may use a short one-shot pop. Motion never changes precision hit geometry. Respect `prefers-reduced-motion`.
 
 ## Compact/mobile Builder
 At <=960px persistent left navigator and right inspector stay out of layout flow.
@@ -45,13 +51,14 @@ Default experience:
 - `Escape`, explicit Close and backdrop dismissal supported;
 - close action receives initial focus;
 - touch targets >=48px;
+- phone dock controls >=52px;
 - dock respects safe-area inset;
 - root horizontal overflow forbidden.
 
-The mobile dock uses the same restrained functional tones as desktop, not a separate mobile theme.
+Tablet keeps Active document + Preview breakpoint + Zoom visible. Phone remains intentionally more minimal to protect canvas space.
 
 ## Inspector
-Visible tabs are now **Properties** and **Design**. This is presentation language only; underlying canonical content/style mutation APIs remain unchanged.
+Visible tabs are **Properties** and **Design**. This is presentation language only; underlying canonical content/style mutation APIs remain unchanged.
 
 ## Invariants
 - Canvas DOM remains projection of canonical state.
@@ -63,18 +70,19 @@ Visible tabs are now **Properties** and **Design**. This is presentation languag
 
 ## Files
 - `src/app/ui/studio-pro-tailwind.css` → Tailwind-first base.
-- `src/app/ui/studio-pro.css` → final reference fidelity, compatibility resets, functional color and motion.
+- `src/app/ui/studio-pro.css` → reference geometry, compatibility and interaction layer.
+- `src/app/ui/studio-pro-compact.css` → final monochrome reference refinements + tablet compact-shell rules.
 - `src/app/editor/inspector/WidgetInspector.tsx` → Properties/Design language.
-- `src/app/studio/ProductionStudio.test.tsx` → updated inspector semantics.
-- `design-system/electrocms-editor/MASTER.md` → visual contract.
+- `e2e/reference-builder-fidelity.spec.ts` → desktop geometry, monochrome rail, primary CTA and motion contract.
+- `e2e/studio-pro-mobile.spec.ts` → mobile canvas, monochrome dock, touch and sheet contract.
 
 ## Validation
 GitHub Actions is authoritative: repository verification, zero-warning lint, TypeScript, unit/integration, coverage, production build and Playwright E2E must all pass.
 
-Latest known intermediate run #1361 proved repository/lint/types green and exposed one obsolete unit expectation for old inspector tab names. That expectation was corrected on the current branch. Use the latest PR #38 head/run as the only final validation source.
+Latest known fully green baseline before the monochrome pass: Quality Gate #1382. The monochrome pass must obtain a newer complete green gate before being considered final.
 
 ## Next action
-1. Wait for the latest PR #38 Quality Gate.
+1. Inspect the latest PR #38 Quality Gate for the current monochrome head.
 2. Fix concrete regressions rather than weakening geometry/mobile accessibility tests.
-3. Record the definitive green run in PR/memory.
+3. Update PR #38 with the definitive green run.
 4. Keep PR draft until the user explicitly asks to merge.
