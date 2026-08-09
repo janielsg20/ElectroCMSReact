@@ -57,9 +57,7 @@
 }
 
 .electrocms-app[data-editor-preset="studio-pro"]
-  .studio-rail[data-studio-rail="true"] .studio-rail-button:hover .studio-rail-icon,
-.electrocms-app[data-editor-preset="studio-pro"]
-  .studio-rail[data-studio-rail="true"] .studio-rail-button[data-active="true"] .studio-rail-icon {
+  .studio-rail[data-studio-rail="true"] .studio-rail-button:hover .studio-rail-icon {
   color: var(--color-ec-text);
 }
 
@@ -68,6 +66,11 @@
   background: var(--color-ec-surface-muted);
   color: var(--color-ec-text);
   box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .studio-rail[data-studio-rail="true"] .studio-rail-button[data-active="true"] .studio-rail-icon {
+  color: var(--color-ec-text-muted);
 }
 
 .electrocms-app[data-editor-preset="studio-pro"]
@@ -135,7 +138,10 @@
 }
 
 .electrocms-app[data-editor-preset="studio-pro"]
-  .mobile-builder-dock button[aria-pressed="true"] svg,
+  .mobile-builder-dock button[aria-pressed="true"] svg {
+  color: var(--color-ec-text-muted);
+}
+
 .electrocms-app[data-editor-preset="studio-pro"]
   .mobile-builder-dock button:hover svg {
   color: var(--color-ec-text);
