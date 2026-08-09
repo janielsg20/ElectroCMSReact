@@ -47,8 +47,8 @@ function validateRelationConfig(config: JsonObject): FieldTypeValidationResult {
   const unknown = rejectUnknown(config, ['relationId', 'side']);
   if (unknown) return unknown;
   const issues: { code: string; path: string; message: string }[] = [];
-  if (typeof config.relationId !== 'string' || !config.relationId.trim()) {
-    issues.push({ code: 'INVALID_RELATION_ID', path: 'relationId', message: 'relationId must be a non-empty string.' });
+  if (typeof config.relationId !== 'string') {
+    issues.push({ code: 'INVALID_RELATION_ID', path: 'relationId', message: 'relationId must be a string.' });
   }
   if (!RELATION_FIELD_SIDES.includes(config.side as RelationFieldSide)) {
     issues.push({ code: 'INVALID_RELATION_SIDE', path: 'side', message: 'side must be source or target.' });
@@ -59,9 +59,9 @@ function validateRelationConfig(config: JsonObject): FieldTypeValidationResult {
 function validateTaxonomyConfig(config: JsonObject): FieldTypeValidationResult {
   const unknown = rejectUnknown(config, ['taxonomyId']);
   if (unknown) return unknown;
-  return typeof config.taxonomyId === 'string' && config.taxonomyId.trim()
+  return typeof config.taxonomyId === 'string'
     ? validFieldTypeValue()
-    : invalidFieldTypeValue('INVALID_TAXONOMY_ID', 'taxonomyId', 'taxonomyId must be a non-empty string.');
+    : invalidFieldTypeValue('INVALID_TAXONOMY_ID', 'taxonomyId', 'taxonomyId must be a string.');
 }
 
 function validateEmptyConfig(config: JsonObject): FieldTypeValidationResult {
