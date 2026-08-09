@@ -13,6 +13,7 @@ import {
   createRelation,
   removeContentRecord,
   removeContentType,
+  removeFieldGroup,
   removeRelation,
   updateRelation,
   validateContentRecordDefinition,
@@ -146,6 +147,19 @@ describe('MF-043 reference integrity', () => {
     if (!contentTypeDelete.ok) {
       expect(contentTypeDelete.error.code).toBe('CONTENT_TYPE_IN_USE');
       expect(contentTypeDelete.error.message).toContain('used by relation product-brand');
+    }
+  });
+
+  it('deletes an unassigned Field Group that contains MF-043 reference fields', () => {
+    const { project } = createReferenceProject();
+    const recordDelete = removeContentRecord(project, 'product-shoe');
+    expect(recordDelete.ok).toBe(true);
+    if (!recordDelete.ok) return;
+
+    const groupDelete = removeFieldGroup(recordDelete.project, 'product-relations');
+    expect(groupDelete.ok).toBe(true);
+    if (groupDelete.ok) {
+      expect(groupDelete.project.fieldGroups['product-relations']).toBeUndefined();
     }
   });
 
