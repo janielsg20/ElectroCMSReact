@@ -1,6 +1,6 @@
 import { useMemo, useState, type FocusEvent } from 'react';
 import type { JsonObject, JsonValue } from '../../../core/domain';
-import type { BreakpointDefinition, DocumentNode } from '../../../core/project';
+import type { BreakpointDefinition, CanonicalProject, DocumentNode, DynamicBinding } from '../../../core/project';
 import {
   formatInspectorFieldValue,
   normalizeInspectorSchema,
@@ -14,14 +14,18 @@ import type {
   CanvasPropEditResult,
   CanvasStyleEditResult,
 } from '../canvas/use-canvas-document-actions';
+import type { CanvasBindingEditResult } from '../canvas/use-canvas-dynamic-binding-actions';
+import { WidgetBindingsInspector } from './WidgetBindingsInspector';
 import { WidgetStyleInspector } from './WidgetStyleInspector';
 import './widget-inspector.css';
 
 export interface WidgetInspectorProps {
   node: DocumentNode | null;
+  project?: CanonicalProject;
   breakpointId?: string;
   breakpoints?: readonly BreakpointDefinition[];
   onSetProps?: (nodeId: string, patch: JsonObject) => CanvasPropEditResult;
+  onSetBindings?: (nodeId: string, bindings: readonly DynamicBinding[]) => CanvasBindingEditResult;
   onSetStyle?: (nodeId: string, key: string, value: JsonValue) => CanvasStyleEditResult;
   onUnsetStyle?: (nodeId: string, key: string) => CanvasStyleEditResult;
   onInheritStyle?: (nodeId: string, key: string, fromBreakpointId: string) => CanvasStyleEditResult;
@@ -103,16 +107,18 @@ function InspectorFieldControl({ node, field, issue, onCommit }: InspectorFieldC
 
 export function WidgetInspector({
   node,
+  project,
   breakpointId = 'desktop',
   breakpoints = [],
   onSetProps,
+  onSetBindings,
   onSetStyle,
   onUnsetStyle,
   onInheritStyle,
 }: WidgetInspectorProps) {
   const registry = useEditorWidgetRegistry();
   const [issues, setIssues] = useState<Readonly<Record<string, string>>>({});
-  const [activeTab, setActiveTab] = useState<'content' | 'style'>('content');
+  const [activeTab, setActiveTab] = useState<'content' | 'bindings' | 'style'>('content');
   const [collapsedSections, setCollapsedSections] = useState<ReadonlySet<string>>(() => new Set());
   const definition = node && registry.has(node.type, node.version) ? registry.core.resolve(node.type, node.version) : null;
   const schema = useMemo(() => definition && node ? normalizeInspectorSchema(definition.inspectorSchema, node.props) : { sections: [] }, [definition, node]);
@@ -179,6 +185,7 @@ export function WidgetInspector({
 
       <div className="widget-inspector-tabs" role="tablist" aria-label="Inspector sections">
         <button type="button" role="tab" aria-selected={activeTab === 'content'} data-active={activeTab === 'content'} onClick={() => setActiveTab('content')}>Properties</button>
+        {project ? <button type="button" role="tab" aria-selected={activeTab === 'bindings'} data-active={activeTab === 'bindings'} onClick={() => setActiveTab('bindings')}>Bindings</button> : null}
         <button type="button" role="tab" aria-selected={activeTab === 'style'} data-active={activeTab === 'style'} onClick={() => setActiveTab('style')}>Design</button>
       </div>
 
@@ -208,6 +215,10 @@ export function WidgetInspector({
                 })}
               </div>
             ) : <div className="widget-inspector-empty">This element has no editable properties.</div>}
+          </div>
+        ) : activeTab === 'bindings' && project ? (
+          <div role="tabpanel" aria-label="Bindings inspector">
+            <WidgetBindingsInspector project={project} node={node} {...(onSetBindings ? { onSetBindings } : {})} />
           </div>
         ) : (
           <div role="tabpanel" aria-label="Design inspector">
