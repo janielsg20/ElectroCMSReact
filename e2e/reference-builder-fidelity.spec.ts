@@ -27,6 +27,14 @@ test('Studio Pro desktop builder keeps professional reference proportions and al
         : null;
     };
 
+    const railButtons = [...document.querySelectorAll<HTMLElement>('.studio-rail-button')].slice(0, 8);
+    const railIconColors = railButtons.flatMap((button) => {
+      const icon = button.querySelector<SVGElement>('svg');
+      return icon ? [getComputedStyle(icon).color] : [];
+    });
+    const firstRailButton = railButtons[0];
+    const stage = document.querySelector<HTMLElement>('.canvas-stage-v2');
+
     return {
       viewportWidth: document.documentElement.clientWidth,
       rootScrollWidth: document.documentElement.scrollWidth,
@@ -39,18 +47,22 @@ test('Studio Pro desktop builder keeps professional reference proportions and al
       inspector: rect('.canvas-inspector-dock'),
       contextDisplay: getComputedStyle(document.querySelector<HTMLElement>('.studio-context-bar')!).display,
       documentBarDisplay: getComputedStyle(document.querySelector<HTMLElement>('.builder-document-bar')!).display,
+      railHeaderDisplay: getComputedStyle(document.querySelector<HTMLElement>('.studio-rail-header')!).display,
+      railIconColors,
+      railTransitionDuration: firstRailButton ? getComputedStyle(firstRailButton).transitionDuration : '',
+      stageBackgroundImage: stage ? getComputedStyle(stage).backgroundImage : '',
     };
   });
 
   expect(geometry.rootScrollWidth).toBe(geometry.viewportWidth);
-  expect(geometry.header?.height ?? 0).toBeGreaterThanOrEqual(58);
-  expect(geometry.header?.height ?? 0).toBeLessThanOrEqual(64);
+  expect(geometry.header?.height ?? 0).toBeGreaterThanOrEqual(60);
+  expect(geometry.header?.height ?? 0).toBeLessThanOrEqual(65);
   expect(geometry.rail?.width ?? 0).toBeGreaterThanOrEqual(58);
   expect(geometry.rail?.width ?? 0).toBeLessThanOrEqual(62);
-  expect(geometry.navigator?.width ?? 0).toBeGreaterThanOrEqual(274);
+  expect(geometry.navigator?.width ?? 0).toBeGreaterThanOrEqual(294);
   expect(geometry.navigator?.width ?? 0).toBeLessThanOrEqual(306);
-  expect(geometry.inspector?.width ?? 0).toBeGreaterThanOrEqual(316);
-  expect(geometry.inspector?.width ?? 0).toBeLessThanOrEqual(346);
+  expect(geometry.inspector?.width ?? 0).toBeGreaterThanOrEqual(330);
+  expect(geometry.inspector?.width ?? 0).toBeLessThanOrEqual(342);
   expect(geometry.toolbar?.height ?? 0).toBeGreaterThanOrEqual(50);
   expect(geometry.toolbar?.height ?? 0).toBeLessThanOrEqual(54);
   expect(geometry.canvas?.width ?? 0).toBeGreaterThan(500);
@@ -58,6 +70,10 @@ test('Studio Pro desktop builder keeps professional reference proportions and al
   expect(Math.abs((geometry.toolbar?.top ?? 0) - (geometry.inspector?.top ?? 0))).toBeLessThanOrEqual(1);
   expect(geometry.contextDisplay).toBe('none');
   expect(geometry.documentBarDisplay).toBe('none');
+  expect(geometry.railHeaderDisplay).toBe('none');
+  expect(new Set(geometry.railIconColors).size).toBeGreaterThan(1);
+  expect(geometry.railTransitionDuration).not.toMatch(/^0s(?:, 0s)*$/);
+  expect(geometry.stageBackgroundImage).toContain('radial-gradient');
 
   await expect(contextBar).toBeHidden();
   await expect(documentBar).toBeHidden();
