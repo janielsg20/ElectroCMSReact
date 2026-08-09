@@ -21,13 +21,14 @@ test('workspace navigation preserves session state between routes', async ({ pag
 test('workspace layout and editor appearance preferences survive reload with the Studio Pro rail', async ({ page }) => {
   await page.goto('/editor');
 
-  await page.getByLabel('Editor theme mode').selectOption('dark');
+  await page.getByRole('button', { name: 'Use dark appearance' }).click();
   await page.locator('summary').filter({ hasText: 'Workspace settings' }).click();
   await page.getByLabel('Navigation position').selectOption('right');
   await page.getByLabel('Navigation display mode').selectOption('icons');
   await page.getByLabel('Workspace density').selectOption('comfortable');
 
   await expect(page.locator('.electrocms-app')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.getByRole('button', { name: 'Use dark appearance' })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('.electrocms-app')).toHaveAttribute('data-navigation-position', 'right');
   await expect(page.locator('.workspace-navigation')).toHaveAttribute('data-studio-rail', 'true');
   await expect(page.locator('.workspace-navigation')).toHaveAttribute('data-collapsed', 'true');
@@ -37,6 +38,7 @@ test('workspace layout and editor appearance preferences survive reload with the
   await page.reload();
 
   await expect(page.locator('.electrocms-app')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.getByRole('button', { name: 'Use dark appearance' })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('.electrocms-app')).toHaveAttribute('data-navigation-position', 'right');
   await expect(page.locator('.electrocms-app')).toHaveAttribute('data-density', 'comfortable');
   await expect(page.locator('.workspace-navigation')).toHaveAttribute('data-display-mode', 'icons');
