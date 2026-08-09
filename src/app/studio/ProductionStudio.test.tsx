@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
+import { createDefaultContentTypeDefinition } from '../../core/content';
 import { createCanonicalProject } from '../../core/project';
 import { App } from '../App';
 import { MemoryWorkspacePreferencesRepository } from '../workspace/workspace-preferences-repository';
@@ -19,10 +20,15 @@ function makeProject() {
 
 function makeDynamicProject() {
   const project = makeProject();
+  const product = {
+    ...createDefaultContentTypeDefinition('product', 'Products'),
+    singularLabel: 'Product',
+    slug: 'products',
+  };
   return {
     ...project,
     contentTypes: {
-      product: { name: 'Products', slug: 'products', fields: ['title', 'price'] },
+      product,
     },
     taxonomies: {
       category: { name: 'Categories', slug: 'category' },
@@ -148,8 +154,10 @@ describe('ProductionStudio', () => {
     const studio = screen.getByRole('region', { name: 'Dynamic Content Studio' });
     expect(within(studio).getByRole('heading', { name: 'Dynamic Content Studio' })).toBeInTheDocument();
     expect(within(studio).getByRole('tab', { name: /Content Types/i })).toHaveAttribute('aria-selected', 'true');
-    expect(within(studio).getByRole('button', { name: /Products/i })).toBeInTheDocument();
-    expect(within(studio).getByRole('complementary', { name: 'Dynamic resource details' })).toHaveTextContent('Products');
+    const products = within(studio).getByRole('button', { name: /Products.*product/i });
+    expect(products).toBeInTheDocument();
+    await user.click(products);
+    expect(within(studio).getByRole('complementary', { name: 'Content type editor' })).toHaveTextContent('Products');
 
     await user.click(within(studio).getByRole('tab', { name: /Relations/i }));
     expect(within(studio).getByText('No relations')).toBeInTheDocument();
