@@ -3,14 +3,17 @@ import {
   createContentRecord as createCanonicalContentRecord,
   createContentType as createCanonicalContentType,
   createFieldGroup as createCanonicalFieldGroup,
+  createRelation as createCanonicalRelation,
   createTaxonomy as createCanonicalTaxonomy,
   removeContentRecord as removeCanonicalContentRecord,
   removeContentType as removeCanonicalContentType,
   removeFieldGroup as removeCanonicalFieldGroup,
+  removeRelation as removeCanonicalRelation,
   removeTaxonomy as removeCanonicalTaxonomy,
   updateContentRecord as updateCanonicalContentRecord,
   updateContentType as updateCanonicalContentType,
   updateFieldGroup as updateCanonicalFieldGroup,
+  updateRelation as updateCanonicalRelation,
   updateTaxonomy as updateCanonicalTaxonomy,
 } from '../../core/content';
 import {
@@ -46,6 +49,7 @@ import {
   type ProjectSaveState,
   type ProjectSessionState,
   type ProjectThemeResourceApplyResult,
+  type RelationSessionMutationResult,
   type TaxonomySessionMutationResult,
 } from './project-session-context';
 
@@ -136,7 +140,6 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
         return;
       }
       if (!event.project) return;
-
       const current = projectRef.current;
       const contentWasSaved = projectContentFingerprint(current) === projectContentFingerprint(event.project);
       const merged = mergeSavedMetadata(current, event.project);
@@ -269,6 +272,33 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
     return { ok: true, value: result.value, changed: true };
   }, [commitProject, queueAutosave]);
 
+  const createRelation = useCallback((input: unknown): RelationSessionMutationResult => {
+    const result = createCanonicalRelation(projectRef.current, input);
+    if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
+    commitProject(result.project);
+    queueAutosave(result.project);
+    return { ok: true, value: result.value, changed: true };
+  }, [commitProject, queueAutosave]);
+
+  const updateRelation = useCallback((id: string, input: unknown): RelationSessionMutationResult => {
+    const result = updateCanonicalRelation(projectRef.current, id, input);
+    if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
+    const changed = JSON.stringify(projectRef.current.relations[id]) !== JSON.stringify(result.project.relations[id]);
+    if (changed) {
+      commitProject(result.project);
+      queueAutosave(result.project);
+    }
+    return { ok: true, value: result.value, changed };
+  }, [commitProject, queueAutosave]);
+
+  const removeRelation = useCallback((id: string): RelationSessionMutationResult => {
+    const result = removeCanonicalRelation(projectRef.current, id);
+    if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
+    commitProject(result.project);
+    queueAutosave(result.project);
+    return { ok: true, value: result.value, changed: true };
+  }, [commitProject, queueAutosave]);
+
   const createFieldGroup = useCallback((input: unknown): FieldGroupSessionMutationResult => {
     const result = createCanonicalFieldGroup(projectRef.current, input);
     if (!result.ok) return { ok: false, code: result.error.code, message: result.error.message };
@@ -385,6 +415,9 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
     createTaxonomy,
     updateTaxonomy,
     removeTaxonomy,
+    createRelation,
+    updateRelation,
+    removeRelation,
     createFieldGroup,
     updateFieldGroup,
     removeFieldGroup,
@@ -403,6 +436,7 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
     createContentRecord,
     createContentType,
     createFieldGroup,
+    createRelation,
     createTaxonomy,
     executeDocumentCommand,
     project,
@@ -410,6 +444,7 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
     removeContentRecord,
     removeContentType,
     removeFieldGroup,
+    removeRelation,
     removeTaxonomy,
     saveState,
     setActiveBreakpointId,
@@ -420,6 +455,7 @@ export function ProjectSessionProvider({ children, initialProject, persistence }
     updateContentRecord,
     updateContentType,
     updateFieldGroup,
+    updateRelation,
     updateTaxonomy,
     zoom,
   ]);
