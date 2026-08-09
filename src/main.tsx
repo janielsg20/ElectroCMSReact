@@ -2,7 +2,6 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 import './styles.css';
-import './app/workspace/workspace.css';
 import './app/workspace/workspace-responsive.css';
 import './app/editor/canvas/canvas.css';
 import './app/editor/canvas/canvas-interactions.css';
@@ -15,7 +14,7 @@ import './app/ui/studio-pro-tailwind.css';
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {
-  throw new Error('Root element not found');
+  throw new Error('ElectroCMS root element was not found.');
 }
 
 createRoot(rootElement).render(
