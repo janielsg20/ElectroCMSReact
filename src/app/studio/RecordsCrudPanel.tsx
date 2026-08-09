@@ -4,6 +4,7 @@ import {
   createContentFieldTypeRegistry,
   createDefaultContentRecordDefinition,
   isMf042AdvancedField,
+  isMf043ReferenceField,
   listContentRecords,
   listContentTypeDefinitions,
   listFieldGroupDefinitions,
@@ -14,6 +15,7 @@ import {
   type FieldGroupDefinition,
 } from '../../core/content';
 import type { JsonObject, JsonValue } from '../../core/domain';
+import type { CanonicalProject } from '../../core/project';
 import { Icon } from '../components/Icon';
 import { useProjectSession } from '../project/project-session-context';
 import { AdvancedRecordFieldControl } from './AdvancedRecordFieldControl';
@@ -62,12 +64,14 @@ function updateGroupValue(record: ContentRecordDefinition, groupId: string, fiel
 }
 
 function RecordFieldEditor({
+  project,
   group,
   field,
   draft,
   fieldGroups,
   onChange,
 }: {
+  project: CanonicalProject;
   group: FieldGroupDefinition;
   field: CustomFieldDefinition;
   draft: ContentRecordDefinition;
@@ -80,11 +84,13 @@ function RecordFieldEditor({
   const value = stored === undefined ? field.defaultValue : stored;
   const label = `${field.label}${field.required ? ' *' : ''}`;
 
-  if (isMf042AdvancedField(field)) {
+  if (isMf042AdvancedField(field) || isMf043ReferenceField(field)) {
     return (
       <div className="sm:col-span-2">
         <div className="mb-1 flex items-center justify-between gap-2 text-[10px] font-semibold text-[var(--color-ec-text-muted)]"><span>{label}</span><small className="font-mono font-normal opacity-70">{field.name}</small></div>
         <AdvancedRecordFieldControl
+          project={project}
+          ownerContentTypeId={draft.contentTypeId}
           field={field}
           value={value}
           siblingValues={resolvedGroupValues(draft, group)}
@@ -243,7 +249,7 @@ export function RecordsCrudPanel({ query }: RecordsCrudPanelProps) {
             {draft.fieldGroupIds.map((groupId) => {
               const group = fieldGroups.find((candidate) => candidate.id === groupId);
               if (!group) return null;
-              return <section key={group.id} className="rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] p-3" aria-label={`Record values ${group.label}`}><header className="mb-3 flex items-center justify-between gap-2"><div><strong className="block text-[10px] text-[var(--color-ec-text)]">{group.label}</strong><span className="text-[8px] text-[var(--color-ec-text-muted)]">{group.id}</span></div><span className="text-[8px] font-semibold uppercase tracking-[.08em] text-[var(--color-ec-text-muted)]">{group.presentation}</span></header><div className="grid gap-3 sm:grid-cols-2">{group.fields.map((field) => <RecordFieldEditor key={field.id} group={group} field={field} draft={draft} fieldGroups={fieldGroups} onChange={setDraft} />)}</div></section>;
+              return <section key={group.id} className="rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] p-3" aria-label={`Record values ${group.label}`}><header className="mb-3 flex items-center justify-between gap-2"><div><strong className="block text-[10px] text-[var(--color-ec-text)]">{group.label}</strong><span className="text-[8px] text-[var(--color-ec-text-muted)]">{group.id}</span></div><span className="text-[8px] font-semibold uppercase tracking-[.08em] text-[var(--color-ec-text-muted)]">{group.presentation}</span></header><div className="grid gap-3 sm:grid-cols-2">{group.fields.map((field) => <RecordFieldEditor key={field.id} project={session.project} group={group} field={field} draft={draft} fieldGroups={fieldGroups} onChange={setDraft} />)}</div></section>;
             })}
 
             {validationIssues.length ? <div role="alert" className="rounded-[var(--ec-radius-md)] border border-[var(--color-ec-danger-600)] p-3 text-[9px] text-[var(--color-ec-danger-600)]"><strong className="block">Resolve {validationIssues.length} validation issue{validationIssues.length === 1 ? '' : 's'}.</strong><ul className="mt-1 list-disc space-y-1 pl-4">{validationIssues.slice(0, 5).map((issue, index) => <li key={`${issue.path}-${index}`}>{issue.message}</li>)}</ul></div> : null}
