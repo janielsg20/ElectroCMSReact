@@ -15,6 +15,9 @@ export type IconName =
   | 'sun'
   | 'moon'
   | 'system'
+  | 'desktop'
+  | 'tablet'
+  | 'mobile'
   | 'settings'
   | 'collapse'
   | 'expand'
@@ -61,6 +64,9 @@ const paths: Record<IconName, React.ReactNode> = {
   sun: <><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></>,
   moon: <path d="M19.5 15.1A8 8 0 0 1 8.9 4.5 8.5 8.5 0 1 0 19.5 15.1Z" />,
   system: <><rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/></>,
+  desktop: <><rect x="3" y="4" width="18" height="13" rx="1.5"/><path d="M8.5 21h7M12 17v4"/></>,
+  tablet: <><rect x="6" y="2.5" width="12" height="19" rx="2"/><path d="M10 18.5h4"/></>,
+  mobile: <><rect x="8" y="2.5" width="8" height="19" rx="2"/><path d="M11 18.5h2"/></>,
   settings: <><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.12-1.3l2-1.55-2-3.46-2.45 1a7 7 0 0 0-2.25-1.3L13.8 3h-4l-.38 2.39a7 7 0 0 0-2.25 1.3l-2.45-1-2 3.46 2 1.55A7 7 0 0 0 4.6 12c0 .44.04.87.12 1.3l-2 1.55 2 3.46 2.45-1a7 7 0 0 0 2.25 1.3L9.8 21h4l.38-2.39a7 7 0 0 0 2.25-1.3l2.45 1 2-3.46-2-1.55c.08-.43.12-.86.12-1.3Z"/></>,
   collapse: <path d="m14 7-5 5 5 5" />,
   expand: <path d="m10 7 5 5-5 5" />,
