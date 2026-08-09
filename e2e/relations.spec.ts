@@ -100,12 +100,19 @@ async function createProductRelationFieldGroup(page: Page) {
 
 async function createRecord(
   page: Page,
-  input: { contentTypeId: string; title: string; slug: string; relationBrandId?: string },
+  input: {
+    id: string;
+    contentTypeId: string;
+    title: string;
+    slug: string;
+    relationBrandId?: string;
+  },
 ) {
   await page.getByRole('tab', { name: 'Records' }).click();
   const panel = page.getByRole('tabpanel', { name: 'Records' });
   await panel.getByRole('button', { name: 'New record' }).click();
   await panel.getByLabel('Record content type').selectOption(input.contentTypeId);
+  await panel.getByLabel('Record ID').fill(input.id);
   await panel.getByLabel('Record title').fill(input.title);
   await panel.getByLabel('Record slug').fill(input.slug);
 
@@ -125,8 +132,14 @@ test('authors persists and protects canonical relations and record references', 
   await createContentType(page, { id: 'brands', plural: 'Brands', singular: 'Brand', slug: 'brands' });
   await createProductBrandRelation(page);
   await createProductRelationFieldGroup(page);
-  await createRecord(page, { contentTypeId: 'brands', title: 'Nike', slug: 'nike' });
   await createRecord(page, {
+    id: 'brands-record',
+    contentTypeId: 'brands',
+    title: 'Nike',
+    slug: 'nike',
+  });
+  await createRecord(page, {
+    id: 'products-record',
     contentTypeId: 'products',
     title: 'Shoe',
     slug: 'shoe',
