@@ -5,43 +5,75 @@ F04 is fully closed and merged into `main` by squash at `57798d9e00f4a3bb87867a8
 
 F05 — Contenido dinámico is active on `agent/f05-dynamic-content` / draft PR #6.
 
-Completed:
+Completed with executable gate evidence:
 - MF-037 CPT — run #730; docs #740.
 - MF-038 Taxonomy — run #766; docs #776.
 - MF-039 Field type registry — run #786; docs #800.
 - MF-040 Custom field groups — run #834; docs #850.
 - MF-041 Records CRUD — run #901; docs #915; evidence-sync #921.
 
-**MF-042 — Advanced fields is IN_PROGRESS.** Implementation is substantially complete and has received additional static hardening, but it MUST NOT be marked DONE until a real full quality gate executes. MF-043 remains BLOCKED.
+Current closure state:
+- **MF-042 — Advanced fields: IMPLEMENTED / UNVERIFIED.** Implementation and hardening are present, but it MUST NOT be marked DONE until a real full quality gate executes.
+- **MF-043 — Relations: IMPLEMENTED / UNVERIFIED.** The branch already contained substantial MF-043 code beyond the stale documentation. That implementation has now been recovered, audited and hardened, but it also MUST NOT be marked DONE without an executable full gate.
+- **MF-044 — Dynamic bindings: BLOCKED.** Do not begin it until the current gate blocker is resolved and MF-042/MF-043 can be closed honestly.
 
 ## MF-042 implemented state
-- `core/repeater`, `core/group`, `core/calculated`, `core/conditional` have v2 `available` definitions in `createContentFieldTypeRegistry()`; v1 historical definitions remain registered as modeled contracts.
-- `core/relation`, `core/user`, `core/taxonomy` remain v1 `modeled` for MF-043.
+- `core/repeater`, `core/group`, `core/calculated`, `core/conditional` have v2 `available` definitions; v1 historical definitions remain modeled contracts.
 - `advanced-field-runtime.ts`: React-free portable runtime, safe calculation tokenizer/parser/evaluator, conditional operators, nested Group/Repeater normalization/validation, max depth 8 and max Repeater items 100.
-- `isMf042AdvancedField()` makes runtime activation version-aware so historical modeled definitions are not silently interpreted as the MF-042 runtime.
+- `isMf042AdvancedField()` makes runtime activation version-aware so historical modeled definitions are not silently interpreted as MF-042 runtime.
 - Nested Group/Repeater payloads normalize canonically before persistence; nested Calculated values are recomputed and nested Conditional values resolve after sibling defaults are available.
 - Calculated expressions may reference sibling Number/Currency only. Calculated→Calculated chaining is rejected so output is independent of schema order.
-- Conditional sources must be non-advanced siblings. `greaterThan`/`lessThan` additionally require Number/Currency sources and finite numeric `compareValue`; `equals`/`notEquals` require `compareValue`; `truthy`/`falsy` do not.
-- `advanced-field-group.ts`: contextual references, calculation source rules, condition source rules, cycle protection and reference-depth protection.
-- `advanced-field-group-integrity.ts`: deleting a Field Group is blocked while another advanced field references it.
-- `field-group-update-integrity.ts`: updating a Field Group is blocked when the candidate schema would invalidate an existing Record. Dependency detection is transitive through nested Group/Repeater/Conditional references, preventing persisted Records from disappearing from list views after an incompatible schema edit.
-- Public `updateFieldGroup` is routed through the record-integrity wrapper; low-level `updateAdvancedFieldGroup` remains the schema mutation primitive.
-- `advanced-content-record.ts`: advanced record normalization is version-aware and staged structural → calculated → conditional.
+- Conditional sources must be non-advanced siblings. Numeric operators require Number/Currency sources and finite numeric `compareValue`; equality operators require `compareValue`.
 - Field Group authoring remains one path: Field Library → Stored Order → Inspector. There is no duplicate Advanced Fields top-level editor.
-- Records uses `AdvancedRecordFieldControl` for nested Group, Repeater rows, Calculated read-only and Conditional reactive UI. The control refuses to execute modeled/historical field versions as MF-042 runtime.
-- `e2e/advanced-fields.spec.ts` covers reusable groups, schema configuration, calculation, condition activation/deactivation, Repeater rows and durable IndexedDB reload.
-- Unit/safety coverage now includes registry caps, safe expression syntax, compare-value rules, numeric conditional-source compatibility, nested canonical normalization, runtime version boundary, direct record-integrity during schema updates and transitive nested record-integrity.
+- Records uses `AdvancedRecordFieldControl` for nested Group, Repeater rows, Calculated read-only and Conditional reactive UI.
+- Field Group update/delete integrity protects direct and transitive Record dependencies.
+- `e2e/advanced-fields.spec.ts` and unit/safety/version/integrity tests cover the durable runtime.
 
-## Critical MF-042 invariants
+## MF-043 recovered + hardened state
+Canonical model and runtime:
+- `src/core/content/relation.ts`: `RelationDefinition` v1 with source/target CPT, one/many cardinality, bidirectional flag, CRUD and stable ID validation.
+- `src/core/content/reference-field-types.ts`: `core/relation`, `core/user`, `core/taxonomy` v2 are `available`; v1 historical contracts remain modeled.
+- Relation values are unique Record ID arrays; User is one user ID or null; Taxonomy stores unique term IDs scoped to one configured taxonomy.
+- Reference runtime is version-aware through `isMf043ReferenceField()`.
+- Relation contextual validation checks relation existence, owner endpoint, cardinality, referenced Record existence and opposite CPT.
+- User contextual validation checks `CanonicalProject.users`.
+- Taxonomy contextual validation checks taxonomy existence and CPT applicability; taxonomy-term catalog CRUD is still outside current scope.
+
+Referential integrity:
+- `reference-content-record.ts` validates MF-043 references recursively through MF-042 Group/Repeater/Conditional structures and blocks deletion of referenced Records.
+- `reference-field-group.ts` validates relation/taxonomy references while authoring/updating Field Groups and protects Records from incompatible schema changes.
+- `relation-integrity.ts` rejects Relation updates that would invalidate existing Field Groups or Records.
+- `relation-content-type-integrity.ts` blocks deletion of CPTs used as Relation endpoints.
+- `reference-taxonomy-integrity.ts` blocks deletion of taxonomies referenced by v2 Taxonomy fields.
+- Public exports in `src/core/content/index.ts` route Relation/CPT/Taxonomy/Field Group/Record mutations through integrity-aware wrappers.
+
+Backend authoring:
+- `DynamicContentManager` has an accessible Relations tab next to Content Types, Taxonomies, Field Groups and Records.
+- `RelationEditor.tsx` provides dense master-detail Relation CRUD against the canonical ProjectSession.
+- `ReferenceRecordFieldControl.tsx` renders User, Taxonomy and Relation Record controls without parallel stores.
+- `FieldGroupEditor.tsx` now uses contextual registry descriptors instead of manual ID text entry:
+  - `relation-id` → select an existing canonical Relation;
+  - `relation-side` → source/target selector;
+  - `taxonomy-id` → select an existing canonical Taxonomy.
+- `reference-field-types.ts` publishes those contextual config descriptors while retaining core validation as the authority.
+
+MF-043 tests added/hardened:
+- `src/core/content/reference-integrity.test.ts`: cardinality/opposite-endpoint validation, referenced Record deletion protection, Relation deletion protection, endpoint CPT deletion protection and atomic Relation-update rejection.
+- `src/core/content/reference-field-types.test.ts`: v1/v2 boundary, contextual reference validation and regression assertions for `relation-id` / `relation-side` / `taxonomy-id` config descriptors.
+- `e2e/relations.spec.ts`: Products/Brands → Relation → Relation Field Group → Records → durable IndexedDB assertion → reload → referenced Record delete guard → incompatible Relation update guard → Relation delete guard → reload/persistence proof.
+- The E2E uses deterministic Record IDs and the contextual Relation selectors.
+
+## Critical F05 invariants
 - Core content runtime remains React-free.
-- No parallel stores: `CanonicalProject.fieldGroups` and `CanonicalProject.records` remain authoritative.
-- Advanced field behavior must resolve by type + version, never by type name alone.
+- No parallel stores: canonical Project collections remain authoritative.
+- Advanced/reference behavior resolves by type + version, never by type name alone.
 - Historical modeled v1 contracts are not automatically migrated or executed as v2.
 - Repeater hard cap is 100 rows; nested reference depth is 8.
 - Calculated never uses `eval`, `Function` or dynamic code execution.
-- Record values derived from a Field Group must remain valid after schema updates. Incompatible schema updates are rejected instead of hiding invalid records.
-- Field Group deletion guards remain chained: advanced references → record assignments → taxonomy assignments.
-- `relation`, `user`, `taxonomy` must remain modeled until MF-043.
+- Record values derived from Field Groups must remain valid after schema/Relation changes; incompatible mutations are rejected before commit.
+- Relation fields may reference only Records on the opposite configured endpoint and must obey side cardinality.
+- Destructive operations do not silently cascade through Relations/references.
+- Durable persistence E2E polls IndexedDB before reload when correctness depends on storage visibility.
 
 ## Quality-gate strategy
 Normal `agent/**` development commits do not run the expensive workflow. `main` retains the final gate and dedicated quality PRs are used for microphase checks.
@@ -49,44 +81,44 @@ Normal `agent/**` development commits do not run the expensive workflow. `main` 
 Primary manual gate:
 - branch: `quality/f05`;
 - PR #7 `quality/f05 -> main`;
-- move `quality/f05` to the exact MF HEAD, reopen #7 once, inspect, then close without merge.
-
-Additional diagnostic gate:
-- fresh PR #8 was created from a fresh quality branch specifically to test `pull_request.opened`.
-- PR #8 triggered run #1018, but both jobs failed before executing any step (`steps=[]`) and job log download returned `BlobNotFound`.
-- This proves the failure is not caused by reusing PR #7 or by a missing opened/reopened event.
+- move `quality/f05` to the exact F05 HEAD, inspect a real workflow, then close #7 without merge.
 
 ## Current Actions blocker
-- Earlier runs #986/#990/#994/#1000/#1002 failed before any job step.
-- Manual run #1014 also failed before any step.
-- Fresh opened-event run #1018 also failed before any step; no usable job log exists.
-- A later attempt on the newest MF-042 HEAD again produced zero workflow/check status at inspection time.
-- Zero-step/no-run attempts are neither PASS nor FAIL evidence for code.
-- Local execution cannot replace CI: the container cannot resolve `github.com`, and its npm mirror does not contain the project dependencies.
-- Vercel Sandbox is not exposed as an executable connected runner here. Do not turn a deployment into CI; deployments remain manual-only by user rule.
+Historical evidence:
+- Runs #986/#990/#994/#1000/#1002/#1014 failed before any job step.
+- Fresh opened-event PR #8 produced run #1018, but both jobs had `steps=[]`; log download returned `BlobNotFound`.
+- Later MF-042 attempts also produced zero workflow/check status.
+
+Current recovery attempt:
+- MF-043 code head before this documentation update: `d8694d083bb2896d16869c4909b356a302165636`.
+- `quality/f05` was moved to that exact code head while PR #7 was open.
+- Inspection returned **zero workflow runs associated with the commit**. No verify/lint/TypeScript/unit/coverage/Playwright/build step executed.
+- Therefore this is neither PASS nor FAIL evidence for MF-042/MF-043 code.
+- Local execution still cannot replace CI in this environment because the prior container path could not resolve GitHub/install the project dependencies.
+- Do not use a deployment as a CI substitute; `QUALITY_GATES.md` remains authoritative.
 
 ## Durable F05 facts
-- Canonical persistence collections remain `contentTypes`, `taxonomies`, `fieldGroups`, `records`; `relations` begins only in MF-043.
-- Field behavior resolves through versioned `FieldTypeRegistry`; callbacks/definitions are not serialized into `CanonicalProject`.
+- Canonical persistence collections are `contentTypes`, `taxonomies`, `fieldGroups`, `records`, `relations`, plus existing `users` and other project collections; no feature-specific duplicate stores.
+- Field behavior resolves through the versioned `FieldTypeRegistry`; callbacks/definitions are never serialized into `CanonicalProject`.
 - Advanced nested fields reference reusable Field Groups by ID rather than duplicating schemas.
 - Project mutations go through `ProjectSession` / `projectRef.current` and existing autosave/recovery.
-- Durable persistence E2E polls IndexedDB before reload when correctness depends on storage visibility.
+- Reference-integrity wrappers must remain the public mutation surface exposed by `src/core/content/index.ts`.
 
 ## Editor design direction
 - Source: `design-system/electrocms-editor/MASTER.md` + `pages/editor.md`.
 - Visual builder anatomy: top commands + left Insert/Elements Library + dominant canvas + right inspector.
 - Backend data CRUD may use dense master-detail.
-- Advanced fields are integrated in Field Groups + Records, not a duplicate top-level editor.
+- Advanced/reference fields are integrated in Field Groups + Records, not duplicate top-level editors.
 - No forced Tailwind/shadcn migration.
 
 ## Resume protocol
 1. Read `AI_ENTRYPOINT.md`, `RULES.md`, `MEMORY.md`, `TRACKING.md`, this handoff, `DECISIONS.md`, `.ai/memory/DECISIONS_LOG.md`, `KNOWN_ISSUES.md` and `QUALITY_GATES.md`.
 2. Resolve the exact current `agent/f05-dynamic-content` HEAD before any gate attempt.
-3. Check whether GitHub Actions hosted runners are usable for the repo/account.
-4. For one gate attempt, move `quality/f05` to that exact HEAD, reopen PR #7 once, require actual executed steps/logs, then close #7 without merge.
-5. Fix any real verify/lint/TypeScript/unit/coverage/Playwright/build failure; never infer code failure from zero-step jobs.
-6. Only after all required checks PASS, update MEMORY/IMPLEMENTATION_MEMORY/DECISIONS/TRACKING/HANDOFF with the exact gate and mark MF-042 DONE.
-7. Only then recover the exact MF-043 Relations contract and begin it.
+3. Check whether GitHub Actions hosted runners are actually producing jobs/steps for the repo/account.
+4. Move `quality/f05` to that exact HEAD and inspect the technical PR/workflow; require actual executed steps/logs, then close #7 without merge.
+5. Fix any real verify/lint/TypeScript/unit/coverage/Playwright/build failure; never infer code failure from zero-step/no-run attempts.
+6. Only after all required checks PASS, update MEMORY/IMPLEMENTATION_MEMORY/DECISIONS/TRACKING/HANDOFF with exact evidence and close MF-042/MF-043 in sequence.
+7. Only then begin MF-044 Dynamic bindings.
 
 ## Phase sequence
 - MF-037 — DONE
@@ -94,6 +126,6 @@ Additional diagnostic gate:
 - MF-039 — DONE
 - MF-040 — DONE
 - MF-041 — DONE
-- MF-042 — IN_PROGRESS; implementation + hardening present, executable gate blocked externally
-- MF-043 — BLOCKED
+- MF-042 — IMPLEMENTED / UNVERIFIED; executable gate blocked externally
+- MF-043 — IMPLEMENTED / UNVERIFIED; recovered + hardened, executable gate blocked externally
 - MF-044 — BLOCKED
