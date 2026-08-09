@@ -21,39 +21,49 @@ ElectroCMS es un CMS visual local-first construido en React 19 + TypeScript stri
 - Root horizontal overflow está prohibido.
 
 ## Editor visual system vigente — Studio Pro
-Desde 2026-08-08/09, ElectroCMS usa un único visual system para el editor: **`studio-pro`**.
+ElectroCMS usa un único sistema visual para el editor: **`studio-pro`**.
 
-- El anterior `bento-high-density` está retirado.
-- No existen hojas `bento-high-density.css`, `bento-modern-polish.css` ni las capas `reference-builder-*` anteriores en el bundle.
 - `EDITOR_THEME_PRESET_IDS` contiene únicamente `studio-pro`.
-- Workspace preferences legacy con Bento u otros preset IDs normalizan automáticamente a `studio-pro` sin cambiar `WorkspacePreferences.schemaVersion = 1`.
-- No existe selector de visual preset en UI.
+- Preferencias de workspace con un preset no reconocido normalizan automáticamente a `studio-pro` sin cambiar `WorkspacePreferences.schemaVersion = 1`.
+- No existe selector de visual presets del editor.
 - `light` / `dark` / `auto` son modos de apariencia del mismo Studio Pro.
 - Frontend/backend project themes siguen siendo independientes y exportables.
 
-## Implementación visual
-Fuente de verdad:
+## Dirección visual vigente
+La referencia principal del shell es un visual builder profesional: toolbar superior continua, rail de iconos estrecho, navegador Pages/Components, canvas dominante e inspector Properties persistente en desktop.
+
+Principios:
+- superficies continuas y separadores de 1px;
+- radios contenidos, sin mosaicos decorativos ni tarjetas flotantes innecesarias;
+- color usado como señal funcional, no como decoración;
+- azul = navegación/edición principal;
+- violeta = creación/publicación;
+- cian/verde = datos/acciones;
+- ámbar = ajustes/estado;
+- microanimaciones de 140–180ms en iconos/botones;
+- `prefers-reduced-motion` desactiva animaciones no esenciales.
+
+Fuente visual final:
+- `src/app/ui/studio-pro-tailwind.css` para la base Tailwind-first.
+- `src/app/ui/studio-pro.css` como entrypoint final y autoridad de compatibilidad/fidelidad visual.
 - `design-system/electrocms-editor/MASTER.md`.
 - `design-system/electrocms-editor/pages/editor.md`.
-- `src/app/ui/studio-pro-tailwind.css` como única capa visual final de Studio Pro.
-
-Studio Pro es **Tailwind-first**: layout/spacing/typography/states usan utilities y `@apply`; custom properties quedan para roles semánticos, canvas/elevation y casos que no deben convertirse en clases ad-hoc. No acumular nuevas hojas “polish/fix/fidelity”; corregir el sistema o componente fuente.
 
 ## Desktop Builder
-Composición objetivo inspirada en constructores visuales profesionales:
-- app toolbar ≈60px;
+Composición objetivo:
+- app toolbar ≈64px;
 - icon rail ≈60px;
-- Pages/Components navigator ≈276–304px;
+- Pages/Components navigator ≈300px;
 - canvas flexible/dominante;
-- Properties inspector ≈318–344px.
+- Properties inspector ≈336px.
 
-Pages/Components tabs, canvas toolbar e inspector comparten origen vertical. `studio-context-bar` y `builder-document-bar` se ocultan en desktop Builder porque duplican contexto. El toolbar V2 neutraliza offsets legacy del canvas.
+Pages/Components tabs, canvas toolbar e inspector comparten origen vertical. El rail desktop no repite el logo del application header. El toolbar V2 neutraliza offsets legacy del canvas.
 
 ## Compact/mobile Builder — canvas-first
 En `compactLayout` no se renderizan persistentemente Pages/Components ni Inspector.
 
 Vista default:
-- header compacto;
+- header de una fila ≈60px;
 - canvas ocupando el workspace;
 - contextual command bar solo cuando hay selección;
 - bottom dock: **Pages / Add / Layers / Properties**.
@@ -64,9 +74,7 @@ Panels:
 - Layers → sheet reutilizando `LayersNavigator` canónico.
 - Properties → sheet reutilizando `WidgetInspector` schema-driven.
 
-Los sheets usan `role=dialog`, `aria-modal`, Close visible, `Escape`, backdrop dismissal y autofocus en Close. Hidden desktop panels no quedan focusables en móvil. Touch targets compactos usan floor 48px y el dock respeta `env(safe-area-inset-bottom)`.
-
-A <=720px el header se reduce a una sola fila de ~60px: navegación + documento + primary action area. Secondary desktop chrome puede ocultarse para proteger el canvas siempre que no se convierta en la única ruta a una función crítica.
+Los sheets usan `role=dialog`, `aria-modal`, Close visible, `Escape`, backdrop dismissal y autofocus en Close. Touch targets compactos usan floor 48px y el dock respeta `env(safe-area-inset-bottom)`.
 
 ## Canvas
 - `CanonicalDocument.nodes + children` es la única estructura persistente.
@@ -76,11 +84,11 @@ A <=720px el header se reduce a una sola fila de ~60px: navegación + documento 
 - Browser zoom permanece habilitado.
 - Grid/guides/snapping son overlays transitorios.
 - Compact stage reserva padding inferior para el dock.
-- Compact command bar se oculta cuando `data-selection-count=0`; cuando aparece, controles touch son >=48px y el strip puede scrollear localmente.
 
 ## Inspector / Layers / Widgets
 - Widget registry core es framework-neutral.
 - Inspector se genera desde schema; no duplica props persistentes.
+- Tabs visibles del inspector: `Properties` y `Design`.
 - Layers search/rename/lock/hide/reorder ejecutan acciones canónicas.
 - Mobile sheets solo cambian presentación, no introducen estado persistente paralelo.
 
@@ -90,13 +98,6 @@ A <=720px el header se reduce a una sola fila de ~60px: navegación + documento 
 - Breakpoint inheritance nearest-first.
 - Geometría X/Y/W/H usa el mismo `ResponsiveStyleSet` sin mezclar responsabilidades.
 - Breakpoints del proyecto y breakpoint del shell del editor son conceptos separados.
-
-## Project themes frontend/backend
-- `frontendThemeId` / `backendThemeId` permanecen en `CanonicalProject`.
-- ProjectThemeRegistry valida scope/id/version/tokens.
-- Built-ins son inmutables; se duplican para editar.
-- Theme packages siguen schema portable y no incluyen credenciales/usuarios/binarios.
-- Nunca usar editor appearance/Studio Pro para mutar output themes.
 
 ## Accesibilidad durable
 - WCAG AA baseline.
@@ -111,6 +112,6 @@ A <=720px el header se reduce a una sola fila de ~60px: navegación + documento 
 - E2E debe cubrir dock/sheets/drawer y geometría desktop.
 
 ## Trabajo actual
-Rama: `agent/unified-bento-high-density-ui` / draft PR #36 (nombre histórico de rama; el producto ya no usa Bento).
+Rama: `agent/studio-reference-ui-polish` / draft PR #38.
 
-Objetivo actual: reemplazar completamente la UI Bento por Studio Pro Tailwind, mantener el desktop similar a la referencia de visual builder y convertir móvil/tablet en canvas-first con dock y sheets accesibles. Antes de mergear, el quality gate del último head debe quedar completamente verde.
+Objetivo actual: acercar toda la interfaz Studio Pro a la referencia visual proporcionada, incluyendo desktop y móvil, con color funcional moderado, microanimaciones y sin degradar el canvas-first mobile layout. Antes de mergear, el quality gate del último head debe quedar completamente verde.

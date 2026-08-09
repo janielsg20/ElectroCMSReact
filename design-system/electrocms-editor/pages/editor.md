@@ -5,6 +5,19 @@ This file specializes `../MASTER.md` for the visual Builder.
 ## Primary task
 Build and manipulate a page visually while preserving canonical structure, responsive behavior and a practical canvas viewport at every editor size.
 
+## Visual reference contract
+The supplied professional visual-builder screenshot is the direct layout reference. The authoring chrome is a flat precision workspace, not a card-grid/dashboard composition.
+
+Required visual rules:
+- continuous white/light-gray work surfaces;
+- fine 1px separators;
+- no decorative card mosaics or card-grid composition;
+- control radii are intentionally small: roughly 2–6px;
+- larger radii are reserved only for transient mobile sheets/dialogs and stay restrained;
+- secondary icons and menus remain monochrome;
+- saturated blue is concentrated in primary actions plus precise focus/selection indicators;
+- shadows are minimal and used mainly for transient overlays or authored-document separation.
+
 ## Desktop composition
 
 ```text
@@ -18,13 +31,28 @@ Build and manipulate a page visually while preserving canonical structure, respo
 ```
 
 Target geometry:
-- app toolbar ≈60px;
+- app toolbar ≈64px;
 - global rail ≈60px;
-- navigator ≈276–304px;
-- inspector ≈318–344px;
+- navigator = 300px desktop column;
+- inspector ≈336px;
 - canvas receives all remaining width.
 
 Pages/Components tabs, canvas toolbar and inspector align to one top edge. No negative toolbar offsets or redundant Builder rows are allowed.
+
+### Pages / Components navigator
+On desktop the navigator is a persistent, full-height 300px column. It must never collapse, disappear behind the canvas, inherit opacity/visibility from compact mode or shrink below its contract width.
+
+Pages view contains:
+- visible Pages/Components tabs;
+- real project document rows;
+- active-document state;
+- canonical Widget Tree with hierarchy guides.
+
+Components view contains:
+- search field;
+- category filters;
+- actual insertable registry widgets;
+- compact neutral tiles with small radii and no category color palette.
 
 ## Compact/mobile composition
 Compact mode (`<=960px`) is not a stacked desktop layout.
@@ -99,6 +127,7 @@ A professional user can immediately answer:
 - What document is open?
 - What is selected?
 - Where are Pages, Add, Layers and Properties?
+- Are Pages and Components visibly available on desktop without opening another workspace?
 - Can I close the active panel without knowing a gesture?
 - Is the canvas still large enough to work on a phone/tablet?
 - Can I navigate with keyboard/touch without horizontal page overflow?

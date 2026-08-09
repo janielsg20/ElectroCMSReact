@@ -124,7 +124,7 @@ export function WidgetInspector({
           <span className="widget-inspector-empty-mark" aria-hidden="true">+</span>
           <strong>Nothing selected</strong>
           <span>Select one widget to inspect its properties.</span>
-          <small>Select a single element on the canvas to edit its content and appearance.</small>
+          <small>Select a single element on the canvas to edit its properties and design.</small>
         </div>
       </aside>
     );
@@ -178,13 +178,13 @@ export function WidgetInspector({
       </header>
 
       <div className="widget-inspector-tabs" role="tablist" aria-label="Inspector sections">
-        <button type="button" role="tab" aria-selected={activeTab === 'content'} data-active={activeTab === 'content'} onClick={() => setActiveTab('content')}>Content</button>
-        <button type="button" role="tab" aria-selected={activeTab === 'style'} data-active={activeTab === 'style'} onClick={() => setActiveTab('style')}>Style</button>
+        <button type="button" role="tab" aria-selected={activeTab === 'content'} data-active={activeTab === 'content'} onClick={() => setActiveTab('content')}>Properties</button>
+        <button type="button" role="tab" aria-selected={activeTab === 'style'} data-active={activeTab === 'style'} onClick={() => setActiveTab('style')}>Design</button>
       </div>
 
       <div className="widget-inspector-scroll">
         {activeTab === 'content' ? (
-          <div role="tabpanel" aria-label="Content inspector">
+          <div role="tabpanel" aria-label="Properties inspector">
             {schema.sections.length > 0 ? (
               <div className="widget-inspector-sections">
                 {schema.sections.map((section) => {
@@ -207,10 +207,10 @@ export function WidgetInspector({
                   );
                 })}
               </div>
-            ) : <div className="widget-inspector-empty">This element has no editable content properties.</div>}
+            ) : <div className="widget-inspector-empty">This element has no editable properties.</div>}
           </div>
         ) : (
-          <div role="tabpanel" aria-label="Style inspector">
+          <div role="tabpanel" aria-label="Design inspector">
             <WidgetStyleInspector
               node={node}
               breakpointId={breakpointId}

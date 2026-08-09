@@ -1,0 +1,474 @@
+/* Studio Pro final reference layer.
+ *
+ * The supplied visual-builder screenshot is the visual contract: flat continuous
+ * work surfaces, fine separators, compact rectangular controls, monochrome
+ * secondary iconography and saturated blue reserved for primary actions and
+ * precise focus/selection indicators. This is the same Studio Pro system on
+ * desktop, tablet and phone.
+ */
+
+/* Precision radius scale: intentionally much squarer than dashboard/card UI. */
+.electrocms-app[data-editor-preset="studio-pro"] {
+  --ec-radius-xs: 2px;
+  --ec-radius-sm: 3px;
+  --ec-radius-md: 4px;
+  --ec-radius-lg: 5px;
+  --ec-radius-xl: 6px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .ec-control {
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .ec-panel,
+.electrocms-app[data-editor-preset="studio-pro"] .project-theme-controls,
+.electrocms-app[data-editor-preset="studio-pro"] .production-studio .ec-panel {
+  border-radius: 5px;
+  box-shadow: none;
+}
+
+/* Application header ------------------------------------------------------- */
+.electrocms-app[data-editor-preset="studio-pro"] .app-header {
+  height: 64px;
+  min-height: 64px;
+  border-radius: 0;
+  border-bottom: 1px solid var(--ec-studio-line);
+  background: var(--color-ec-surface);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .brand-mark {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--ec-studio-line);
+  border-radius: 4px;
+  background: var(--color-ec-surface);
+  color: var(--color-ec-text);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .brand-mark svg {
+  filter: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-controls > div,
+.electrocms-app[data-editor-preset="studio-pro"] .header-controls > label {
+  border-radius: 4px;
+  border-color: var(--ec-studio-line);
+  background: var(--color-ec-surface);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-controls select,
+.electrocms-app[data-editor-preset="studio-pro"] .header-controls button,
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions button {
+  border-radius: 4px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .breakpoint-field,
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-eyebrow,
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions button:first-child {
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .theme-field {
+  border-color: var(--ec-studio-line);
+  background: var(--color-ec-surface);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions button:first-child:hover {
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+}
+
+/* Publish remains the main saturated header action. */
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions button:last-child {
+  border-radius: 4px;
+}
+
+/* Rail and global menus ----------------------------------------------------- */
+.electrocms-app[data-editor-preset="studio-pro"]
+  .studio-rail[data-studio-rail="true"] .studio-rail-button,
+.electrocms-app[data-editor-preset="studio-pro"]
+  .studio-rail[data-studio-rail="true"] .workspace-settings > summary {
+  --rail-tone: var(--color-ec-text-muted);
+  --rail-soft: var(--color-ec-surface-muted);
+  border-radius: 4px;
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .studio-rail[data-studio-rail="true"] .studio-rail-button .studio-rail-icon {
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .studio-rail[data-studio-rail="true"] .studio-rail-button:hover,
+.electrocms-app[data-editor-preset="studio-pro"] .workspace-settings > summary:hover {
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .studio-rail[data-studio-rail="true"] .studio-rail-button:hover .studio-rail-icon {
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .studio-rail[data-studio-rail="true"] .studio-rail-button[data-active="true"] {
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .studio-rail[data-studio-rail="true"] .studio-rail-button[data-active="true"] .studio-rail-icon {
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .studio-rail[data-studio-rail="true"] .studio-rail-button[data-active="true"]::before {
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--ec-ref-blue);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .workspace-settings[open] > summary svg {
+  color: currentColor;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .workspace-settings-popover {
+  border-radius: 6px;
+  border-color: var(--ec-studio-line);
+  box-shadow: 0 12px 32px rgb(15 23 42 / .14);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .workspace-settings-popover :where(button, select) {
+  border-radius: 4px;
+}
+
+/* Builder navigator: persistent, full-height desktop column ---------------- */
+@media (min-width: 961px) {
+  .electrocms-app[data-editor-preset="studio-pro"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"] .studio-pro-builder {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    align-items: stretch;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"] .builder-context-panel {
+    display: flex !important;
+    grid-column: 1;
+    width: 300px !important;
+    min-width: 300px !important;
+    max-width: 300px !important;
+    height: 100%;
+    min-height: 0;
+    align-self: stretch;
+    overflow: hidden;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative;
+    z-index: 1;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"] .studio-editor-region {
+    grid-column: 2;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+  }
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-context-panel {
+  border-radius: 0;
+  border-right: 1px solid var(--ec-studio-line);
+  background: var(--color-ec-surface);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-context-tabs {
+  flex: none;
+  height: 52px;
+  min-height: 52px;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 0;
+  border-bottom: 1px solid var(--ec-studio-line);
+  background: var(--color-ec-surface);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-context-tabs button {
+  min-height: 38px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-ec-text-muted);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-context-tabs button:hover {
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-context-tabs button[data-active="true"] {
+  border-color: var(--ec-studio-line);
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text);
+  box-shadow: inset 0 -2px 0 var(--ec-ref-blue);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-pages-panel,
+.electrocms-app[data-editor-preset="studio-pro"] .builder-components-panel {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-pages-panel {
+  height: 100%;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-pages-section > header {
+  min-height: 46px;
+  border-radius: 0;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-pages-section > header span {
+  min-width: auto;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-page-row {
+  min-height: 40px;
+  border-radius: 3px;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-page-row[data-active="true"] {
+  border-color: transparent;
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+  box-shadow: inset 2px 0 0 var(--ec-ref-blue);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-tree-row {
+  border-radius: 3px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-components-panel .ec-control {
+  border-radius: 4px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-components-panel [aria-label="Element categories"] button {
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-components-panel [aria-label="Element categories"] button[data-active="true"] {
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .builder-components-panel section button[aria-label^="Add "] {
+  min-height: 74px;
+  border-radius: 4px !important;
+  border-color: var(--ec-studio-line);
+  background: var(--color-ec-surface);
+  box-shadow: none !important;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .builder-components-panel section button[aria-label^="Add "] > span:first-child {
+  border-radius: 3px !important;
+  background: var(--color-ec-surface-muted) !important;
+  color: var(--color-ec-text-muted) !important;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .builder-components-panel section button[aria-label^="Add "]:hover {
+  border-color: var(--ec-studio-line-strong) !important;
+  background: var(--color-ec-surface-subtle) !important;
+  box-shadow: none !important;
+  transform: translateY(-1px);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-context-empty,
+.electrocms-app[data-editor-preset="studio-pro"] .builder-components-panel .border-dashed {
+  border-radius: 4px !important;
+}
+
+/* Canvas and inspector ------------------------------------------------------ */
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-command-bar-v2 :where(button, select, input) {
+  border-radius: 4px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-layers-trigger[aria-pressed="true"] {
+  border-color: var(--ec-studio-line-strong);
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-scaled-document {
+  border-radius: 4px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-node {
+  border-radius: 3px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-layer-row[data-selected="true"] {
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+  box-shadow: inset 2px 0 0 var(--ec-ref-blue);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-layers-popover {
+  border-radius: 6px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-tabs button {
+  border-radius: 3px 3px 0 0;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-disclosure-trigger {
+  border-radius: 3px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .widget-inspector-field :where(input:not([type="checkbox"]), select, textarea),
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-geometry-controls input {
+  border-radius: 4px;
+}
+
+/* General Studio workspaces: flat utility surfaces, not card mosaics. */
+.electrocms-app[data-editor-preset="studio-pro"] .production-studio :where(.ec-panel, .project-theme-controls) {
+  border-radius: 5px;
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .production-studio [role="tab"] {
+  border-radius: 4px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .production-studio [role="tab"][aria-selected="true"] {
+  border-color: var(--ec-studio-line);
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+  box-shadow: none;
+}
+
+/* Mobile: same visual language, only the interaction model changes. */
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock {
+  right: 6px;
+  bottom: 6px;
+  left: 6px;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgb(15 23 42 / .12);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button {
+  --dock-tone: var(--color-ec-text-muted) !important;
+  --dock-soft: var(--color-ec-surface-muted) !important;
+  border-radius: 4px;
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button svg {
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button:hover,
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button[aria-pressed="true"] {
+  border-color: var(--ec-studio-line-strong);
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-panel,
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-canvas-sheet-panel {
+  border-radius: 8px 8px 0 0;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-sheet-header button {
+  border-radius: 4px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-sheet-header button:hover {
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-navigation-drawer {
+  border-radius: 0;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"]
+  .header-project button[aria-label="Open navigation"] {
+  border-radius: 4px;
+  color: var(--color-ec-text-muted);
+}
+
+/* Tablet keeps the responsive authoring essentials in the header. */
+@media (min-width: 641px) and (max-width: 960px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls {
+    display: flex;
+    min-width: 0;
+    justify-content: center;
+    gap: 6px;
+    overflow: hidden;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > div:first-child {
+    display: flex !important;
+    width: auto;
+    min-width: 0;
+    flex: 0 1 auto;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"]
+    .header-controls > div:first-child .breakpoint-field {
+    display: block !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .zoom-control {
+    display: flex !important;
+    flex: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .history-control,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .theme-field {
+    display: none !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls select {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 640px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .app-header,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > div:first-child .compact-field:first-child select,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions button {
+    border-radius: 0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-project button[aria-label="Open navigation"],
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions button {
+    border-radius: 4px;
+  }
+}

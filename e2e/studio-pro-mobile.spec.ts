@@ -24,8 +24,21 @@ test.describe('Studio Pro mobile builder', () => {
       const box = await button.boundingBox();
       expect(box).not.toBeNull();
       expect(box!.width).toBeGreaterThanOrEqual(48);
-      expect(box!.height).toBeGreaterThanOrEqual(48);
+      expect(box!.height).toBeGreaterThanOrEqual(52);
     }
+
+    const dockVisuals = await dock.evaluate((element) => {
+      const buttons = [...element.querySelectorAll<HTMLButtonElement>('button')];
+      return {
+        iconColors: buttons.flatMap((button) => {
+          const icon = button.querySelector<SVGElement>('svg');
+          return icon ? [getComputedStyle(icon).color] : [];
+        }),
+        transitionDurations: buttons.map((button) => getComputedStyle(button).transitionDuration),
+      };
+    });
+    expect(new Set(dockVisuals.iconColors).size).toBe(1);
+    expect(dockVisuals.transitionDurations.some((value) => !/^0s(?:, 0s)*$/.test(value))).toBe(true);
 
     const menu = page.getByRole('button', { name: 'Open navigation' });
     const menuBox = await menu.boundingBox();
