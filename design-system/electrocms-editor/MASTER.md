@@ -1,26 +1,26 @@
 # ElectroCMS Editor Design System — MASTER
 
 ## Purpose
-This is the source of truth for the ElectroCMS **authoring chrome**. It does not define frontend/backend project themes.
+This document is the source of truth for the ElectroCMS **authoring chrome**. It does not define frontend/backend project themes.
 
 ElectroCMS is a professional local-first no-code/low-code builder. The editor prioritizes canvas space, predictable navigation, information density, accessible interaction and confidence while editing.
 
 ## One visual system: Studio Pro
-ElectroCMS exposes one editor UI/UX system: **Studio Pro** (`studio-pro`). It is Tailwind-first. `light`, `dark` and `auto` are appearance modes of the same system. Project frontend/backend themes remain independent.
+ElectroCMS exposes one editor UI/UX system: **Studio Pro** (`studio-pro`). `light`, `dark` and `auto` are appearance modes of the same system. Frontend/backend project themes remain independent.
 
-Do not introduce selectable editor visual presets or parallel visual skins. Improve the shared system at the component/source level.
+Do not introduce selectable editor visual presets, Bento variants or parallel chrome skins. Improve the shared system at the component/source level.
 
 ## Product reference
-The primary composition reference is the supplied professional visual-builder screenshot. Studio Pro follows the same class of interaction model used by mature visual builders such as FlutterFlow, Webflow and Wix Studio without copying proprietary implementation.
+The primary composition reference is the supplied professional visual-builder screenshot.
 
 Required composition:
 - continuous compact application toolbar;
 - narrow global icon rail on desktop;
 - persistent Pages/Components navigator on desktop;
-- dominant canvas;
+- dominant central canvas;
 - persistent contextual Properties inspector on desktop;
-- explicit responsive breakpoints;
-- mobile authoring as a dedicated interaction mode rather than compressed desktop chrome.
+- explicit responsive-breakpoint editing;
+- mobile authoring as a dedicated canvas-first interaction mode rather than compressed desktop chrome.
 
 ## Visual character
 Studio Pro is a precision authoring tool, not a dashboard.
@@ -33,34 +33,49 @@ Use:
 - modest 6–12px radii;
 - minimal elevation except floating menus, dialogs and authored-document separation;
 - compact but readable typography;
-- strong spatial alignment.
+- strong spatial alignment;
+- one restrained blue accent family.
 
 Avoid:
-- decorative mosaic layouts;
+- decorative mosaic/Bento layouts;
 - oversized cards;
 - stacked card-on-card compositions;
 - heavy gradients;
 - unrelated accent colors;
+- colored icon palettes by module/category;
 - persistent decorative animation;
 - rounded containers around every control group.
 
-## Functional color system
-Color must communicate purpose and state, never visual noise.
+## Color contract — monochrome chrome
+The supplied reference is predominantly neutral. ElectroCMS follows that rule.
 
-Suggested roles:
-- **Blue:** active navigation, editing, selection, primary canvas actions.
-- **Violet/indigo:** creation, publishing and preview-adjacent actions.
-- **Cyan/green:** data, workflows, forms and positive actions.
-- **Amber:** settings, warnings and workspace state.
-- **Rose:** exceptional/secondary specialist tools only.
-- **Slate/neutral:** secondary and inactive controls.
+### Neutral by default
+These remain monochrome/neutral:
+- Studio rail icons;
+- Pages/Components navigation icons;
+- Components library icons and tiles;
+- Preview and secondary header actions;
+- breakpoint/zoom/history/appearance controls;
+- Settings icon;
+- Layers and other secondary canvas commands;
+- mobile Pages/Add/Layers/Properties dock icons;
+- sheet Close icons and secondary inspector icons.
 
-Rules:
-- default chrome remains predominantly neutral;
-- use soft tinted backgrounds for hover/current states;
-- use saturated color mainly for icon, indicator or primary CTA;
-- selected/current state must not rely on color alone;
-- maintain WCAG AA contrast.
+### Where saturated color is allowed
+Use saturated blue mainly for:
+- primary Publish/Export CTA;
+- primary Insert Widget action;
+- precise canvas selection outline;
+- focus-visible ring;
+- thin current/active indicators when needed.
+
+Selected/current secondary controls should prefer neutral surface/weight changes and, when useful, a thin blue underline/edge rather than a filled colored button.
+
+### Semantic-status exception
+Save/error/warning/success indicators may retain semantic colors when color communicates real state rather than decoration. Never rely on color alone; pair with text/iconography/state semantics.
+
+### Prohibited pattern
+Do not assign violet, cyan, green, amber, rose or other hues to navigation modules, widget categories or mobile dock destinations simply to differentiate them.
 
 ## Desktop layout contract
 For widths above the compact-shell breakpoint:
@@ -68,7 +83,7 @@ For widths above the compact-shell breakpoint:
 1. **Application toolbar** — approximately 64px high.
 2. **Studio rail** — approximately 60px wide, icon-first.
 3. **Builder navigator** — approximately 300px.
-4. **Canvas** — flexible and always receives the largest remaining area.
+4. **Canvas** — flexible and receives the largest remaining area.
 5. **Properties inspector** — approximately 336px.
 
 Pages/Components tabs, canvas toolbar and inspector start on the same vertical line. Avoid redundant rows that duplicate document/breakpoint information already present elsewhere.
@@ -76,26 +91,30 @@ Pages/Components tabs, canvas toolbar and inspector start on the same vertical l
 The desktop rail must not repeat the application logo already shown in the top toolbar.
 
 ## Application toolbar
-The toolbar establishes the editor hierarchy.
-
-Order of importance:
+Hierarchy:
 1. project/navigation identity;
 2. active document + breakpoint;
 3. zoom/history/appearance;
-4. preview;
-5. primary publish/export action.
+4. Preview;
+5. primary Publish/Export action.
 
-Primary CTA uses solid blue. Secondary actions stay neutral with small functional color cues. Avoid large shadows.
+Rules:
+- primary CTA uses solid blue;
+- Preview and other secondary actions remain neutral;
+- controls are compact with fine borders;
+- avoid large shadows and decorative color blocks;
+- save state stays readable but visually quiet.
 
 ## Studio rail
 Desktop navigation is a 60px icon rail.
 
 - controls are about 44px square;
-- current item uses a soft tinted background plus a visible edge indicator;
-- icons may use restrained semantic color by function;
-- hover animation is subtle and must not move the hit area;
+- all module icons use the same neutral icon color;
+- hover may increase contrast but must not introduce a module-specific hue;
+- current item uses neutral surface/weight plus one thin blue edge indicator;
+- icon motion is subtle and never moves the hit area;
 - labels remain accessible through `aria-label`/title/tooltips even when visually hidden;
-- settings remain anchored at the bottom.
+- Settings remains anchored at the bottom.
 
 Compact navigation becomes an accessible drawer and may show labels.
 
@@ -103,11 +122,12 @@ Compact navigation becomes an accessible drawer and may show labels.
 Desktop uses a persistent Pages/Components navigator.
 
 - width target ≈300px;
-- Pages/Components tabs use flat segmented navigation;
-- active page is stronger by weight/background plus a thin blue edge;
+- Pages/Components tabs use flat navigation;
+- active page is stronger by weight/background plus a thin blue edge when useful;
 - Widget Tree hierarchy may use subtle guide lines;
 - Components uses search, categories and compact insertion tiles;
-- insertion tiles may vary icon tint by category but retain neutral surfaces.
+- component tiles and icons remain neutral across categories;
+- hover uses border/background/elevation changes rather than category colors.
 
 Do not make the navigator look like a separate dashboard card.
 
@@ -131,9 +151,9 @@ Desktop toolbar aligns with Builder navigator tabs and top of the inspector.
 
 - target height ≈52px;
 - controls are compact 32–36px high;
-- Quick Add / primary insert action receives the strongest emphasis;
-- other editing commands remain neutral;
-- selected/toggled tools may use a soft semantic tint;
+- primary Insert Widget receives solid blue emphasis;
+- all other editing commands remain neutral;
+- toggled secondary tools prefer neutral selected surfaces;
 - horizontal overflow is local, never root-level.
 
 ## Inspector
@@ -142,9 +162,10 @@ Desktop uses a persistent right inspector. Compact mode uses the Properties shee
 Visible top-level tabs are **Properties** and **Design**.
 
 - schema-driven property controls remain the same in desktop/mobile modes;
-- active tab uses a blue underline/current state rather than a large filled card;
+- active tab may use one blue underline/current indicator;
 - long schemas use disclosures;
 - disclosure rows are separated by fine lines;
+- disclosure/chevron icons remain neutral;
 - labels stay associated with inputs;
 - focus uses a visible blue ring/border;
 - responsive inheritance remains explicit;
@@ -154,9 +175,9 @@ Visible top-level tabs are **Properties** and **Design**.
 ## Mobile and compact layout contract
 At `<= 960px`, ElectroCMS switches to a **canvas-first authoring mode**.
 
-Persistent desktop side panels are removed from layout flow. The default view is:
+Persistent desktop side panels are removed from layout flow. Default view:
 - one-row compact application header;
-- visual canvas occupying the available workspace;
+- visual canvas occupying available workspace;
 - contextual command strip only when a selection requires it;
 - bottom dock with four stable destinations: **Pages, Add, Layers, Properties**.
 
@@ -164,35 +185,40 @@ Pages/Add/Layers/Properties open as temporary bottom sheets.
 
 Sheets:
 - use `role="dialog"` + `aria-modal="true"`;
-- expose a visible close action;
+- expose a visible Close action;
 - close with `Escape` and backdrop activation;
-- autofocus the close action when opened;
-- never leave hidden focusable controls in the document flow;
-- keep the canvas model intact while open;
-- cap height so the user retains spatial context.
+- autofocus the Close action when opened;
+- never leave hidden focusable controls in document flow;
+- keep canvas/model state intact while open;
+- cap height so spatial context remains clear.
 
-Critical touch targets are at least 48px. Do not depend on swipe/drag gestures as the only way to dismiss or operate a surface.
+Critical touch targets are at least 48px.
 
-## Mobile header
+## Tablet header
+Tablet keeps these responsive-authoring controls visible:
+- Active document;
+- Preview breakpoint;
+- Zoom.
+
+History/appearance may move out of the compact row to protect available workspace.
+
+## Phone header
 Phone header is a single row of approximately 60px:
 - menu trigger: 48px;
 - active document: flexible center region;
-- primary publish/export action: 48px;
-- preview may be removed from the smallest header when another route exists;
+- primary Publish/Export action: 48px;
+- Preview may be removed from the smallest header when another explicit route exists;
 - secondary zoom/history/theme controls may be omitted from the phone header when they remain reachable elsewhere.
 
 The root document must not horizontally scroll.
 
 ## Mobile dock
-The bottom dock is the primary phone navigation for builder context.
+The bottom dock is the primary phone navigation for Builder context.
 
-- Pages = blue cue;
-- Add = violet cue;
-- Layers = cyan cue;
-- Properties = amber cue;
-- surfaces remain mostly neutral;
+- Pages/Add/Layers/Properties icons use one neutral color;
+- no per-destination color palette;
+- active state uses neutral background/weight and `aria-pressed` semantics;
 - each control is at least 52px high on phone;
-- active state combines tint, icon color and `aria-pressed`;
 - dock respects `env(safe-area-inset-bottom)`.
 
 ## Motion
@@ -211,17 +237,17 @@ Typical icon behavior:
 - hover: translateY(-1px) + scale about 1.05;
 - press: scale about .94–.98;
 - active destination: short one-shot pop;
-- settings may rotate slightly when open.
+- Settings may rotate slightly when open while retaining neutral color.
 
-## Tailwind implementation rules
+## Tailwind / CSS implementation rules
 Studio Pro is authored primarily through Tailwind utilities and `@apply` in `src/app/ui/studio-pro-tailwind.css`.
 
-`src/app/ui/studio-pro.css` is the final Studio Pro entrypoint and may contain narrowly scoped unlayered rules where older unlayered canvas CSS would otherwise override the Tailwind cascade layer.
+`src/app/ui/studio-pro.css` owns reference geometry/interaction compatibility. `src/app/ui/studio-pro-compact.css` contains the final monochrome reference overrides plus compact/tablet rules. Both are part of the same Studio Pro system, not separate themes.
 
 Rules:
 - prefer Tailwind layout/spacing/typography/state utilities for component source;
 - use CSS custom properties for semantic color/elevation roles and canvas-specific values;
-- keep one Studio Pro entrypoint rather than accumulating unrelated fix stylesheets;
+- do not create a second visual theme to fix a local component;
 - component behavior belongs in React; appearance belongs in Tailwind/CSS;
 - never use DOM layout as project/canvas source of truth.
 
@@ -243,8 +269,8 @@ Editor responsiveness is separate from the breakpoints of the site/app being aut
 
 - **Wide desktop:** toolbar + rail + navigator + canvas + inspector.
 - **Laptop:** same architecture with fixed panel widths and flexible canvas.
-- **Tablet/compact:** canvas-first with bottom dock and sheets.
-- **Phone:** one-row header + canvas + dock + sheets.
+- **Tablet/compact:** canvas-first with bottom dock and sheets, plus document/breakpoint/zoom in header.
+- **Phone:** one-row header + canvas + neutral dock + sheets.
 
 Do not stack Pages, canvas and a large inspector permanently on a phone.
 
@@ -257,14 +283,16 @@ Keep these independent:
 ## Quality checklist
 Before completing an editor UI change:
 - [ ] Studio Pro remains the only editor visual system.
-- [ ] Desktop composition matches the professional builder contract.
+- [ ] Desktop composition matches the professional builder reference.
 - [ ] Canvas remains the largest working surface.
-- [ ] Color is functional and restrained.
+- [ ] Rail, component-library and mobile-dock icons are monochrome/neutral.
+- [ ] Solid saturated color is concentrated in primary actions.
+- [ ] Current/selected secondary controls avoid large colored fills.
 - [ ] Buttons/icons have consistent hover/press/current states.
 - [ ] Motion respects reduced-motion and does not alter precision hit geometry.
 - [ ] Phone default view is canvas-first.
 - [ ] Pages/Add/Layers/Properties are reachable from the mobile dock.
-- [ ] Mobile sheets are keyboard-dismissable and have visible close actions.
+- [ ] Mobile sheets are keyboard-dismissable and have visible Close actions.
 - [ ] Touch targets are >=48px in compact mode.
 - [ ] No root horizontal overflow exists.
 - [ ] Focus/selected/disabled states are explicit.
