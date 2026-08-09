@@ -19,7 +19,7 @@ test('inherits a style from the nearest wider breakpoint and follows later sourc
   await desktopFontSize.blur();
   await expect.poll(async () => headingNode.evaluate((element) => (element as HTMLElement).style.fontSize)).toBe('40px');
 
-  await chooseBreakpoint(page, 'laptop');
+  await chooseBreakpoint(page, 'tablet-portrait');
   await inspector.getByRole('button', { name: 'Inherit Font size from Desktop' }).click();
   await expect(inspector.getByText('Inherited from desktop')).toBeVisible();
   await expect.poll(async () => headingNode.evaluate((element) => (element as HTMLElement).style.fontSize)).toBe('40px');
@@ -29,7 +29,7 @@ test('inherits a style from the nearest wider breakpoint and follows later sourc
   await updatedDesktopFontSize.fill('44');
   await updatedDesktopFontSize.blur();
 
-  await chooseBreakpoint(page, 'laptop');
+  await chooseBreakpoint(page, 'tablet-portrait');
   await expect.poll(async () => headingNode.evaluate((element) => (element as HTMLElement).style.fontSize)).toBe('44px');
 
   await inspector.getByRole('button', { name: 'Unset Font size' }).click();
