@@ -1,0 +1,28 @@
+/* Responsive contract for the reference header. Kept separate from the base
+ * header skin so desktop geometry and compact behavior remain easy to audit.
+ */
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-document-group,
+.electrocms-app[data-editor-preset="studio-pro"] .segmented-control,
+.electrocms-app[data-editor-preset="studio-pro"] .appearance-toggle {
+  box-sizing: border-box;
+  min-height: 34px;
+}
+
+@media (max-width: 960px) and (min-width: 641px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .zoom-control {
+    display: flex !important;
+    flex: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .history-control {
+    display: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .zoom-control,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .history-control {
+    display: none !important;
+  }
+}
