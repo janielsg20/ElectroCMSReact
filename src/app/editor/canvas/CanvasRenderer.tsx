@@ -6,6 +6,7 @@ import {
   type CanonicalDocument,
   type CanonicalProject,
   type DocumentNode,
+  type ResolvedDocumentNodeBindings,
 } from '../../../core/project';
 import type { EditorWidgetRegistry } from '../../widgets/editor-widget-registry';
 import { useEditorWidgetRegistry } from '../../widgets/editor-widget-registry-context';
@@ -16,7 +17,7 @@ type MoveNodeHandler = (nodeId: string, parentId: string, index: number) => bool
 type SelectNodeHandler = (nodeId: string, additive: boolean) => void;
 
 export interface CanvasRendererProps {
-  project: CanonicalProject;
+  project?: CanonicalProject;
   document: CanonicalDocument;
   breakpointId: string;
   viewportWidth: number;
@@ -27,7 +28,7 @@ export interface CanvasRendererProps {
 }
 
 interface CanvasNodeViewProps {
-  project: CanonicalProject;
+  project: CanonicalProject | undefined;
   document: CanonicalDocument;
   breakpointId: string;
   node: DocumentNode;
@@ -46,6 +47,10 @@ interface DropZoneProps {
 
 function nodeLabel(node: DocumentNode): string {
   return node.name?.trim() || node.type;
+}
+
+function unresolvedNode(node: DocumentNode): ResolvedDocumentNodeBindings {
+  return { node, resolutions: [], state: 'none' };
 }
 
 function setRendererDragState(element: HTMLElement, active: boolean) {
@@ -154,7 +159,7 @@ function CanvasNodeView({
   const selected = selectedNodeIds.has(node.id);
   const geometry = readNodeGeometry(node, breakpointId);
   const visualStyle = resolveCanvasNodeStyle(node, breakpointId);
-  const bindingResolution = resolveDocumentNodeBindings(project, node);
+  const bindingResolution = project ? resolveDocumentNodeBindings(project, node) : unresolvedNode(node);
   const previewNode = bindingResolution.node;
   const bindingErrorCount = bindingResolution.resolutions.filter((resolution) => resolution.state === 'error').length;
   const nodeStyle: CSSProperties = {
