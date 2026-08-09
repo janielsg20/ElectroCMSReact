@@ -250,8 +250,8 @@ describe('ProductionStudio', () => {
     expect(containerLayer).toHaveAttribute('aria-pressed', 'true');
 
     const inspector = screen.getByRole('complementary', { name: 'Widget inspector' });
-    expect(within(inspector).getByRole('tab', { name: 'Content' })).toHaveAttribute('aria-selected', 'true');
-    await user.click(within(inspector).getByRole('tab', { name: 'Style' }));
-    expect(within(inspector).getByRole('tabpanel', { name: 'Style inspector' })).toBeInTheDocument();
+    expect(within(inspector).getByRole('tab', { name: 'Properties' })).toHaveAttribute('aria-selected', 'true');
+    await user.click(within(inspector).getByRole('tab', { name: 'Design' }));
+    expect(within(inspector).getByRole('tabpanel', { name: 'Design inspector' })).toBeInTheDocument();
   });
 });
