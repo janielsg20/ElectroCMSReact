@@ -12,7 +12,7 @@ test('content types CRUD persists through the local-first project runtime', asyn
   await studio.getByLabel('Content type singular label').fill('Article');
   await studio.getByLabel('Content type description').fill('Editorial articles');
   await studio.getByRole('button', { name: 'Create content type' }).click();
-  await expect(studio.getByRole('status')).toContainText('Content type saved.');
+  await expect(studio.getByText('Content type saved.', { exact: true })).toBeVisible();
   await expect(page.getByText('Saved locally')).toBeVisible({ timeout: 5000 });
 
   await page.reload();
@@ -23,7 +23,7 @@ test('content types CRUD persists through the local-first project runtime', asyn
 
   await page.getByLabel('Content type label').fill('Knowledge Articles');
   await page.getByRole('button', { name: 'Save changes' }).click();
-  await expect(page.getByRole('status')).toContainText('Content type saved.');
+  await expect(page.getByText('Content type saved.', { exact: true })).toBeVisible();
   await expect(page.getByText('Saved locally')).toBeVisible({ timeout: 5000 });
 
   await page.reload();
@@ -31,7 +31,7 @@ test('content types CRUD persists through the local-first project runtime', asyn
   await page.getByRole('button', { name: /Knowledge Articles article/i }).click();
   await page.getByRole('button', { name: 'Delete' }).click();
   await page.getByRole('button', { name: 'Confirm delete' }).click();
-  await expect(page.getByRole('status')).toContainText('Deleted Knowledge Articles.');
+  await expect(page.getByText('Deleted Knowledge Articles.', { exact: true })).toBeVisible();
   await expect(page.getByText('Saved locally')).toBeVisible({ timeout: 5000 });
 
   await page.reload();
