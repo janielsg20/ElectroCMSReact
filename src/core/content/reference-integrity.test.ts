@@ -97,6 +97,7 @@ describe('MF-043 reference integrity', () => {
     const { project, registry } = createReferenceProject();
     const current = project.records['product-shoe'];
     expect(current).toBeDefined();
+    if (!current) throw new Error('Expected product-shoe to exist.');
 
     const tooMany = validateContentRecordDefinition({
       ...current,
@@ -167,6 +168,7 @@ describe('MF-043 reference integrity', () => {
     const { project } = createReferenceProject();
     const currentRelation = project.relations['product-brand'];
     expect(currentRelation).toBeDefined();
+    if (!currentRelation) throw new Error('Expected product-brand relation to exist.');
 
     const update = updateRelation(project, 'product-brand', {
       ...currentRelation,
