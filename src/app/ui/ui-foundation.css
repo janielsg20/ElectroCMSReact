@@ -105,6 +105,10 @@
   scroll-margin-inline: 16px;
 }
 
+.electrocms-app :where(button, summary, select, [role="tab"]) {
+  touch-action: manipulation;
+}
+
 .electrocms-app :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 2px solid var(--color-ec-accent);
   outline-offset: 2px;
@@ -181,6 +185,11 @@
 
   .electrocms-app :where(input:not([type="hidden"]), textarea) {
     min-height: 44px;
+  }
+
+  /* Prevent browser auto-zoom and keep editable controls readable on phones. */
+  .electrocms-app :where(input:not([type="hidden"]), select, textarea) {
+    font-size: 16px !important;
   }
 }
 
