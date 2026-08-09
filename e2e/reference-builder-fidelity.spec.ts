@@ -34,6 +34,8 @@ test('Studio Pro desktop builder keeps professional reference proportions and al
     });
     const firstRailButton = railButtons[0];
     const stage = document.querySelector<HTMLElement>('.canvas-stage-v2');
+    const publish = document.querySelector<HTMLElement>('.header-actions button:last-child');
+    const insert = document.querySelector<HTMLElement>('.canvas-command-primary');
 
     return {
       viewportWidth: document.documentElement.clientWidth,
@@ -51,6 +53,8 @@ test('Studio Pro desktop builder keeps professional reference proportions and al
       railIconColors,
       railTransitionDuration: firstRailButton ? getComputedStyle(firstRailButton).transitionDuration : '',
       stageBackgroundImage: stage ? getComputedStyle(stage).backgroundImage : '',
+      publishBackground: publish ? getComputedStyle(publish).backgroundColor : '',
+      insertBackground: insert ? getComputedStyle(insert).backgroundColor : '',
     };
   });
 
@@ -71,9 +75,11 @@ test('Studio Pro desktop builder keeps professional reference proportions and al
   expect(geometry.contextDisplay).toBe('none');
   expect(geometry.documentBarDisplay).toBe('none');
   expect(geometry.railHeaderDisplay).toBe('none');
-  expect(new Set(geometry.railIconColors).size).toBeGreaterThan(1);
+  expect(new Set(geometry.railIconColors).size).toBe(1);
   expect(geometry.railTransitionDuration).not.toMatch(/^0s(?:, 0s)*$/);
   expect(geometry.stageBackgroundImage).toContain('radial-gradient');
+  expect(geometry.publishBackground).toBe('rgb(37, 99, 235)');
+  expect(geometry.insertBackground).toBe('rgb(37, 99, 235)');
 
   await expect(contextBar).toBeHidden();
   await expect(documentBar).toBeHidden();
