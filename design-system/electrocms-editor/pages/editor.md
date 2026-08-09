@@ -1,108 +1,105 @@
-# Editor workspace override — Bento High Density
+# Editor workspace override — Studio Pro
 
-This file overrides `../MASTER.md` only for the main visual editor workspace.
+This file specializes `../MASTER.md` for the visual Builder.
 
 ## Primary task
-Build and manipulate a page visually while preserving exact canonical structure, responsive behavior and a practical canvas viewport on desktop, tablet and mobile.
-
-## Visual hierarchy
-1. Canvas/document is the dominant surface.
-2. Current selection is the strongest local signal.
-3. Contextual commands and inspector are secondary to the selected object.
-4. Insert library is discoverable but must not starve the canvas.
-5. Navigation and global project controls remain visually quieter than editing state.
+Build and manipulate a page visually while preserving canonical structure, responsive behavior and a practical canvas viewport at every editor size.
 
 ## Desktop composition
-The editor uses a compact Bento workspace:
 
 ```text
-┌──────────────────────────────────────────────────────────────┐
-│ Global Bento header / project / breakpoint / history        │
-├──────────┬───────────┬───────────────────────┬───────────────┤
-│ Studio   │ Elements  │                       │ Inspector     │
-│ rail     │ library   │    Visual canvas      │ properties    │
-│          │           │                       │ styles        │
-│          │           │                       │ responsive    │
-└──────────┴───────────┴───────────────────────┴───────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│ App toolbar                                                      │
+├──────┬────────────────┬────────────────────────┬─────────────────┤
+│ Rail │ Pages /        │ Canvas toolbar         │ Properties      │
+│      │ Components     ├────────────────────────┤ inspector       │
+│      │ + Widget Tree  │ Visual canvas          │                 │
+└──────┴────────────────┴────────────────────────┴─────────────────┘
 ```
 
-Major zones read as related Bento modules through consistent gap, border, radius and elevation. Internal rows remain flatter for scan speed.
+Target geometry:
+- app toolbar ≈60px;
+- global rail ≈60px;
+- navigator ≈276–304px;
+- inspector ≈318–344px;
+- canvas receives all remaining width.
 
-## Canvas rules
-- Preserve a neutral workspace around the document so project design is not confused with editor chrome.
-- Document boundary must remain obvious at every zoom level.
-- Use a stable top-center transform origin for the scaled document.
-- Contain canvas scroll/pan locally; the root document must never overflow horizontally.
-- Use intentional `overscroll-behavior` so canvas scrolling does not unexpectedly chain into the app shell.
-- Grid/guides/snapping are functional overlays, never persisted decoration.
-- Selection outline remains legible over light, dark and colorful content.
-- Locked and hidden states require text/icon/shape signals beyond opacity.
-- Empty state teaches the next action without consuming excessive canvas area.
+Pages/Components tabs, canvas toolbar and inspector align to one top edge. No negative toolbar offsets or redundant Builder rows are allowed.
 
-## Responsive canvas behavior
-### Laptop
-- Reduce inspector width before shrinking the document work area excessively.
-- Low-priority geometry command groups may collapse before primary commands.
+## Compact/mobile composition
+Compact mode (`<=960px`) is not a stacked desktop layout.
 
-### Tablet
-- Insert library becomes a compact horizontal strip.
-- Inspector docks below the canvas.
-- Canvas keeps local scrolling and usable vertical space.
+```text
+┌──────────────────────────┐
+│ Menu | Document | Actions│
+├──────────────────────────┤
+│                          │
+│      Visual canvas       │
+│                          │
+│                          │
+├──────────────────────────┤
+│ Pages | Add | Layers |   │
+│              Properties  │
+└──────────────────────────┘
+```
 
-### Mobile
-- Use 44px critical targets.
-- Command bar scrolls locally.
-- Insert library remains horizontal and compact.
-- Inspector stays below the canvas with a bounded viewport height.
-- Canvas stage padding reduces to preserve usable working area.
-- Do not force the full desktop document to fit width; preserve zoom/pan behavior instead.
+The four bottom destinations open temporary sheets. Only the requested sheet occupies space; the canvas remains the default workspace.
 
-## DnD rules
-- While dragging, valid insertion zones become visible before pointer entry.
-- Root/sibling insertion zones receive larger hit areas than idle spacers.
-- Drag source receives reduced-emphasis styling but remains identifiable.
-- Do not animate hit-area geometry during precision drag.
-- Exact target index remains semantic `parentId + index`, never DOM position inference.
-- Icon/button micro-motion must use transforms that do not change DnD layout geometry.
+### Pages
+Opens page navigation + canonical Widget Tree.
 
-## Command bar
-- Prioritize insert, clipboard, grouping, visibility/lock, layers, geometry and history-related actions.
-- High-frequency actions use shared iconography.
-- Define explicit hover/focus/pressed/selected/disabled states.
-- Horizontal local scrolling is acceptable; root overflow is not.
-- Touch layouts expand critical buttons to at least 44px.
+### Add
+Opens component search/categories. Successful insertion closes the sheet and returns focus/context to the canvas workflow.
 
-## Element library
-- Search remains immediately available.
-- Category filtering stays compact.
-- Element groups use icon + label.
-- Tiles use dense Bento cells with clear hover/focus/press states.
-- Tablet/mobile horizontal mode must remain keyboard-scrollable and touch-friendly.
+### Layers
+Opens the existing Layers navigator as a modal sheet, without creating parallel hierarchy state.
 
-## Inspector
-- Persistent right-side panel on wide desktop.
-- Lower dock on narrow layouts.
-- Common fields remain visible; long schemas use accessible collapsible sections.
-- Content/style tabs show a persistent selected state.
-- Responsive source/inherited/unset state remains adjacent to responsive properties.
-- Failed validation never silently mutates the canonical node.
+### Properties
+Opens the existing schema-driven inspector as a modal sheet. If nothing is selected, the normal empty inspector state is shown.
 
-## Motion
-- Selection: immediate or ≤100ms.
-- Hover/press/icon feedback: 80–140ms.
-- Panel/drawer reveal: 140–220ms.
-- DnD insertion feedback: immediate.
-- Animate transform/opacity rather than layout dimensions.
-- Respect `prefers-reduced-motion`.
+## Mobile accessibility
+- dock controls >=48px;
+- sheet Close controls >=48px;
+- sheets use dialog semantics and `aria-modal`;
+- Close receives initial focus;
+- Escape dismisses the current sheet;
+- backdrop provides an additional dismissal path;
+- gesture-only dismissal is forbidden;
+- hidden panels are not left as hidden focusable DOM regions;
+- root horizontal overflow is forbidden;
+- safe-area bottom inset is respected by the dock.
+
+## Canvas
+- neutral/dotted workspace remains distinct from authored content;
+- stable top-center scaling origin;
+- local overscroll containment;
+- browser zoom remains enabled;
+- compact mode reserves bottom canvas padding for the dock;
+- contextual command bar is hidden when there is no selection on compact layouts;
+- when visible on touch layouts, contextual controls use >=48px targets and local horizontal scrolling.
+
+## Header on phone
+The phone header becomes a single 60px row:
+- 48px navigation trigger;
+- flexible active-document selector;
+- touch-safe primary action(s).
+
+Desktop-only secondary controls may leave the phone header to protect the canvas; they must remain available through another explicit UI path when they are required for mobile authoring.
+
+## DnD and canonical behavior
+- valid insertion zones are visible during drag;
+- hit-area geometry does not animate;
+- target semantics remain `parentId + index`;
+- all structural changes use canonical commands;
+- DOM placement is never project structure source of truth;
+- mobile sheets only change presentation, never project data architecture.
 
 ## Acceptance signals
-A professional user should be able to answer instantly:
-- What document am I editing?
-- What breakpoint am I viewing?
+A professional user can immediately answer:
+- What document is open?
 - What is selected?
-- Where will this dragged node be inserted?
-- Is this element locked or hidden?
-- Are changes saved?
-- Can I undo this operation?
-- Where are elements, layers and properties?
-- Can I still work comfortably when the viewport becomes tablet/mobile sized?
+- Where are Pages, Add, Layers and Properties?
+- Can I close the active panel without knowing a gesture?
+- Is the canvas still large enough to work on a phone/tablet?
+- Can I navigate with keyboard/touch without horizontal page overflow?
+- Are changes still using the same canonical undoable commands as desktop?
