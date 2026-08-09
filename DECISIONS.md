@@ -131,16 +131,23 @@
 **Why:** package boundaries are untrusted file boundaries and need deterministic validation before they enter the local registry.
 
 ## ADR-027 — No-code editor design principles are adapted, not framework-copied
-**Decision:** ElectroCMS adopts relevant principles from UI/UX and React skills through its own design-system docs, without forcing an unrelated framework migration.
+**Decision:** ElectroCMS adopts relevant principles from professional UI/UX and React guidance through its own design-system docs, without forcing an unrelated framework migration.
 
-**Why:** external guidance provides useful accessibility, token, density, interaction and React-performance practices, but ElectroCMS already has a working React/CSS architecture. Product principles should improve the system rather than trigger an unrelated rewrite.
+**Why:** external guidance provides useful accessibility, token, density, interaction and React-performance practices, but ElectroCMS already has a working React architecture. Product principles should improve the system rather than trigger an unrelated rewrite.
 
 ## ADR-028 — Preview deployments are manual-only
 **Decision:** `vercel.json` sets `git.deploymentEnabled=false`; Vercel deployments only occur after explicit user instruction.
 
 **Why:** automatic deployments consumed daily preview quota during phase development. GitHub Actions remains the continuous quality gate; deployment is a separate, deliberate action.
 
-## ADR-029 — One Bento High Density visual language for the ElectroCMS editor
-**Decision:** retire selectable editor UI/UX presets and use a single editor visual system identified as `bento-high-density`. `light`, `dark` and `auto` remain appearance modes of that same visual system. Legacy schema-v1 workspace preferences that contain former preset IDs normalize to the unified ID. Frontend/backend project themes remain independent and unchanged.
+## ADR-029 — One Bento High Density visual language for the ElectroCMS editor — SUPERSEDED
+**Decision:** this decision previously retired selectable presets in favor of `bento-high-density`.
 
-**Why:** one coherent high-density Bento authoring language reduces visual fragmentation, improves learnability, responsive consistency and accessibility, and prevents editor chrome choices from being confused with project design. Retaining the legacy preference field as a constrained compatibility value avoids an unnecessary persistence-schema break.
+**Status:** superseded by ADR-030. It remains recorded only as migration history.
+
+## ADR-030 — Studio Pro Tailwind visual system and canvas-first compact authoring
+**Decision:** `studio-pro` is the only ElectroCMS editor visual system. It is implemented Tailwind-first with one final Studio Pro stylesheet instead of stacked Bento/polish/fidelity layers. `light`, `dark` and `auto` remain appearance modes. Schema-v1 workspace preferences containing `bento-high-density` or older IDs normalize to `studio-pro` without a schema bump. Frontend/backend project themes remain independent.
+
+Desktop keeps a persistent professional builder composition: compact toolbar, ~60px icon rail, Pages/Components navigator, dominant canvas and Properties inspector. At the editor compact breakpoint, persistent side panels leave layout flow and the experience becomes canvas-first with a bottom dock for Pages, Add, Layers and Properties. Those destinations open accessible modal sheets with explicit Close, Escape/backdrop dismissal and touch targets of at least 48px.
+
+**Why:** the supplied professional visual-builder reference depends more on disciplined spatial hierarchy than decorative cards. A single Tailwind-first system removes accumulated CSS override debt, keeps desktop predictable, and prevents phone/tablet authoring from becoming an unusable stack of desktop panels. Canvas-first sheets preserve the same canonical commands and data while improving reachability, focus behavior and usable canvas area on touch devices.
