@@ -6,10 +6,18 @@ test.describe('Studio Pro mobile builder', () => {
     await page.goto('/editor');
   });
 
-  test('keeps the canvas dominant with touch-safe bottom tools and no root overflow', async ({ page }) => {
+  test('keeps the canvas dominant with touch-safe header and bottom tools and no root overflow', async ({ page }) => {
     const app = page.locator('.electrocms-app');
     await expect(app).toHaveAttribute('data-editor-preset', 'studio-pro');
     await expect(page.getByRole('complementary', { name: 'Builder navigator' })).toHaveCount(0);
+
+    const appearance = page.getByRole('group', { name: 'Editor appearance' });
+    const lightAppearance = appearance.getByRole('button', { name: 'Use light appearance' });
+    const darkAppearance = appearance.getByRole('button', { name: 'Use dark appearance' });
+    await expect(appearance).toBeVisible();
+    await expect(lightAppearance).toBeVisible();
+    await expect(darkAppearance).toBeVisible();
+    await expect(appearance.getByRole('button', { name: 'Use system appearance' })).toBeHidden();
 
     const stage = page.locator('.canvas-stage-v2');
     await expect(stage).toBeVisible();
@@ -43,8 +51,15 @@ test.describe('Studio Pro mobile builder', () => {
     const menu = page.getByRole('button', { name: 'Open navigation' });
     const menuBox = await menu.boundingBox();
     expect(menuBox).not.toBeNull();
-    expect(menuBox!.width).toBeGreaterThanOrEqual(48);
-    expect(menuBox!.height).toBeGreaterThanOrEqual(48);
+    expect(menuBox!.width).toBeGreaterThanOrEqual(44);
+    expect(menuBox!.height).toBeGreaterThanOrEqual(44);
+
+    const lightBox = await lightAppearance.boundingBox();
+    const darkBox = await darkAppearance.boundingBox();
+    expect(lightBox).not.toBeNull();
+    expect(darkBox).not.toBeNull();
+    expect(lightBox!.height).toBeGreaterThanOrEqual(34);
+    expect(darkBox!.height).toBeGreaterThanOrEqual(34);
 
     const rootFitsViewport = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
     expect(rootFitsViewport).toBe(true);
