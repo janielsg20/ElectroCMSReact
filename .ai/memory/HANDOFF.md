@@ -14,7 +14,7 @@ Completed with executable gate evidence:
 
 Current closure state:
 - **MF-042 — Advanced fields: IMPLEMENTED / UNVERIFIED.** Implementation and hardening are present, but it MUST NOT be marked DONE until a real full quality gate executes.
-- **MF-043 — Relations: IMPLEMENTED / UNVERIFIED.** The branch already contained substantial MF-043 code beyond the stale documentation. That implementation has now been recovered, audited and hardened, but it also MUST NOT be marked DONE without an executable full gate.
+- **MF-043 — Relations: IMPLEMENTED / UNVERIFIED.** Implementation has been recovered, audited and further hardened, but it also MUST NOT be marked DONE without an executable full gate.
 - **MF-044 — Dynamic bindings: BLOCKED.** Do not begin it until the current gate blocker is resolved and MF-042/MF-043 can be closed honestly.
 
 ## MF-042 implemented state
@@ -46,20 +46,24 @@ Referential integrity:
 - `relation-content-type-integrity.ts` blocks deletion of CPTs used as Relation endpoints.
 - `reference-taxonomy-integrity.ts` blocks deletion of taxonomies referenced by v2 Taxonomy fields.
 - Public exports in `src/core/content/index.ts` route Relation/CPT/Taxonomy/Field Group/Record mutations through integrity-aware wrappers.
+- **MF-042→MF-043 registry hardening:** `advanced-field-group-integrity.ts` now defaults to the full registry from `reference-field-types`, not the MF-042-only registry. This prevents deletion of an otherwise unassigned Field Group containing Relation/User/Taxonomy v2 fields from failing as an apparently invalid historical schema.
 
 Backend authoring:
 - `DynamicContentManager` has an accessible Relations tab next to Content Types, Taxonomies, Field Groups and Records.
 - `RelationEditor.tsx` provides dense master-detail Relation CRUD against the canonical ProjectSession.
 - `ReferenceRecordFieldControl.tsx` renders User, Taxonomy and Relation Record controls without parallel stores.
-- `FieldGroupEditor.tsx` now uses contextual registry descriptors instead of manual ID text entry:
+- `FieldGroupEditor.tsx` uses contextual registry descriptors instead of manual ID text entry:
   - `relation-id` → select an existing canonical Relation;
   - `relation-side` → source/target selector;
   - `taxonomy-id` → select an existing canonical Taxonomy.
 - `reference-field-types.ts` publishes those contextual config descriptors while retaining core validation as the authority.
 
 MF-043 tests added/hardened:
-- `src/core/content/reference-integrity.test.ts`: cardinality/opposite-endpoint validation, referenced Record deletion protection, Relation deletion protection, endpoint CPT deletion protection and atomic Relation-update rejection.
-- `src/core/content/reference-field-types.test.ts`: v1/v2 boundary, contextual reference validation and regression assertions for `relation-id` / `relation-side` / `taxonomy-id` config descriptors.
+- `src/core/content/reference-integrity.test.ts` covers relation cardinality/opposite-endpoint validation, referenced Record deletion protection, Relation deletion protection, endpoint CPT deletion protection and atomic Relation-update rejection.
+- The same suite now covers deletion of an unassigned Field Group containing MF-043 fields, exercising the full-registry deletion fix.
+- The suite now exercises **User + Taxonomy through the full ContentRecord validation/mutation path**, including unknown user rejection, wrong taxonomy/CPT scope rejection and taxonomy-delete protection while referenced by a Field Group.
+- Strict TypeScript guards were added before spreading indexed Record/Relation values; `expect(...).toBeDefined()` is not treated as a narrowing primitive under `strict + noUncheckedIndexedAccess`.
+- `src/core/content/reference-field-types.test.ts` covers v1/v2 boundary, contextual reference validation and regression assertions for `relation-id` / `relation-side` / `taxonomy-id` config descriptors.
 - `e2e/relations.spec.ts`: Products/Brands → Relation → Relation Field Group → Records → durable IndexedDB assertion → reload → referenced Record delete guard → incompatible Relation update guard → Relation delete guard → reload/persistence proof.
 - The E2E uses deterministic Record IDs and the contextual Relation selectors.
 
@@ -67,6 +71,7 @@ MF-043 tests added/hardened:
 - Core content runtime remains React-free.
 - No parallel stores: canonical Project collections remain authoritative.
 - Advanced/reference behavior resolves by type + version, never by type name alone.
+- Public F05 mutation paths that validate Field Groups/Records must use the **full current F05 registry** once MF-043 fields are available; MF-042-only registries remain valid only inside explicitly internal MF-042 primitives that receive the full registry from their MF-043 wrapper.
 - Historical modeled v1 contracts are not automatically migrated or executed as v2.
 - Repeater hard cap is 100 rows; nested reference depth is 8.
 - Calculated never uses `eval`, `Function` or dynamic code execution.
@@ -83,18 +88,25 @@ Primary manual gate:
 - PR #7 `quality/f05 -> main`;
 - move `quality/f05` to the exact F05 HEAD, inspect a real workflow, then close #7 without merge.
 
+Diagnostic gate used in the latest recovery pass:
+- fresh branch `quality/f05-fresh-20260808` from the exact F05 HEAD;
+- fresh PR #37 → `main` to force a new `pull_request.opened` event;
+- later synchronized repeatedly to the new hardening HEADs;
+- PR #37 was closed without merge after it still produced zero workflow runs.
+
 ## Current Actions blocker
 Historical evidence:
 - Runs #986/#990/#994/#1000/#1002/#1014 failed before any job step.
 - Fresh opened-event PR #8 produced run #1018, but both jobs had `steps=[]`; log download returned `BlobNotFound`.
 - Later MF-042 attempts also produced zero workflow/check status.
 
-Current recovery attempt:
-- MF-043 code head before this documentation update: `d8694d083bb2896d16869c4909b356a302165636`.
-- `quality/f05` was moved to that exact code head while PR #7 was open.
-- Inspection returned **zero workflow runs associated with the commit**. No verify/lint/TypeScript/unit/coverage/Playwright/build step executed.
-- Therefore this is neither PASS nor FAIL evidence for MF-042/MF-043 code.
-- Local execution still cannot replace CI in this environment because the prior container path could not resolve GitHub/install the project dependencies.
+Latest evidence:
+- `main` currently contains `.github/workflows/quality.yml` with `pull_request: branches: [main]`, so the base branch still defines the expected PR trigger.
+- PR #37 was created fresh from the current F05 lineage and later synchronized through hardening head `f5ab202e8aba0ec222fd3bd9f4dbd25cd2759575`.
+- `fetch_commit_workflow_runs` returned **zero workflow runs** for that synchronized HEAD.
+- Therefore verify/lint/TypeScript/unit/coverage/Playwright/build still did not execute; this is neither PASS nor FAIL evidence for the code.
+- Container recheck: Node 22 and a global TypeScript compiler are present, but `git ls-remote https://github.com/janielsg20/ElectroCMSReact.git` still fails because `github.com` cannot be resolved. The container therefore cannot clone/install the full project and cannot replace the official gate.
+- Static TypeScript reasoning was still used to catch the `noUncheckedIndexedAccess` spread issue described above, but this is not a substitute for `npm run typecheck`.
 - Do not use a deployment as a CI substitute; `QUALITY_GATES.md` remains authoritative.
 
 ## Durable F05 facts
@@ -113,12 +125,13 @@ Current recovery attempt:
 
 ## Resume protocol
 1. Read `AI_ENTRYPOINT.md`, `RULES.md`, `MEMORY.md`, `TRACKING.md`, this handoff, `DECISIONS.md`, `.ai/memory/DECISIONS_LOG.md`, `KNOWN_ISSUES.md` and `QUALITY_GATES.md`.
-2. Resolve the exact current `agent/f05-dynamic-content` HEAD before any gate attempt.
+2. Resolve the exact current `agent/f05-dynamic-content` HEAD before any gate attempt; documentation commits may move it beyond the last code head recorded here.
 3. Check whether GitHub Actions hosted runners are actually producing jobs/steps for the repo/account.
 4. Move `quality/f05` to that exact HEAD and inspect the technical PR/workflow; require actual executed steps/logs, then close #7 without merge.
 5. Fix any real verify/lint/TypeScript/unit/coverage/Playwright/build failure; never infer code failure from zero-step/no-run attempts.
-6. Only after all required checks PASS, update MEMORY/IMPLEMENTATION_MEMORY/DECISIONS/TRACKING/HANDOFF with exact evidence and close MF-042/MF-043 in sequence.
-7. Only then begin MF-044 Dynamic bindings.
+6. Re-audit any public mutation path that still instantiates an MF-042-only registry after MF-043 activation; internal MF-042 primitives are allowed only when the MF-043 wrapper passes the full registry explicitly.
+7. Only after all required checks PASS, update MEMORY/IMPLEMENTATION_MEMORY/DECISIONS/TRACKING/HANDOFF with exact evidence and close MF-042/MF-043 in sequence.
+8. Only then begin MF-044 Dynamic bindings.
 
 ## Phase sequence
 - MF-037 — DONE
