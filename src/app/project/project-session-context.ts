@@ -2,6 +2,8 @@ import { createContext, useContext } from 'react';
 import type {
   ContentTypeDefinition,
   ContentTypeMutationErrorCode,
+  FieldGroupDefinition,
+  FieldGroupMutationErrorCode,
   TaxonomyDefinition,
   TaxonomyMutationErrorCode,
 } from '../../core/content';
@@ -28,6 +30,10 @@ export type TaxonomySessionMutationResult =
   | { ok: true; value: TaxonomyDefinition; changed: boolean }
   | { ok: false; code: TaxonomyMutationErrorCode; message: string };
 
+export type FieldGroupSessionMutationResult =
+  | { ok: true; value: FieldGroupDefinition; changed: boolean }
+  | { ok: false; code: FieldGroupMutationErrorCode; message: string };
+
 export interface ProjectSessionState {
   project: CanonicalProject;
   activeDocumentId: string;
@@ -50,6 +56,9 @@ export interface ProjectSessionState {
   createTaxonomy(input: unknown): TaxonomySessionMutationResult;
   updateTaxonomy(id: string, input: unknown): TaxonomySessionMutationResult;
   removeTaxonomy(id: string): TaxonomySessionMutationResult;
+  createFieldGroup(input: unknown): FieldGroupSessionMutationResult;
+  updateFieldGroup(id: string, input: unknown): FieldGroupSessionMutationResult;
+  removeFieldGroup(id: string): FieldGroupSessionMutationResult;
   executeDocumentCommand(command: DocumentCommand): boolean;
   undo(): boolean;
   redo(): boolean;
