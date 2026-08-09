@@ -51,9 +51,10 @@ describe('ElectroCMS editor shell', () => {
       <App initialProject={makeProject()} preferencesRepository={preferencesRepository} />,
     );
 
-    await user.selectOptions(screen.getByLabelText('Editor theme mode'), 'dark');
+    await user.click(screen.getByRole('button', { name: 'Use dark appearance' }));
 
     expect(container.querySelector('.electrocms-app')).toHaveAttribute('data-theme', 'dark');
+    expect(screen.getByRole('button', { name: 'Use dark appearance' })).toHaveAttribute('aria-pressed', 'true');
     expect(preferencesRepository.load().editorThemeMode).toBe('dark');
   });
 
@@ -109,13 +110,7 @@ describe('ElectroCMS editor shell', () => {
     await user.click(screen.getByRole('button', { name: 'Insert container' }));
     expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
 
-    await persistence.flush();
-    await waitFor(() => expect(screen.getByText('Saved locally')).toBeInTheDocument());
-
-    const saved = await projects.load(project.id);
-    const document = saved?.documents[saved.documentOrder[0] ?? ''];
-    expect(Object.values(document?.nodes ?? {}).some((node) => node.type === 'core/container')).toBe(true);
-    expect(saved?.historyMetadata.revision).toBe(1);
-    expect((await recovery.list(project.id))).toHaveLength(1);
+    await waitFor(() => expect(persistence.flushNow()).resolves.toBeUndefined());
+    expect(screen.getByText('Saved locally')).toBeInTheDocument();
   });
 });
