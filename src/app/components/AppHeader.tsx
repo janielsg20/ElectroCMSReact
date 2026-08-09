@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useProjectSession } from '../project/project-session-context';
 import { useDocumentHistoryShortcuts } from '../project/use-document-history-shortcuts';
 import type { WorkspaceId } from '../routing/workspaces';
+import type { ResolvedEditorTheme } from '../workspace/editor-theme';
 import { useWorkspacePreferences } from '../workspace/workspace-preferences-store';
 import { Icon, type IconName } from './Icon';
 
 export interface AppHeaderProps {
   compactLayout: boolean;
+  resolvedTheme: ResolvedEditorTheme;
   activeWorkspace: WorkspaceId;
   onOpenNavigation(): void;
   onNavigate(workspaceId: WorkspaceId): void;
@@ -47,7 +49,7 @@ function breakpointDevice(width: number): HeaderBreakpointDevice {
   return 'mobile';
 }
 
-export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, onNavigate }: AppHeaderProps) {
+export function AppHeader({ compactLayout, resolvedTheme, activeWorkspace, onOpenNavigation, onNavigate }: AppHeaderProps) {
   const session = useProjectSession();
   const { preferences, setEditorThemeMode } = useWorkspacePreferences();
   const [pageMenuOpen, setPageMenuOpen] = useState(false);
@@ -259,7 +261,7 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
               className="appearance-toggle-button"
               type="button"
               aria-label={`Use ${mode.label.toLowerCase()} appearance`}
-              aria-pressed={preferences.editorThemeMode === mode.id}
+              aria-pressed={preferences.editorThemeMode === 'auto' ? resolvedTheme === mode.id : preferences.editorThemeMode === mode.id}
               title={`${mode.label} appearance`}
               onClick={() => setEditorThemeMode(mode.id)}
             >
