@@ -20,16 +20,28 @@ const saveLabels = {
 } as const;
 
 type AppearanceMode = 'light' | 'dark';
+type HeaderBreakpointDevice = 'desktop' | 'tablet' | 'mobile';
 
 const appearanceModes: readonly { id: AppearanceMode; label: string; icon: IconName }[] = [
   { id: 'light', label: 'Light', icon: 'sun' },
   { id: 'dark', label: 'Dark', icon: 'moon' },
 ];
 
+const headerBreakpointTargets: readonly {
+  device: HeaderBreakpointDevice;
+  preferredId: string;
+  targetWidth: number;
+  icon: IconName;
+}[] = [
+  { device: 'desktop', preferredId: 'desktop', targetWidth: 1440, icon: 'desktop' },
+  { device: 'tablet', preferredId: 'tablet-portrait', targetWidth: 768, icon: 'tablet' },
+  { device: 'mobile', preferredId: 'mobile-small', targetWidth: 360, icon: 'mobile' },
+];
+
 const iconButtonClass = 'header-icon-button ec-focus-ring group inline-grid size-8 shrink-0 place-items-center text-[var(--color-ec-text-muted)] hover:text-[var(--color-ec-text)] max-[720px]:size-11';
 const segmentButtonClass = 'header-segment-button ec-focus-ring group grid size-7 place-items-center text-[var(--color-ec-text-muted)] transition-colors hover:bg-[var(--color-ec-surface-muted)] hover:text-[var(--color-ec-text)] disabled:cursor-not-allowed disabled:opacity-30';
 
-function breakpointIcon(width: number): IconName {
+function breakpointDevice(width: number): HeaderBreakpointDevice {
   if (width >= 1100) return 'desktop';
   if (width >= 700) return 'tablet';
   return 'mobile';
@@ -42,6 +54,20 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
   const pageMenuRef = useRef<HTMLDivElement>(null);
   const pageTriggerRef = useRef<HTMLButtonElement>(null);
   const activeDocument = session.project.documents[session.activeDocumentId];
+  const activeBreakpoint = session.project.breakpoints.find((breakpoint) => breakpoint.id === session.activeBreakpointId);
+  const activeBreakpointDevice = breakpointDevice(activeBreakpoint?.width ?? 1440);
+  const headerBreakpoints = headerBreakpointTargets.flatMap((target) => {
+    const exact = session.project.breakpoints.find((breakpoint) => breakpoint.id === target.preferredId);
+    if (exact) return [{ ...target, breakpoint: exact }];
+
+    const candidates = session.project.breakpoints.filter(
+      (breakpoint) => breakpointDevice(breakpoint.width) === target.device,
+    );
+    const nearest = candidates.sort(
+      (left, right) => Math.abs(left.width - target.targetWidth) - Math.abs(right.width - target.targetWidth),
+    )[0];
+    return nearest ? [{ ...target, breakpoint: nearest }] : [];
+  });
   useDocumentHistoryShortcuts(session.undo, session.redo);
 
   useEffect(() => {
@@ -187,19 +213,19 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
           <span className="header-control-divider" aria-hidden="true" />
 
           <div className="header-breakpoint-picker" role="group" aria-label="Preview breakpoint">
-            {session.project.breakpoints.map((breakpoint) => (
+            {headerBreakpoints.map(({ device, icon, breakpoint }) => (
               <button
-                key={breakpoint.id}
+                key={device}
                 className="header-breakpoint-button ec-focus-ring"
                 type="button"
                 data-breakpoint-id={breakpoint.id}
-                aria-label={`${breakpoint.label} breakpoint ${breakpoint.width}px`}
-                aria-pressed={session.activeBreakpointId === breakpoint.id}
-                title={`${breakpoint.label} · ${breakpoint.width}px`}
+                data-breakpoint-device={device}
+                aria-label={`${device} breakpoint ${breakpoint.width}px`}
+                aria-pressed={activeBreakpointDevice === device}
+                title={`${device[0]?.toUpperCase()}${device.slice(1)} · ${breakpoint.width}px`}
                 onClick={() => session.setActiveBreakpointId(breakpoint.id)}
               >
-                <Icon name={breakpointIcon(breakpoint.width)} size={14} />
-                <span className="header-breakpoint-width">{breakpoint.width}</span>
+                <Icon name={icon} size={15} />
               </button>
             ))}
           </div>
