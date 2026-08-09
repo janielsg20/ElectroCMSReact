@@ -5,6 +5,10 @@ export const DYNAMIC_BINDING_KINDS = ['text', 'image', 'link', 'listing'] as con
 export const DYNAMIC_BINDING_SOURCE_PREFIXES = ['record', 'records'] as const;
 
 export type DynamicBindingState = 'resolved' | 'fallback' | 'error';
+export type AuthoredDynamicBinding = DynamicBinding & {
+  target: string;
+  kind: DynamicBindingKind;
+};
 
 export interface DynamicBindingIssue {
   code: string;
@@ -13,7 +17,7 @@ export interface DynamicBindingIssue {
 }
 
 export type DynamicBindingValidationResult =
-  | { ok: true; value: DynamicBinding }
+  | { ok: true; value: AuthoredDynamicBinding }
   | { ok: false; issues: readonly DynamicBindingIssue[] };
 
 export interface DynamicBindingResolution {
@@ -56,7 +60,7 @@ export function createDynamicBinding(input: {
   kind: DynamicBindingKind;
   source: string;
   fallback?: JsonValue;
-}): DynamicBinding {
+}): AuthoredDynamicBinding {
   return {
     target: input.target.trim(),
     kind: input.kind,
@@ -82,7 +86,7 @@ export function validateDynamicBinding(input: unknown): DynamicBindingValidation
     issues.push({ code: 'INVALID_FALLBACK', path: 'fallback', message: 'Binding fallback must be portable JSON.' });
   }
 
-  if (issues.length > 0 || !isBindingKind(kind)) return { ok: false, issues };
+  if (issues.length > 0 || !target || !source || !isBindingKind(kind)) return { ok: false, issues };
   return {
     ok: true,
     value: {
@@ -94,11 +98,11 @@ export function validateDynamicBinding(input: unknown): DynamicBindingValidation
   };
 }
 
-export function validateDynamicBindings(input: unknown): { ok: true; value: DynamicBinding[] } | { ok: false; issues: readonly DynamicBindingIssue[] } {
+export function validateDynamicBindings(input: unknown): { ok: true; value: AuthoredDynamicBinding[] } | { ok: false; issues: readonly DynamicBindingIssue[] } {
   if (!Array.isArray(input)) {
     return { ok: false, issues: [{ code: 'INVALID_BINDINGS', path: '$', message: 'Bindings must be an array.' }] };
   }
-  const bindings: DynamicBinding[] = [];
+  const bindings: AuthoredDynamicBinding[] = [];
   const issues: DynamicBindingIssue[] = [];
   const targets = new Set<string>();
   input.forEach((candidate, index) => {
@@ -143,9 +147,9 @@ function readPath(value: JsonValue, path: string): JsonValue | undefined {
   let current: JsonValue | undefined = value;
   for (const segment of segments) {
     if (!isJsonObject(current)) return undefined;
-    const next = current[segment];
-    if (!isJsonValue(next)) return undefined;
-    current = next;
+    const nextValue: JsonValue | undefined = current[segment];
+    if (!isJsonValue(nextValue)) return undefined;
+    current = nextValue;
   }
   return current;
 }
@@ -185,14 +189,14 @@ function resolveSource(project: CanonicalProject, source: ParsedBindingSource, k
       if (value === undefined) return;
       const display = textValue(value);
       if (display !== null) values.push(display);
-      else if (isJsonValue(value)) values.push(structuredClone(value));
+      else values.push(structuredClone(value));
     });
   return values;
 }
 
-function fallbackResolution(binding: DynamicBinding, message: string): DynamicBindingResolution {
+function fallbackResolution(binding: AuthoredDynamicBinding, message: string): DynamicBindingResolution {
   if (binding.fallback !== undefined && isJsonValue(binding.fallback)) {
-    const normalized = normalizeBoundValue(binding.kind as DynamicBindingKind, binding.fallback);
+    const normalized = normalizeBoundValue(binding.kind, binding.fallback);
     if (normalized !== null) return { binding, state: 'fallback', value: normalized, message };
   }
   return { binding, state: 'error', message };
@@ -206,9 +210,6 @@ export function resolveDynamicBinding(project: CanonicalProject, input: DynamicB
   const binding = validation.value;
   const source = parseDynamicBindingSource(binding.source);
   if (!source) return fallbackResolution(binding, `Unsupported binding source ${binding.source}.`);
-  if (binding.kind === 'listing' && source.kind !== 'records' && source.kind !== 'record') {
-    return fallbackResolution(binding, 'Listing bindings require a record array or records source.');
-  }
   const raw = resolveSource(project, source, binding.kind);
   if (raw === undefined) return fallbackResolution(binding, `Binding source ${binding.source} did not resolve.`);
   const normalized = normalizeBoundValue(binding.kind, raw);
