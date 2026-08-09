@@ -63,6 +63,21 @@
     margin: 0;
     padding: 0;
   }
+
+  /* canvas-interactions.css still carries the old floating-toolbar offset.
+   * The V2 builder places this toolbar in grid row 1, so that negative margin
+   * would pull it 20px above Pages/Components and the inspector. */
+  .electrocms-app[data-editor-preset="bento-high-density"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"]
+    .editor-canvas-v2 > .canvas-command-bar-v2 {
+    position: relative;
+    top: auto;
+    justify-self: stretch;
+    align-self: stretch;
+    width: auto;
+    max-width: none;
+    margin: 0;
+  }
 }
 
 /* Compact Builder: a 44px target needs enough parent height after padding. */
