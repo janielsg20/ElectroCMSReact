@@ -24,7 +24,7 @@ export interface AppProps {
 }
 
 function useCompactStudioLayout(): boolean {
-  const query = '(max-width: 960px)';
+  const query = '(max-width: 1024px)';
   const [compact, setCompact] = useState(() =>
     typeof globalThis.matchMedia === 'function' ? globalThis.matchMedia(query).matches : false,
   );
@@ -81,6 +81,7 @@ function EditorApplicationShell() {
       <a className="skip-link" href="#workspace-main">Skip to workspace</a>
       <AppHeader
         compactLayout={compactLayout}
+        resolvedTheme={resolvedTheme}
         activeWorkspace={activeWorkspace}
         onOpenNavigation={() => setNavigationOpen(true)}
         onNavigate={navigate}
