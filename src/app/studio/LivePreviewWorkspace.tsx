@@ -38,7 +38,7 @@ export function LivePreviewWorkspace() {
       <div className="mx-auto grid min-h-0 w-full max-w-[1500px] flex-1 gap-3 p-3 lg:grid-cols-[minmax(0,1fr)_300px] md:p-4">
         <main className="min-h-0 overflow-auto rounded-[var(--ec-radius-lg)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface-subtle)] shadow-[var(--ec-shadow-panel)]" aria-label="Live document preview">
           <div className="sticky top-0 z-10 flex h-9 items-center justify-between gap-3 border-b border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] px-3 text-[8px] text-[var(--color-ec-text-muted)]"><span className="truncate"><strong className="font-semibold text-[var(--color-ec-text)]">{document.name}</strong> · {breakpoint.label}</span><span className="shrink-0 font-mono tabular-nums">{breakpoint.width}px · {previewZoom}%</span></div>
-          <div className="preview-canvas-host min-h-[560px] overflow-auto p-4 md:p-6"><CanvasRenderer document={document} breakpointId={breakpoint.id} viewportWidth={breakpoint.width} zoom={previewZoom} /></div>
+          <div className="preview-canvas-host min-h-[560px] overflow-auto p-4 md:p-6"><CanvasRenderer project={session.project} document={document} breakpointId={breakpoint.id} viewportWidth={breakpoint.width} zoom={previewZoom} /></div>
         </main>
 
         <aside className="min-h-0 space-y-3 overflow-y-auto" aria-label="Preview diagnostics">
