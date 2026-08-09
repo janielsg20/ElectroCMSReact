@@ -21,8 +21,22 @@ export type ResponsiveSlot<T> =
 export type ResponsiveValue<T> = Record<string, ResponsiveSlot<T>>;
 export type ResponsiveStyleSet = Record<string, ResponsiveValue<JsonValue>>;
 
+export type DynamicBindingKind = 'text' | 'image' | 'link' | 'listing';
+
+/**
+ * Portable node binding contract.
+ *
+ * `source` existed before MF-044, therefore `target` and `kind` remain optional
+ * at the model boundary so older schema-v1 projects can still hydrate. MF-044
+ * authoring always writes the complete form and the binding runtime reports
+ * incomplete legacy bindings as an explicit error state rather than mutating
+ * or discarding them.
+ */
 export interface DynamicBinding extends JsonObject {
   source: string;
+  target?: string;
+  kind?: DynamicBindingKind;
+  fallback?: JsonValue;
 }
 
 export interface VisibilityCondition extends JsonObject {
