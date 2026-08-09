@@ -29,7 +29,7 @@ describe('workspace preferences', () => {
     expect(normalized.navigationCollapsed).toBe(true);
     expect(normalized.workspaceOrder).toEqual(['editor', 'preview', 'backend', 'export']);
     expect(normalized.editorThemeMode).toBe('dark');
-    expect(normalized.editorThemePresetId).toBe('bento-high-density');
+    expect(normalized.editorThemePresetId).toBe('studio-pro');
   });
 
   it('persists editor workspace preferences independently from project data', () => {
@@ -40,7 +40,7 @@ describe('workspace preferences', () => {
     preferences.navigationCollapsed = true;
     preferences.lastWorkspace = 'preview';
     preferences.editorThemeMode = 'dark';
-    preferences.editorThemePresetId = 'bento-high-density';
+    preferences.editorThemePresetId = 'studio-pro';
 
     repository.save(preferences);
 
@@ -50,18 +50,20 @@ describe('workspace preferences', () => {
       navigationCollapsed: true,
       lastWorkspace: 'preview',
       editorThemeMode: 'dark',
-      editorThemePresetId: 'bento-high-density',
+      editorThemePresetId: 'studio-pro',
     });
     const serialized = localStorage.getItem('test:workspace-preferences') ?? '';
     expect(serialized).not.toContain('documents');
     expect(serialized).not.toContain('contentTypes');
   });
 
-  it('migrates older editor preset values to the unified Bento theme', () => {
+  it('migrates former Bento and older editor preset values to Studio Pro', () => {
     const defaults = createDefaultWorkspacePreferences();
-    const legacy = { ...defaults, editorThemePresetId: 'developer-console' } as Record<string, unknown>;
+    const oldBento = { ...defaults, editorThemePresetId: 'bento-high-density' } as Record<string, unknown>;
+    const olderPreset = { ...defaults, editorThemePresetId: 'developer-console' } as Record<string, unknown>;
 
-    expect(normalizeWorkspacePreferences(legacy).editorThemePresetId).toBe('bento-high-density');
+    expect(normalizeWorkspacePreferences(oldBento).editorThemePresetId).toBe('studio-pro');
+    expect(normalizeWorkspacePreferences(olderPreset).editorThemePresetId).toBe('studio-pro');
   });
 
   it('fills the additive preset field for older schema-v1 preference payloads', () => {
@@ -69,7 +71,7 @@ describe('workspace preferences', () => {
     const legacy = { ...defaults } as Record<string, unknown>;
     delete legacy.editorThemePresetId;
 
-    expect(normalizeWorkspacePreferences(legacy).editorThemePresetId).toBe('bento-high-density');
+    expect(normalizeWorkspacePreferences(legacy).editorThemePresetId).toBe('studio-pro');
   });
 
   it('falls back to defaults when local storage is corrupted', () => {
