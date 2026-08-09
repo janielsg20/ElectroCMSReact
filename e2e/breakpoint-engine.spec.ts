@@ -20,7 +20,7 @@ test('inherits a style from the nearest wider breakpoint and follows later sourc
   await expect.poll(async () => headingNode.evaluate((element) => (element as HTMLElement).style.fontSize)).toBe('40px');
 
   await chooseBreakpoint(page, 'tablet-portrait');
-  await inspector.getByRole('button', { name: 'Inherit Font size from Desktop' }).click();
+  await inspector.getByRole('button', { name: 'Inherit Font size from Tablet horizontal' }).click();
   await expect(inspector.getByText('Inherited from desktop')).toBeVisible();
   await expect.poll(async () => headingNode.evaluate((element) => (element as HTMLElement).style.fontSize)).toBe('40px');
 
