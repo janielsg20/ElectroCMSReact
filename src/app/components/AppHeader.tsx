@@ -2,7 +2,7 @@ import { useProjectSession } from '../project/project-session-context';
 import { useDocumentHistoryShortcuts } from '../project/use-document-history-shortcuts';
 import type { WorkspaceId } from '../routing/workspaces';
 import { useWorkspacePreferences } from '../workspace/workspace-preferences-store';
-import { Icon } from './Icon';
+import { Icon, type IconName } from './Icon';
 
 export interface AppHeaderProps {
   compactLayout: boolean;
@@ -18,9 +18,17 @@ const saveLabels = {
   error: 'Save error',
 } as const;
 
-const selectClass = 'ec-control h-8 min-w-0 px-2.5 text-[11px] font-semibold';
-const iconButtonClass = 'ec-control ec-focus-ring group inline-grid size-8 shrink-0 place-items-center text-[var(--color-ec-text-muted)] hover:text-[var(--color-ec-text)] max-[720px]:size-11';
-const segmentButtonClass = 'ec-focus-ring group grid size-7 place-items-center rounded-[var(--ec-radius-sm)] text-[var(--color-ec-text-muted)] transition-colors hover:bg-[var(--color-ec-surface-muted)] hover:text-[var(--color-ec-text)] disabled:cursor-not-allowed disabled:opacity-30';
+type AppearanceMode = 'light' | 'dark' | 'auto';
+
+const appearanceModes: readonly { id: AppearanceMode; label: string; icon: IconName }[] = [
+  { id: 'light', label: 'Light', icon: 'sun' },
+  { id: 'dark', label: 'Dark', icon: 'moon' },
+  { id: 'auto', label: 'System', icon: 'system' },
+];
+
+const selectClass = 'header-select min-w-0 bg-transparent px-2 text-[11px] font-semibold text-[var(--color-ec-text)] outline-none';
+const iconButtonClass = 'header-icon-button ec-focus-ring group inline-grid size-8 shrink-0 place-items-center text-[var(--color-ec-text-muted)] hover:text-[var(--color-ec-text)] max-[720px]:size-11';
+const segmentButtonClass = 'header-segment-button ec-focus-ring group grid size-7 place-items-center text-[var(--color-ec-text-muted)] transition-colors hover:bg-[var(--color-ec-surface-muted)] hover:text-[var(--color-ec-text)] disabled:cursor-not-allowed disabled:opacity-30';
 
 export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, onNavigate }: AppHeaderProps) {
   const session = useProjectSession();
@@ -29,42 +37,26 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
   useDocumentHistoryShortcuts(session.undo, session.redo);
 
   return (
-    <header
-      className="app-header relative z-40 flex min-h-[54px] items-center gap-2 border-b border-[var(--color-ec-border)] bg-[color:var(--color-ec-surface)] px-2.5 shadow-[0_1px_0_rgb(16_19_18_/_0.03)]"
-      data-testid="app-header"
-    >
-      <div className="header-project flex min-w-0 shrink-0 items-center gap-2.5 lg:w-[236px]">
+    <header className="app-header" data-testid="app-header">
+      <div className="header-project">
         {compactLayout ? (
           <button className={iconButtonClass} type="button" aria-label="Open navigation" onClick={onOpenNavigation}>
-            <Icon name="menu" size={16} />
+            <Icon name="menu" size={17} />
           </button>
         ) : null}
 
-        <div
-          className="brand-mark grid size-8 shrink-0 place-items-center rounded-[var(--ec-radius-md)] bg-[var(--color-ec-chrome)] text-[var(--color-ec-accent)] shadow-sm"
-          aria-hidden="true"
-        >
+        <div className="brand-mark" aria-hidden="true">
           <Icon name="bolt" size={16} />
         </div>
 
-        <div className="project-identity min-w-0 leading-tight">
-          <div className="flex min-w-0 items-center gap-1.5">
-            <strong
-              className="project-name block truncate text-[12px] font-semibold tracking-[-.01em] text-[var(--color-ec-text)]"
-              title={session.project.name}
-            >
-              {session.project.name}
-            </strong>
-            <span className="hidden text-[9px] font-semibold uppercase tracking-[.14em] text-[var(--color-ec-text-muted)] xl:inline">Local</span>
+        <div className="project-identity">
+          <div className="project-title-row">
+            <strong className="project-name" title={session.project.name}>{session.project.name}</strong>
+            <span className="project-local-label">Local</span>
           </div>
-          <span
-            className="save-state mt-0.5 flex items-center gap-1.5 text-[9px] font-medium text-[var(--color-ec-text-muted)]"
-            data-state={session.saveState}
-            role="status"
-            aria-live="polite"
-          >
+          <span className="save-state" data-state={session.saveState} role="status" aria-live="polite">
             <span
-              className={`save-dot size-1.5 rounded-full ${session.saveState === 'error' ? 'bg-[var(--color-ec-danger-600)]' : session.saveState === 'dirty' ? 'bg-[var(--color-ec-warning-600)]' : session.saveState === 'saving' ? 'bg-[var(--color-ec-violet-600)]' : 'bg-[var(--color-ec-success-600)]'}`}
+              className={`save-dot ${session.saveState === 'error' ? 'bg-[var(--color-ec-danger-600)]' : session.saveState === 'dirty' ? 'bg-[var(--color-ec-warning-600)]' : session.saveState === 'saving' ? 'bg-[var(--color-ec-violet-600)]' : 'bg-[var(--color-ec-success-600)]'}`}
               aria-hidden="true"
             />
             {saveLabels[session.saveState]}
@@ -72,20 +64,13 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
         </div>
       </div>
 
-      <div
-        className="header-controls flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        role="toolbar"
-        aria-label="Editor controls"
-      >
-        <div
-          className="flex h-9 shrink-0 items-center gap-1 rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface-subtle)] p-0.5"
-          role="group"
-          aria-label="Document and breakpoint"
-        >
-          <label className="compact-field shrink-0">
+      <div className="header-controls" role="toolbar" aria-label="Editor controls">
+        <div className="header-document-group" role="group" aria-label="Document and breakpoint">
+          <span className="header-control-icon" aria-hidden="true"><Icon name="pages" size={14} /></span>
+          <label className="compact-field header-document-field">
             <span className="sr-only">Active document</span>
             <select
-              className={`${selectClass} min-w-[126px] max-w-[190px] border-0 bg-transparent shadow-none`}
+              className={`${selectClass} header-document-select`}
               aria-label="Active document"
               value={session.activeDocumentId}
               onChange={(event) => session.setActiveDocumentId(event.target.value)}
@@ -97,12 +82,12 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
             </select>
           </label>
 
-          <span className="h-4 w-px bg-[var(--color-ec-border)]" aria-hidden="true" />
+          <span className="header-control-divider" aria-hidden="true" />
 
-          <label className="compact-field breakpoint-field hidden shrink-0 sm:block">
+          <label className="compact-field breakpoint-field">
             <span className="sr-only">Preview breakpoint</span>
             <select
-              className={`${selectClass} min-w-[138px] border-0 bg-transparent shadow-none`}
+              className={`${selectClass} header-breakpoint-select`}
               aria-label="Preview breakpoint"
               value={session.activeBreakpointId}
               onChange={(event) => session.setActiveBreakpointId(event.target.value)}
@@ -114,25 +99,17 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
           </label>
         </div>
 
-        <div
-          className="segmented-control zoom-control flex h-8 shrink-0 items-center rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] p-0.5"
-          role="group"
-          aria-label="Canvas zoom"
-        >
+        <div className="segmented-control zoom-control" role="group" aria-label="Canvas zoom">
           <button className={segmentButtonClass} type="button" aria-label="Zoom out" disabled={session.zoom <= 50} onClick={() => session.setZoom(session.zoom - 10)}>
             <Icon name="minus" size={13} />
           </button>
-          <output className="min-w-11 px-1 text-center text-[10px] font-semibold tabular-nums text-[var(--color-ec-text)]" aria-label="Zoom level">{session.zoom}%</output>
+          <output className="header-zoom-output" aria-label="Zoom level">{session.zoom}%</output>
           <button className={segmentButtonClass} type="button" aria-label="Zoom in" disabled={session.zoom >= 200} onClick={() => session.setZoom(session.zoom + 10)}>
             <Icon name="plus" size={13} />
           </button>
         </div>
 
-        <div
-          className="segmented-control history-control flex h-8 shrink-0 items-center rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] p-0.5"
-          role="group"
-          aria-label="Document history"
-        >
+        <div className="segmented-control history-control" role="group" aria-label="Document history">
           <button className={segmentButtonClass} type="button" aria-label="Undo" disabled={!session.canUndo} title={session.canUndo ? 'Undo last document command' : 'Nothing to undo'} onClick={session.undo}>
             <Icon name="undo" size={13} />
           </button>
@@ -140,41 +117,47 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
             <Icon name="redo" size={13} />
           </button>
         </div>
-
-        <label className="compact-field theme-field hidden shrink-0 lg:block">
-          <span className="sr-only">Editor appearance</span>
-          <select
-            className={`${selectClass} border-0 bg-transparent shadow-none`}
-            aria-label="Editor theme mode"
-            value={preferences.editorThemeMode}
-            onChange={(event) => setEditorThemeMode(event.target.value as 'light' | 'dark' | 'auto')}
-          >
-            <option value="auto">Auto appearance</option>
-            <option value="dark">Dark appearance</option>
-            <option value="light">Light appearance</option>
-          </select>
-        </label>
       </div>
 
-      <div className="header-actions ml-auto flex shrink-0 items-center gap-1">
+      <div className="header-actions">
+        <div className="appearance-toggle" role="group" aria-label="Editor appearance">
+          {appearanceModes.map((mode) => (
+            <button
+              key={mode.id}
+              className={`appearance-toggle-button ${mode.id === 'auto' ? 'appearance-system' : ''}`}
+              type="button"
+              aria-label={`Use ${mode.label.toLowerCase()} appearance`}
+              aria-pressed={preferences.editorThemeMode === mode.id}
+              title={`${mode.label} appearance`}
+              onClick={() => setEditorThemeMode(mode.id)}
+            >
+              <Icon name={mode.icon} size={14} />
+              <span>{mode.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <span className="header-actions-divider" aria-hidden="true" />
+
         <button
-          className="ec-focus-ring group inline-flex h-8 items-center gap-1.5 rounded-[var(--ec-radius-md)] px-2.5 text-[10px] font-semibold text-[var(--color-ec-text-muted)] transition-colors hover:bg-[var(--color-ec-surface-muted)] hover:text-[var(--color-ec-text)]"
+          className="header-preview-button ec-focus-ring group"
           type="button"
           aria-pressed={activeWorkspace === 'preview'}
           onClick={() => onNavigate('preview')}
         >
-          <Icon name="preview" size={13} />
-          <span className="hidden sm:inline">Preview</span>
+          <Icon name="preview" size={14} />
+          <span>Preview</span>
         </button>
+
         <button
-          className="ec-focus-ring group inline-flex h-8 items-center gap-1.5 rounded-[var(--ec-radius-md)] bg-[var(--color-ec-accent)] px-3 text-[10px] font-semibold text-white shadow-sm transition-[filter,transform] hover:brightness-95 active:translate-y-px"
+          className="header-publish-button ec-focus-ring group"
           type="button"
           aria-label="Export"
           aria-pressed={activeWorkspace === 'export'}
           onClick={() => onNavigate('export')}
         >
-          <Icon name="export" size={13} />
-          <span className="hidden sm:inline">Publish</span>
+          <Icon name="export" size={14} />
+          <span>Publish</span>
         </button>
       </div>
 
