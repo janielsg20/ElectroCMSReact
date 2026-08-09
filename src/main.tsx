@@ -9,7 +9,7 @@ import './app/ui/ui-foundation.css';
 import './app/studio/studio.css';
 import './app/editor/builder-v2.css';
 import './app/editor/builder-v2-polish.css';
-import './app/ui/studio-pro-tailwind.css';
+import './app/ui/studio-pro.css';
 
 const rootElement = document.getElementById('root');
 
