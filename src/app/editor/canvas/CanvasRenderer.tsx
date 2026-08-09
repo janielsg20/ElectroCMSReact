@@ -2,7 +2,9 @@ import type { CSSProperties, DragEvent, KeyboardEvent, MouseEvent } from 'react'
 import {
   inspectDocumentTree,
   readNodeGeometry,
+  resolveDocumentNodeBindings,
   type CanonicalDocument,
+  type CanonicalProject,
   type DocumentNode,
 } from '../../../core/project';
 import type { EditorWidgetRegistry } from '../../widgets/editor-widget-registry';
@@ -14,6 +16,7 @@ type MoveNodeHandler = (nodeId: string, parentId: string, index: number) => bool
 type SelectNodeHandler = (nodeId: string, additive: boolean) => void;
 
 export interface CanvasRendererProps {
+  project: CanonicalProject;
   document: CanonicalDocument;
   breakpointId: string;
   viewportWidth: number;
@@ -24,6 +27,7 @@ export interface CanvasRendererProps {
 }
 
 interface CanvasNodeViewProps {
+  project: CanonicalProject;
   document: CanonicalDocument;
   breakpointId: string;
   node: DocumentNode;
@@ -91,6 +95,7 @@ function DropZone({ parentId, index, onMoveNode }: DropZoneProps) {
 }
 
 function CanvasNodeView({
+  project,
   document,
   breakpointId,
   node,
@@ -110,6 +115,7 @@ function CanvasNodeView({
       {children.map((child, index) => (
         <div className="canvas-child-entry" key={child.id}>
           <CanvasNodeView
+            project={project}
             document={document}
             breakpointId={breakpointId}
             node={child}
@@ -148,6 +154,9 @@ function CanvasNodeView({
   const selected = selectedNodeIds.has(node.id);
   const geometry = readNodeGeometry(node, breakpointId);
   const visualStyle = resolveCanvasNodeStyle(node, breakpointId);
+  const bindingResolution = resolveDocumentNodeBindings(project, node);
+  const previewNode = bindingResolution.node;
+  const bindingErrorCount = bindingResolution.resolutions.filter((resolution) => resolution.state === 'error').length;
   const nodeStyle: CSSProperties = {
     ...visualStyle,
     ...(geometry.x === 0 && geometry.y === 0
@@ -182,7 +191,7 @@ function CanvasNodeView({
     children.length > 0 || onMoveNode ? renderChildren() : <div className="canvas-node-leaf" aria-hidden="true" />;
   const previewRegistered = widgetRegistry.hasPreview(node.type, node.version);
   const previewContent = widgetRegistry.renderPreview(node.type, node.version, {
-    node,
+    node: previewNode,
     breakpointId,
     selected,
     children: childContent,
@@ -203,6 +212,9 @@ function CanvasNodeView({
       data-geometry-width={geometry.width ?? ''}
       data-geometry-height={geometry.height ?? ''}
       data-widget-registered={previewRegistered ? 'true' : 'false'}
+      data-binding-state={bindingResolution.state}
+      data-binding-count={bindingResolution.resolutions.length}
+      data-binding-errors={bindingErrorCount}
       data-drag-source="false"
       draggable={Boolean(onMoveNode) && !node.locked}
       onDragStart={onMoveNode ? handleDragStart : undefined}
@@ -222,6 +234,7 @@ function CanvasNodeView({
 }
 
 export function CanvasRenderer({
+  project,
   document,
   breakpointId,
   viewportWidth,
@@ -266,6 +279,7 @@ export function CanvasRenderer({
     >
       <div className="canvas-scaled-document">
         <CanvasNodeView
+          project={project}
           document={document}
           breakpointId={breakpointId}
           node={rootNode}
