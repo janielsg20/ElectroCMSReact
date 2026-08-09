@@ -4,16 +4,19 @@
 - Estado: IN_PROGRESS
 - Fase completada: F04 — Widgets, inspector, responsive y themes
 - Fase actual: **F05 — Dynamic Content**
-- Microfase actual: **MF-040 — Custom Field Groups — NEXT**
+- Microfase actual: **MF-041 — Records CRUD — NEXT**
 - Repositorio oficial: `janielsg20/ElectroCMSReact`
 - UI activa: Studio Pro único; no reintroducir UI/CSS legacy de F05.
 - Estrategia F05: portar cada microfase validada desde `agent/f05-dynamic-content` a una rama fresca desde `main`, ejecutar gate completo y fusionar secuencialmente.
+- Último merge funcional F05: MF-040 → `dcef1c3302c2520a1911884624fb059eef09f4c0`.
+- Último quality gate funcional completo: GitHub Actions #1524 PASS.
 - Preview deployment: MANUAL ONLY. `vercel.json` usa `git.deploymentEnabled: false`; no desplegar por push/PR.
 
 ## Evidencia reciente F05
 - MF-037 Content Types: PR #34 → merge `748c6e61af114640a176665903b5f3bc0336ca07`; Quality Gate #1515 PASS.
 - MF-038 Taxonomies: PR #41 → merge `7cf28bb23d2825fd6174f90720fd80cbe0314666`; Quality Gate #1517 PASS.
 - MF-039 Field Type Registry: PR #42 → merge `0db52d1c8db88b70a6ce5c6275f14803397c9691`; Quality Gate #1519 PASS.
+- MF-040 Custom Field Groups: PR #44 → merge `dcef1c3302c2520a1911884624fb059eef09f4c0`; Quality Gate #1524 PASS.
 
 ## F00
 | Microfase | Estado | Evidencia |
@@ -78,9 +81,9 @@
 | MF-037 | DONE | Content Types canónicos + Studio Pro CRUD + autosave/persistencia E2E; PR #34; Quality Gate #1515 PASS; merge `748c6e61…` |
 | MF-038 | DONE | Taxonomías canónicas, asociaciones/referencias validadas + Studio Pro CRUD + reload E2E; PR #41; Quality Gate #1517 PASS; merge `7cf28bb2…` |
 | MF-039 | DONE | Registry React-free `type@version`, 27 contratos builtin, plugins externos, migraciones explícitas; PR #42; Quality Gate #1519 PASS; merge `0db52d1c…` |
-| MF-040 | NEXT | Custom Field Groups. Portar contrato histórico validado sobre `main` moderno y habilitar edición Studio Pro solo después del core/session |
-| MF-041 | BLOCKED | Records CRUD; depende de MF-040 |
-| MF-042 | BLOCKED | Advanced fields; la rama histórica tiene implementación, pero debe portarse y revalidarse sobre current `main` |
+| MF-040 | DONE | Custom Field Groups canónicos, 20 tipos disponibles, orden/config/defaults, protección de referencias, Studio Pro CRUD + persistencia E2E; PR #44; Quality Gate #1524 PASS; merge `dcef1c33…` |
+| MF-041 | NEXT | Records CRUD. Recuperar contrato histórico, validar contra Field Groups MF-040, conectar ProjectSession + Studio Pro + persistencia E2E |
+| MF-042 | BLOCKED | Advanced fields; depende de MF-041 integrado y debe portarse/revalidarse sobre current `main` |
 | MF-043 | BLOCKED | Relations; la rama histórica tiene implementación/hardening, pero debe portarse y revalidarse después de MF-042 |
 | MF-044 | BLOCKED | Dynamic bindings; no iniciar hasta cerrar MF-042 y MF-043 en la línea moderna |
 
@@ -97,7 +100,9 @@
 - `CanonicalProject` y sus colecciones son la única fuente persistente de verdad; no crear stores paralelos para F05.
 - Widgets se resuelven por `type@version` mediante registries explícitos.
 - Field Types F05 también se resuelven por `type@version`; no promover tipos `modeled` antes de su microfase.
-- Mutaciones de Content Types/Taxonomies y futuras entidades F05 deben entrar por APIs públicas de core expuestas por `ProjectSession`, conservando validación, autosave y persistencia atómica.
+- Mutaciones F05 entran por APIs públicas de core expuestas por `ProjectSession`, conservando validación, autosave y persistencia atómica.
+- Field Groups MF-040 solo permiten instanciar los 20 Field Types `available`; los 7 `modeled` permanecen bloqueados hasta sus microfases.
+- Los Field Groups preservan el orden de campos y bloquean borrado cuando una Taxonomía los referencia.
 - Undo/Redo de documentos usa comandos canónicos reversibles; UI transitoria no entra al proyecto.
 - Autosave reutiliza los repositorios F01 y no reemplaza contenido nuevo con callbacks stale.
 - Deployments de preview son manuales y solo bajo petición explícita del usuario.
@@ -115,4 +120,4 @@ Cada microfase portada a la línea moderna debe ejecutar y aprobar, contra el me
 No marcar una microfase como DONE por evidencia histórica únicamente. La evidencia histórica sirve para recuperar el contrato; el estado DONE exige un gate nuevo en la UI/arquitectura actual.
 
 ## Regla de salida
-Continuar F05 secuencialmente. **Próximo trabajo: MF-040 Custom Field Groups**. No saltar a Records/Advanced Fields/Relations hasta que MF-040 esté integrado y verde en `main`.
+Continuar F05 secuencialmente. **Próximo trabajo: MF-041 Records CRUD**. No saltar a Advanced Fields/Relations/Dynamic Bindings hasta que MF-041 esté integrado y verde en `main`.
