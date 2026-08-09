@@ -12,6 +12,16 @@
   min-height: 34px;
 }
 
+/* The header exposes only the three primary responsive targets. Keep the
+ * controls visually icon-only while preserving resolution details in aria/title.
+ */
+.electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-button {
+  width: 30px !important;
+  min-width: 30px !important;
+  padding: 0 !important;
+  gap: 0 !important;
+}
+
 @media (max-width: 960px) and (min-width: 641px) {
   .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .header-document-group,
   .electrocms-app[data-editor-preset="studio-pro"] .header-actions > .appearance-toggle {
@@ -35,6 +45,14 @@
   .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .history-control {
     display: none !important;
   }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-button {
+    display: inline-flex !important;
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+  }
 }
 
 @media (max-width: 640px) {
@@ -53,5 +71,16 @@
   .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .zoom-control,
   .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .history-control {
     display: none !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-button,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-button:not([aria-pressed="true"]),
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-button[aria-pressed="true"] {
+    display: inline-flex !important;
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    padding: 0 !important;
   }
 }
