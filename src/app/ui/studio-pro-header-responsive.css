@@ -4,7 +4,9 @@
 
 .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .header-document-group,
 .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .segmented-control,
-.electrocms-app[data-editor-preset="studio-pro"] .header-actions > .appearance-toggle {
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions > .appearance-toggle,
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions > .header-preview-button,
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions > .header-publish-button {
   box-sizing: border-box;
   height: 34px;
   min-height: 34px;
@@ -15,6 +17,12 @@
   .electrocms-app[data-editor-preset="studio-pro"] .header-actions > .appearance-toggle {
     height: 40px;
     min-height: 40px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions > .header-preview-button,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions > .header-publish-button {
+    height: 44px;
+    min-height: 44px;
   }
 
   .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .zoom-control {
@@ -34,6 +42,12 @@
   .electrocms-app[data-editor-preset="studio-pro"] .header-actions > .appearance-toggle {
     height: 40px;
     min-height: 40px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions > .header-preview-button,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions > .header-publish-button {
+    height: 44px;
+    min-height: 44px;
   }
 
   .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .zoom-control,
