@@ -1,22 +1,923 @@
 @import "./studio-pro-tailwind.css";
 @reference "../studio/studio.css";
 
-@layer components {
-  .electrocms-app[data-editor-preset="studio-pro"] .app-header {
-    height: 60px;
-    min-height: 60px;
-  }
+/*
+ * Studio Pro reference skin
+ * --------------------------------------------------------------------------
+ * The application intentionally uses one authoring visual language inspired by
+ * professional visual builders: compact chrome, flat work surfaces, a dominant
+ * canvas, a narrow icon rail, contextual navigation and a fixed inspector.
+ *
+ * These unlayered rules are the final visual authority. Legacy canvas styles
+ * predate Tailwind cascade layers, so keeping the final skin unlayered prevents
+ * old geometry/appearance rules from leaking back into the production UI.
+ */
+
+.electrocms-app[data-editor-preset="studio-pro"] {
+  --ec-ref-blue: #2563eb;
+  --ec-ref-blue-soft: #edf4ff;
+  --ec-ref-indigo: #4f46e5;
+  --ec-ref-indigo-soft: #eef2ff;
+  --ec-ref-violet: #7c3aed;
+  --ec-ref-violet-soft: #f5f0ff;
+  --ec-ref-cyan: #0891b2;
+  --ec-ref-cyan-soft: #ecfeff;
+  --ec-ref-green: #15945f;
+  --ec-ref-green-soft: #ecfdf5;
+  --ec-ref-amber: #c97808;
+  --ec-ref-amber-soft: #fff8e8;
+  --ec-ref-rose: #d94a72;
+  --ec-ref-rose-soft: #fff0f4;
+  --ec-ref-slate: #667085;
+  --ec-ref-slate-soft: #f3f5f7;
+
+  --color-ec-app: #f4f5f7;
+  --color-ec-surface: #ffffff;
+  --color-ec-surface-subtle: #f8f9fb;
+  --color-ec-surface-muted: #f0f2f5;
+  --color-ec-border: #e2e6ec;
+  --color-ec-text: #1b2230;
+  --color-ec-text-muted: #6e7786;
+  --color-ec-accent: var(--ec-ref-blue);
+  --color-ec-accent-soft: var(--ec-ref-blue-soft);
+  --color-ec-chrome: #ffffff;
+  --color-ec-chrome-raised: #fafbfc;
+  --ec-studio-line: #e2e6ec;
+  --ec-studio-line-strong: #cbd2dc;
+  --ec-studio-canvas: #f5f6f8;
+  --ec-studio-dot: rgb(100 116 139 / 0.22);
+  --ec-studio-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px rgb(15 23 42 / 0.05);
+  --ec-studio-float: 0 20px 56px rgb(15 23 42 / 0.2);
+  --ec-motion-fast: 140ms;
+  --ec-motion-normal: 180ms;
+  --ec-ease-product: cubic-bezier(.2,.75,.2,1);
+
+  background: var(--color-ec-app);
+  color: var(--color-ec-text);
 }
 
-/* Legacy canvas styles predate Tailwind cascade layers. Keep these narrow
- * compatibility resets unlayered so the single Studio Pro entrypoint wins
- * over old unlayered geometry/display declarations without adding a patch
- * stylesheet or changing canonical editor behavior. */
-.electrocms-app[data-editor-preset="studio-pro"]
-  .editor-canvas-v2 > .canvas-command-bar-v2 {
+.electrocms-app[data-editor-preset="studio-pro"][data-theme="dark"] {
+  --color-ec-app: #11151b;
+  --color-ec-surface: #191e26;
+  --color-ec-surface-subtle: #202630;
+  --color-ec-surface-muted: #282f3a;
+  --color-ec-border: #343c48;
+  --color-ec-text: #f3f6fa;
+  --color-ec-text-muted: #a4aebe;
+  --color-ec-accent: #7399ff;
+  --color-ec-accent-soft: #26385f;
+  --ec-studio-line: #343c48;
+  --ec-studio-line-strong: #485362;
+  --ec-studio-canvas: #141920;
+  --ec-studio-dot: rgb(148 163 184 / 0.22);
+  --ec-ref-blue-soft: #26385f;
+  --ec-ref-indigo-soft: #292b58;
+  --ec-ref-violet-soft: #392b58;
+  --ec-ref-cyan-soft: #173c46;
+  --ec-ref-green-soft: #183b2f;
+  --ec-ref-amber-soft: #46351c;
+  --ec-ref-rose-soft: #4b2935;
+  --ec-ref-slate-soft: #292f38;
+  --ec-studio-shadow: 0 1px 2px rgb(0 0 0 / 0.24), 0 12px 30px rgb(0 0 0 / 0.16);
+  --ec-studio-float: 0 24px 68px rgb(0 0 0 / 0.42);
+}
+
+/* Global interaction language ------------------------------------------------ */
+.electrocms-app[data-editor-preset="studio-pro"] button,
+.electrocms-app[data-editor-preset="studio-pro"] summary,
+.electrocms-app[data-editor-preset="studio-pro"] [role="tab"],
+.electrocms-app[data-editor-preset="studio-pro"] select,
+.electrocms-app[data-editor-preset="studio-pro"] input,
+.electrocms-app[data-editor-preset="studio-pro"] textarea {
+  transition:
+    background-color var(--ec-motion-fast) var(--ec-ease-product),
+    border-color var(--ec-motion-fast) var(--ec-ease-product),
+    color var(--ec-motion-fast) var(--ec-ease-product),
+    box-shadow var(--ec-motion-fast) var(--ec-ease-product),
+    transform var(--ec-motion-fast) var(--ec-ease-product),
+    opacity var(--ec-motion-fast) var(--ec-ease-product);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] button svg,
+.electrocms-app[data-editor-preset="studio-pro"] summary svg,
+.electrocms-app[data-editor-preset="studio-pro"] [role="tab"] svg {
+  transform-origin: center;
+  transition: transform var(--ec-motion-normal) var(--ec-ease-product), color var(--ec-motion-fast) var(--ec-ease-product);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] button:hover:not(:disabled) svg,
+.electrocms-app[data-editor-preset="studio-pro"] summary:hover svg,
+.electrocms-app[data-editor-preset="studio-pro"] [role="tab"]:hover svg {
+  transform: translateY(-1px) scale(1.06);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] button:active:not(:disabled),
+.electrocms-app[data-editor-preset="studio-pro"] [role="tab"]:active {
+  transform: translateY(1px) scale(.985);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] button:active:not(:disabled) svg,
+.electrocms-app[data-editor-preset="studio-pro"] [role="tab"]:active svg {
+  transform: scale(.94);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] button:focus-visible,
+.electrocms-app[data-editor-preset="studio-pro"] summary:focus-visible,
+.electrocms-app[data-editor-preset="studio-pro"] [role="tab"]:focus-visible,
+.electrocms-app[data-editor-preset="studio-pro"] select:focus-visible,
+.electrocms-app[data-editor-preset="studio-pro"] input:focus-visible,
+.electrocms-app[data-editor-preset="studio-pro"] textarea:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-ec-accent) 78%, white);
+  outline-offset: 2px;
+}
+
+@keyframes ec-studio-icon-pop {
+  0% { transform: scale(.82); opacity: .65; }
+  60% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes ec-studio-sheet-in {
+  from { transform: translateY(18px); opacity: .82; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Application toolbar ------------------------------------------------------- */
+.electrocms-app[data-editor-preset="studio-pro"] .app-header {
+  height: 64px;
+  min-height: 64px;
+  grid-template-columns: minmax(224px, .78fr) minmax(0, 1.55fr) auto;
+  gap: 10px;
+  padding: 0 14px;
+  border: 0;
+  border-bottom: 1px solid var(--ec-studio-line);
+  background: var(--color-ec-surface);
+  box-shadow: 0 1px 0 rgb(15 23 42 / .025);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-project {
+  gap: 10px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .brand-mark {
+  width: 38px;
+  height: 38px;
+  border: 1px solid color-mix(in srgb, var(--ec-ref-blue) 20%, var(--ec-studio-line));
+  border-radius: 10px;
+  background: var(--color-ec-surface);
+  color: var(--ec-ref-blue);
+  box-shadow: 0 2px 7px rgb(37 99 235 / .08);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .brand-mark svg {
+  filter: drop-shadow(0 2px 3px rgb(37 99 235 / .12));
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .project-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: -.015em;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .save-state {
+  font-size: 9px;
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-controls {
+  justify-content: center;
+  gap: 7px;
+  padding: 5px 0;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-controls > div,
+.electrocms-app[data-editor-preset="studio-pro"] .header-controls > label {
+  min-height: 36px;
+  border: 1px solid var(--ec-studio-line);
+  border-radius: 8px;
+  background: var(--color-ec-surface);
+  box-shadow: 0 1px 2px rgb(15 23 42 / .025);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-controls > div:first-child {
+  background: var(--color-ec-surface-subtle);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .breakpoint-field {
+  color: var(--ec-ref-blue);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .theme-field {
+  border-color: color-mix(in srgb, var(--ec-ref-violet) 14%, var(--ec-studio-line));
+  background: color-mix(in srgb, var(--ec-ref-violet-soft) 56%, var(--color-ec-surface));
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .segmented-control button:hover:not(:disabled) {
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions {
+  gap: 6px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions button {
+  min-height: 36px;
+  border-radius: 8px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions button:first-child {
+  color: var(--ec-ref-indigo);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions button:first-child:hover {
+  background: var(--ec-ref-indigo-soft);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions button:last-child {
+  border: 1px solid color-mix(in srgb, var(--ec-ref-blue) 82%, #1747a6);
+  background: var(--ec-ref-blue);
+  color: white;
+  box-shadow: 0 4px 12px rgb(37 99 235 / .18);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions button:last-child:hover {
+  background: #1f59d7;
+  box-shadow: 0 6px 16px rgb(37 99 235 / .22);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions button:last-child:hover svg {
+  transform: translateY(-2px) scale(1.04);
+}
+
+/* Studio shell / rail ------------------------------------------------------- */
+.electrocms-app[data-editor-preset="studio-pro"] .production-studio,
+.electrocms-app[data-editor-preset="studio-pro"] .production-studio-main,
+.electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder,
+.electrocms-app[data-editor-preset="studio-pro"] .studio-editor-region {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail[data-studio-rail="true"] {
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
+  border: 0;
+  border-right: 1px solid var(--ec-studio-line);
+  background: var(--color-ec-surface);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail[data-studio-rail="true"][data-position="right"] {
+  border-right: 0;
+  border-left: 1px solid var(--ec-studio-line);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail[data-studio-rail="true"] .studio-rail-header {
+  display: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail[data-studio-rail="true"] .studio-rail-primary {
+  padding-top: 10px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-primary,
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-modules {
+  gap: 5px;
+  padding-inline: 7px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button {
+  --rail-tone: var(--ec-ref-slate);
+  --rail-soft: var(--ec-ref-slate-soft);
+  position: relative;
+  min-height: 44px;
+  border-radius: 9px;
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button .studio-rail-icon {
+  color: var(--rail-tone);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button:hover {
+  background: var(--rail-soft);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[data-active="true"] {
+  background: var(--rail-soft);
+  color: var(--rail-tone);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rail-tone) 10%, transparent);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[data-active="true"] .studio-rail-icon svg {
+  animation: ec-studio-icon-pop var(--ec-motion-normal) var(--ec-ease-product);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[data-active="true"]::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: -7px;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: var(--rail-tone);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail[data-position="right"] .studio-rail-button[data-active="true"]::before {
+  right: -7px;
+  left: auto;
+  border-radius: 4px 0 0 4px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[aria-label="Editor"],
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[aria-label="Builder"],
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[aria-label="Pages"] {
+  --rail-tone: var(--ec-ref-blue);
+  --rail-soft: var(--ec-ref-blue-soft);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[aria-label="Preview"],
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[aria-label="Themes"] {
+  --rail-tone: var(--ec-ref-indigo);
+  --rail-soft: var(--ec-ref-indigo-soft);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[aria-label="Content"],
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[aria-label="Queries"] {
+  --rail-tone: var(--ec-ref-cyan);
+  --rail-soft: var(--ec-ref-cyan-soft);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[aria-label="Forms"],
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[aria-label="Roles"] {
+  --rail-tone: var(--ec-ref-green);
+  --rail-soft: var(--ec-ref-green-soft);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[aria-label="Filters"],
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[aria-label="Settings"] {
+  --rail-tone: var(--ec-ref-amber);
+  --rail-soft: var(--ec-ref-amber-soft);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[aria-label="Media"],
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[aria-label="Export"] {
+  --rail-tone: var(--ec-ref-violet);
+  --rail-soft: var(--ec-ref-violet-soft);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[aria-label="Blueprints"] {
+  --rail-tone: var(--ec-ref-rose);
+  --rail-soft: var(--ec-ref-rose-soft);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .workspace-settings > summary:hover {
+  background: var(--ec-ref-amber-soft);
+  color: var(--ec-ref-amber);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .workspace-settings[open] > summary svg {
+  color: var(--ec-ref-amber);
+  transform: rotate(35deg) scale(1.05);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .workspace-settings-popover {
+  border: 1px solid var(--ec-studio-line);
+  border-radius: 12px;
+  background: var(--color-ec-surface);
+  box-shadow: var(--ec-studio-float);
+}
+
+/* Builder navigator --------------------------------------------------------- */
+.electrocms-app[data-editor-preset="studio-pro"] .builder-context-panel {
+  width: 300px;
+  min-width: 300px;
+  border: 0;
+  border-right: 1px solid var(--ec-studio-line);
+  background: var(--color-ec-surface);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-context-tabs {
+  height: 52px;
+  min-height: 52px;
+  gap: 5px;
+  padding: 6px;
+  border-bottom: 1px solid var(--ec-studio-line);
+  background: var(--color-ec-surface);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-context-tabs button {
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--color-ec-text-muted);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-context-tabs button:hover {
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-context-tabs button[data-active="true"] {
+  border-color: var(--ec-studio-line);
+  background: var(--color-ec-surface);
+  color: var(--ec-ref-blue);
+  box-shadow: 0 2px 7px rgb(15 23 42 / .06);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-pages-section {
+  border-bottom: 1px solid var(--ec-studio-line);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-pages-section > header {
+  min-height: 48px;
+  padding: 0 13px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-pages-section > header strong {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-pages-section > header span {
+  min-width: 22px;
+  border-radius: 999px;
+  background: var(--ec-ref-blue-soft);
+  color: var(--ec-ref-blue);
+  text-align: center;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-page-list {
+  gap: 3px;
+  padding: 0 8px 10px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-page-row {
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding-inline: 9px;
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-page-row:hover {
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-page-row[data-active="true"] {
+  border-color: color-mix(in srgb, var(--ec-ref-blue) 10%, var(--ec-studio-line));
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+  font-weight: 700;
+  box-shadow: inset 3px 0 0 var(--ec-ref-blue);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-widget-tree {
+  padding-inline: 7px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-widget-tree ul[role="group"] {
+  margin-left: 14px;
+  border-left: 1px solid color-mix(in srgb, var(--ec-studio-line-strong) 68%, transparent);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-tree-row {
+  min-height: 32px;
+  border-radius: 6px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-tree-row:hover {
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-components-panel .ec-control {
+  border-color: var(--ec-studio-line);
+  border-radius: 8px;
+  background: var(--color-ec-surface-subtle);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-components-panel section button[aria-label^="Add "] {
+  --widget-tone: var(--ec-ref-blue);
+  --widget-soft: var(--ec-ref-blue-soft);
+  min-height: 82px;
+  border-color: var(--ec-studio-line);
+  border-radius: 9px;
+  background: var(--color-ec-surface);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-components-panel section:nth-of-type(4n + 2) button[aria-label^="Add "] {
+  --widget-tone: var(--ec-ref-violet);
+  --widget-soft: var(--ec-ref-violet-soft);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-components-panel section:nth-of-type(4n + 3) button[aria-label^="Add "] {
+  --widget-tone: var(--ec-ref-cyan);
+  --widget-soft: var(--ec-ref-cyan-soft);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-components-panel section:nth-of-type(4n) button[aria-label^="Add "] {
+  --widget-tone: var(--ec-ref-green);
+  --widget-soft: var(--ec-ref-green-soft);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-components-panel section button[aria-label^="Add "] > span:first-child {
+  background: var(--widget-soft);
+  color: var(--widget-tone);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .builder-components-panel section button[aria-label^="Add "]:hover {
+  border-color: color-mix(in srgb, var(--widget-tone) 46%, var(--ec-studio-line));
+  background: color-mix(in srgb, var(--widget-soft) 38%, var(--color-ec-surface));
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgb(15 23 42 / .06);
+}
+
+/* Canvas -------------------------------------------------------------------- */
+.electrocms-app[data-editor-preset="studio-pro"] .studio-editor-region,
+.electrocms-app[data-editor-preset="studio-pro"] .editor-canvas-v2 {
+  background: var(--ec-studio-canvas);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .editor-canvas-v2 > .canvas-command-bar-v2 {
   position: relative;
   top: auto;
+  width: auto;
+  max-width: none;
+  height: 52px;
+  min-height: 52px;
   margin: 0;
+  padding: 6px 8px;
+  border: 0;
+  border-right: 1px solid var(--ec-studio-line);
+  border-bottom: 1px solid var(--ec-studio-line);
+  border-radius: 0;
+  background: var(--color-ec-surface);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-command-cluster {
+  gap: 5px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-command-label,
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-selection-summary {
+  color: var(--color-ec-text-muted);
+  font-size: 9px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-command-bar-v2 button,
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-command-bar-v2 select,
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-geometry-controls input {
+  height: 32px;
+  min-height: 32px;
+  border: 1px solid var(--ec-studio-line);
+  border-radius: 7px;
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-command-bar-v2 button:hover:not(:disabled),
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-command-bar-v2 select:hover:not(:disabled) {
+  border-color: var(--ec-studio-line-strong);
+  background: var(--color-ec-surface-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-command-primary {
+  border-color: var(--ec-ref-blue) !important;
+  background: var(--ec-ref-blue) !important;
+  color: white !important;
+  box-shadow: 0 3px 9px rgb(37 99 235 / .16) !important;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-command-primary:hover:not(:disabled) {
+  background: #1f59d7 !important;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-layers-trigger[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--ec-ref-violet) 30%, var(--ec-studio-line));
+  background: var(--ec-ref-violet-soft);
+  color: var(--ec-ref-violet);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-stage-v2 {
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y pinch-zoom;
+  scrollbar-gutter: stable both-edges;
+  padding: clamp(24px, 3vw, 44px) clamp(18px, 3.6vw, 58px) 92px;
+  background-color: var(--ec-studio-canvas);
+  background-image: radial-gradient(var(--ec-studio-dot) .72px, transparent .72px);
+  background-size: 15px 15px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-scaled-document {
+  max-width: none;
+  flex: none;
+  border: 1px solid var(--ec-studio-line-strong);
+  border-radius: 12px;
+  background: var(--color-ec-surface);
+  box-shadow: 0 24px 68px rgb(15 23 42 / .14), 0 3px 9px rgb(15 23 42 / .07);
+  transform-origin: top center;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-document-root {
+  background: var(--color-ec-surface);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-node {
+  border-color: var(--ec-studio-line);
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-node[data-selected="true"] {
+  outline: 2px solid var(--ec-ref-blue);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ec-ref-blue) 12%, transparent);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-layers-popover {
+  border-color: var(--ec-studio-line);
+  border-radius: 10px;
+  background: var(--color-ec-surface);
+  box-shadow: var(--ec-studio-float);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-layer-row[data-selected="true"] {
+  background: var(--ec-ref-blue-soft);
+  color: var(--ec-ref-blue);
+}
+
+/* Inspector ----------------------------------------------------------------- */
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-inspector-dock,
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-v2 {
+  background: var(--color-ec-surface);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .canvas-inspector-dock {
+  border: 0;
+  border-left: 1px solid var(--ec-studio-line);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-header-v2 {
+  min-height: 56px;
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--ec-studio-line);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-header-v2 strong {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-eyebrow {
+  color: var(--ec-ref-blue);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-tabs {
+  min-height: 52px;
+  gap: 2px;
+  margin: 0;
+  padding: 6px 8px 0;
+  border: 0;
+  border-bottom: 1px solid var(--ec-studio-line);
+  border-radius: 0;
+  background: var(--color-ec-surface);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-tabs button {
+  position: relative;
+  min-height: 40px;
+  border: 0;
+  border-radius: 7px 7px 0 0;
+  background: transparent;
+  color: var(--color-ec-text-muted);
+  font-size: 10.5px;
+  font-weight: 650;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-tabs button:hover {
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-tabs button[data-active="true"] {
+  background: transparent;
+  color: var(--ec-ref-blue);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-tabs button[data-active="true"]::after {
+  content: '';
+  position: absolute;
+  right: 8px;
+  bottom: -1px;
+  left: 8px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--ec-ref-blue);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-scroll {
+  padding: 4px 13px 24px;
+  scrollbar-width: thin;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-section,
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-disclosure {
+  padding: 9px 0;
+  border: 0;
+  border-bottom: 1px solid var(--ec-studio-line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-disclosure-trigger {
+  min-height: 40px;
+  border-radius: 7px;
+  padding-inline: 5px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-disclosure-trigger:hover {
+  background: var(--color-ec-surface-subtle);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-disclosure-trigger[aria-expanded="true"] svg {
+  color: var(--ec-ref-blue);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-field {
+  gap: 6px;
+  font-size: 10px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-field > span {
+  color: var(--color-ec-text-muted);
+  font-weight: 600;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-field input:not([type="checkbox"]),
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-field select,
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-field textarea {
+  min-height: 38px;
+  border: 1px solid var(--ec-studio-line);
+  border-radius: 7px;
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-field input:not([type="checkbox"]):focus,
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-field select:focus,
+.electrocms-app[data-editor-preset="studio-pro"] .widget-inspector-field textarea:focus {
+  border-color: var(--ec-ref-blue);
+  background: var(--color-ec-surface);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ec-ref-blue) 11%, transparent);
+}
+
+/* Other Studio workspaces --------------------------------------------------- */
+.electrocms-app[data-editor-preset="studio-pro"] .production-studio .ec-panel,
+.electrocms-app[data-editor-preset="studio-pro"] .project-theme-controls {
+  border: 1px solid var(--ec-studio-line);
+  border-radius: 9px;
+  background: var(--color-ec-surface);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .production-studio [role="tablist"] {
+  scrollbar-width: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .production-studio [role="tab"] {
+  border-radius: 7px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .production-studio [role="tab"][aria-selected="true"] {
+  border-color: color-mix(in srgb, var(--ec-ref-blue) 15%, var(--ec-studio-line));
+  background: var(--ec-ref-blue-soft);
+  color: var(--ec-ref-blue);
+  box-shadow: none;
+}
+
+/* Mobile / tablet: same language, canvas-first ------------------------------ */
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock {
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
+  gap: 4px;
+  padding: 5px;
+  padding-bottom: max(5px, env(safe-area-inset-bottom));
+  border: 1px solid var(--ec-studio-line);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--color-ec-surface) 97%, transparent);
+  box-shadow: 0 12px 34px rgb(15 23 42 / .14);
+  backdrop-filter: blur(16px) saturate(1.04);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button {
+  --dock-tone: var(--ec-ref-slate);
+  --dock-soft: var(--ec-ref-slate-soft);
+  min-height: 52px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button:nth-child(1) {
+  --dock-tone: var(--ec-ref-blue);
+  --dock-soft: var(--ec-ref-blue-soft);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button:nth-child(2) {
+  --dock-tone: var(--ec-ref-violet);
+  --dock-soft: var(--ec-ref-violet-soft);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button:nth-child(3) {
+  --dock-tone: var(--ec-ref-cyan);
+  --dock-soft: var(--ec-ref-cyan-soft);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button:nth-child(4) {
+  --dock-tone: var(--ec-ref-amber);
+  --dock-soft: var(--ec-ref-amber-soft);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button svg {
+  color: var(--dock-tone);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button:hover,
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--dock-tone) 18%, var(--ec-studio-line));
+  background: var(--dock-soft);
+  color: var(--dock-tone);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button[aria-pressed="true"] svg {
+  animation: ec-studio-icon-pop var(--ec-motion-normal) var(--ec-ease-product);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet,
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-canvas-sheet {
+  background: rgb(15 23 42 / .28);
+  backdrop-filter: blur(2px);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-panel,
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-canvas-sheet-panel {
+  max-height: min(78dvh, 700px);
+  border: 1px solid var(--ec-studio-line);
+  border-bottom: 0;
+  border-radius: 18px 18px 0 0;
+  background: var(--color-ec-surface);
+  box-shadow: var(--ec-studio-float);
+  animation: ec-studio-sheet-in var(--ec-motion-normal) var(--ec-ease-product);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-sheet-header {
+  min-height: 64px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--ec-studio-line);
+  background: var(--color-ec-surface);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-sheet-header button {
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--ec-studio-line);
+  border-radius: 11px;
+  color: var(--color-ec-text-muted);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-sheet-header button:hover {
+  background: var(--ec-ref-blue-soft);
+  color: var(--ec-ref-blue);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-content .builder-context-panel {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-content .builder-context-tabs button,
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-content .builder-page-row,
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-inspector-content .widget-inspector-tabs button,
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-inspector-content .widget-inspector-disclosure-trigger,
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-inspector-content .widget-inspector-field input:not([type="checkbox"]),
+.electrocms-app[data-editor-preset="studio-pro"] .mobile-inspector-content .widget-inspector-field select {
+  min-height: 48px;
 }
 
 .electrocms-app[data-editor-preset="studio-pro"]
@@ -25,9 +926,219 @@
   display: none;
 }
 
-@media (max-width: 720px) {
+/* Desktop geometry ---------------------------------------------------------- */
+@media (min-width: 961px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .studio-context-bar,
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .builder-document-bar {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .studio-pro-builder {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .builder-context-panel {
+    grid-column: 1;
+    width: auto;
+    min-width: 0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .studio-editor-region {
+    grid-column: 2;
+    min-width: 0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .editor-canvas-v2 {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 336px;
+    grid-template-rows: 52px minmax(0, 1fr);
+    height: 100%;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .canvas-command-bar-v2 {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .canvas-stage-v2 {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-workspace="editor"][data-editor-module="builder"] .canvas-inspector-dock {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    min-width: 336px;
+    width: 336px;
+  }
+}
+
+/* Tablet / phone ------------------------------------------------------------ */
+@media (max-width: 960px) {
   .electrocms-app[data-editor-preset="studio-pro"] .app-header {
     height: 60px;
     min-height: 60px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 6px;
+    padding: 0 8px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-project {
+    min-width: 0;
+    width: auto;
+    grid-column: 1;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-project .brand-mark,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-project .project-identity {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-project button[aria-label="Open navigation"] {
+    width: 48px;
+    height: 48px;
+    border-radius: 11px;
+    border-color: var(--ec-studio-line);
+    background: var(--color-ec-surface);
+    color: var(--ec-ref-blue);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls {
+    grid-column: 2;
+    min-width: 0;
+    justify-content: stretch;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > * {
+    display: none !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > div:first-child {
+    display: flex !important;
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > div:first-child .compact-field:first-child {
+    display: block !important;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > div:first-child .compact-field:first-child select {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    height: 40px;
+    border: 1px solid var(--ec-studio-line);
+    border-radius: 9px;
+    background: var(--color-ec-surface-subtle);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > div:first-child > span,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > div:first-child .breakpoint-field {
+    display: none !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions {
+    grid-column: 3;
+    gap: 3px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions button {
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    min-height: 48px;
+    justify-content: center;
+    padding: 0;
+    border-radius: 11px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions button span {
+    display: none !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .canvas-stage-v2 {
+    padding: 16px 10px 92px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock {
+    z-index: 35;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .workspace-settings-popover {
+    max-height: min(68dvh, 560px);
+  }
+}
+
+@media (max-width: 560px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions button:first-child {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .canvas-command-bar-v2 {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock {
+    right: 6px;
+    bottom: 6px;
+    left: 6px;
+    border-radius: 14px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button {
+    min-height: 54px;
+    font-size: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .electrocms-app[data-editor-preset="studio-pro"] *,
+  .electrocms-app[data-editor-preset="studio-pro"] *::before,
+  .electrocms-app[data-editor-preset="studio-pro"] *::after {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] button:hover:not(:disabled) svg,
+  .electrocms-app[data-editor-preset="studio-pro"] summary:hover svg,
+  .electrocms-app[data-editor-preset="studio-pro"] [role="tab"]:hover svg,
+  .electrocms-app[data-editor-preset="studio-pro"] .workspace-settings[open] > summary svg {
+    transform: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .electrocms-app[data-editor-preset="studio-pro"] {
+    --ec-studio-line: color-mix(in srgb, currentColor 34%, transparent);
+    --ec-studio-line-strong: color-mix(in srgb, currentColor 48%, transparent);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] button:focus-visible,
+  .electrocms-app[data-editor-preset="studio-pro"] summary:focus-visible,
+  .electrocms-app[data-editor-preset="studio-pro"] [role="tab"]:focus-visible {
+    outline-width: 3px;
+  }
+}
+
+@media (forced-colors: active) {
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-rail-button[data-active="true"],
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-context-tabs button[data-active="true"],
+  .electrocms-app[data-editor-preset="studio-pro"] .builder-page-row[data-active="true"],
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button[aria-pressed="true"] {
+    border: 1px solid Highlight;
+    color: Highlight;
   }
 }
