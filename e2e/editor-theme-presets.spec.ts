@@ -10,12 +10,11 @@ test('uses one Studio Pro editor system while header appearance selector remains
   const appearance = page.getByRole('group', { name: 'Editor appearance' });
   const light = appearance.getByRole('button', { name: 'Use light appearance' });
   const dark = appearance.getByRole('button', { name: 'Use dark appearance' });
-  const system = appearance.getByRole('button', { name: 'Use system appearance' });
 
   await expect(appearance).toBeVisible();
+  await expect(appearance.getByRole('button')).toHaveCount(2);
   await expect(light).toBeVisible();
   await expect(dark).toBeVisible();
-  await expect(system).toBeVisible();
 
   await dark.click();
   await expect(dark).toHaveAttribute('aria-pressed', 'true');
