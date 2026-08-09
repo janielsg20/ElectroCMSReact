@@ -4,120 +4,48 @@
 - Estado: IN_PROGRESS
 - Fase completada: F04 — Widgets, inspector, responsive y themes
 - Fase actual: **F05 — Dynamic Content**
-- Microfase actual: **MF-041 — Records CRUD — NEXT**
+- Microfase actual: **MF-042 — Advanced Fields — NEXT**
 - Repositorio oficial: `janielsg20/ElectroCMSReact`
 - UI activa: Studio Pro único; no reintroducir UI/CSS legacy de F05.
 - Estrategia F05: portar cada microfase validada desde `agent/f05-dynamic-content` a una rama fresca desde `main`, ejecutar gate completo y fusionar secuencialmente.
-- Último merge funcional F05: MF-040 → `dcef1c3302c2520a1911884624fb059eef09f4c0`.
-- Último quality gate funcional completo: GitHub Actions #1524 PASS.
-- Preview deployment: MANUAL ONLY. `vercel.json` usa `git.deploymentEnabled: false`; no desplegar por push/PR.
+- Último merge funcional F05: MF-041 → `2aa05132b7c8303071ec33936fff9ca1d1c14fa1`.
+- Último quality gate funcional completo: GitHub Actions #1528 PASS.
+- Preview deployment: MANUAL ONLY.
 
 ## Evidencia reciente F05
 - MF-037 Content Types: PR #34 → merge `748c6e61af114640a176665903b5f3bc0336ca07`; Quality Gate #1515 PASS.
 - MF-038 Taxonomies: PR #41 → merge `7cf28bb23d2825fd6174f90720fd80cbe0314666`; Quality Gate #1517 PASS.
 - MF-039 Field Type Registry: PR #42 → merge `0db52d1c8db88b70a6ce5c6275f14803397c9691`; Quality Gate #1519 PASS.
 - MF-040 Custom Field Groups: PR #44 → merge `dcef1c3302c2520a1911884624fb059eef09f4c0`; Quality Gate #1524 PASS.
+- MF-041 Records CRUD: PR #46 → merge `2aa05132b7c8303071ec33936fff9ca1d1c14fa1`; Quality Gate #1528 PASS.
 
-## F00
-| Microfase | Estado | Evidencia |
-|---|---|---|
-| MF-000 | DONE | Inventario del proyecto completado |
-| MF-001 | DONE | Gap analysis completado |
-| MF-002 | DONE | Arquitectura React/TypeScript definida |
-| MF-003 | DONE | Modelo canónico y versionado definido |
-| MF-004 | DONE | Contratos de registries/renderers/exporters definidos |
-| MF-005 | DONE | CI base con lint, types, tests, coverage, build y E2E |
-
-## F01
-| Microfase | Estado | Evidencia |
-|---|---|---|
-| MF-006 | DONE | React/TypeScript strict, `package-lock.json`, CI reproducible con `npm ci` |
-| MF-007 | DONE | Core domain independiente de React/DOM: JSON, errores, Result e IDs tipados |
-| MF-008 | DONE | `CanonicalProject` schema v1, factory, seis breakpoints y validación de integridad del árbol |
-| MF-009 | DONE | `ProjectRepository` + adapter in-memory con clones defensivos y conflicto en create duplicado |
-| MF-010 | DONE | CRUD IndexedDB transaccional + recovery store + Playwright reload E2E |
-| MF-011 | DONE | Migration registry ordenado, v0→v1, rechazo de schemas futuros e integración desde IndexedDB |
-| MF-012 | DONE | Autosave debounced/serializado, revisión incremental y recovery snapshots limitados |
-
-## F02
-| Microfase | Estado | Evidencia |
-|---|---|---|
-| MF-013 | DONE | History API router para Editor/Preview/Backend/Export y `ProjectSessionProvider`; E2E conserva zoom/estado |
-| MF-014 | DONE | Header conectado a project/save/document/breakpoint/zoom y routing Preview/Export |
-| MF-015 | DONE | Navegación izquierda/derecha, collapse, resize, reorder, icon/text modes y density |
-| MF-016 | DONE | Estrategias desktop/tablet/mobile, drawer accesible y Playwright sin overflow raíz |
-| MF-017 | DONE | Workspace preferences schema v1 separado de `CanonicalProject`; reload E2E |
-| MF-018 | DONE | Editor light/dark/auto persistente e independiente de frontend/backend themes |
-
-## F03
-| Microfase | Estado | Evidencia |
-|---|---|---|
-| MF-019 | DONE | Motor inmutable de árbol, indexes/traversals/invariants; run #195 PASS |
-| MF-020 | DONE | Renderer recursivo del modelo canónico y overlay separado; run #211 PASS |
-| MF-021 | DONE | Inserción, reorder/nesting y DnD semántico; run #256 PASS |
-| MF-022 | DONE | Selección simple/múltiple transitoria y convivencia con DnD; run #276 PASS |
-| MF-023 | DONE | `DocumentCommand` reversible, Undo/Redo y atajos; run #296 PASS |
-| MF-024 | DONE | Copy/Cut/Paste, Group/Ungroup, Lock/Hide reversibles; run #320 PASS |
-| MF-025 | DONE | Geometría responsive, snapping, guías y Undo; run #348 PASS |
-| MF-026 | DONE | Autosave/hydration/recovery IndexedDB integrado; run #368 PASS y cierre final #396 PASS |
-
-## F04
-| Microfase | Estado | Evidencia |
-|---|---|---|
-| MF-027 | DONE | Registry framework-neutral + binding React, factories, validation, child policies, capabilities, migrations y plugin preview sin branching del editor; run #424 PASS |
-| MF-028 | DONE | Container/Group/Section/Grid/Flex/Stack/Divider/Spacer/Tabs/Accordion registrados, inserción genérica y factories registry-driven; run #434 PASS |
-| MF-029 | DONE | 16 widgets básicos/contenido con defaults, validación, previews e inserción registry-driven; run #446 PASS |
-| MF-030 | DONE | 19 contratos dynamic/commerce/form/filter con capacidad `modeled`, previews honestos y validación; run #456 PASS |
-| MF-031 | DONE | Inspector schema engine, controles generados, validación, edición canónica y Undo/Redo; run #479 PASS |
-| MF-032 | DONE | Style engine responsive, resolución explicit/inherited/unset, renderer seguro, inspector y Undo; run #505 PASS |
-| MF-033 | DONE | Breakpoint engine, cadena wider/narrower, herencia desde breakpoint superior y E2E; run #529 PASS |
-| MF-034 | DONE | 10 presets de editor separados de proyecto + DnD con hit areas estables/no rerender durante gesto; run #568 PASS |
-| MF-035 | DONE | Themes frontend/backend separados, 15 built-ins, duplicación editable local, versionado automático y autosave/reload; run #662 PASS |
-| MF-036 | DONE | Paquetes versionados, export/import selectivo, demo data opt-in, merge no destructivo, biblioteca local y round-trip; run #688 PASS; F04 posteriormente cerrada y fusionada |
+## F00–F04
+F00–F04 permanecen DONE con la evidencia histórica ya registrada. No reabrir esas fases salvo regresión demostrada.
 
 ## F05
 | Microfase | Estado | Evidencia |
 |---|---|---|
-| MF-037 | DONE | Content Types canónicos + Studio Pro CRUD + autosave/persistencia E2E; PR #34; Quality Gate #1515 PASS; merge `748c6e61…` |
-| MF-038 | DONE | Taxonomías canónicas, asociaciones/referencias validadas + Studio Pro CRUD + reload E2E; PR #41; Quality Gate #1517 PASS; merge `7cf28bb2…` |
-| MF-039 | DONE | Registry React-free `type@version`, 27 contratos builtin, plugins externos, migraciones explícitas; PR #42; Quality Gate #1519 PASS; merge `0db52d1c…` |
-| MF-040 | DONE | Custom Field Groups canónicos, 20 tipos disponibles, orden/config/defaults, protección de referencias, Studio Pro CRUD + persistencia E2E; PR #44; Quality Gate #1524 PASS; merge `dcef1c33…` |
-| MF-041 | NEXT | Records CRUD. Recuperar contrato histórico, validar contra Field Groups MF-040, conectar ProjectSession + Studio Pro + persistencia E2E |
-| MF-042 | BLOCKED | Advanced fields; depende de MF-041 integrado y debe portarse/revalidarse sobre current `main` |
-| MF-043 | BLOCKED | Relations; la rama histórica tiene implementación/hardening, pero debe portarse y revalidarse después de MF-042 |
-| MF-044 | BLOCKED | Dynamic bindings; no iniciar hasta cerrar MF-042 y MF-043 en la línea moderna |
+| MF-037 | DONE | Content Types canónicos + Studio Pro CRUD + autosave/persistencia E2E; PR #34; Gate #1515; merge `748c6e61…` |
+| MF-038 | DONE | Taxonomías canónicas + referencias validadas + Studio Pro CRUD; PR #41; Gate #1517; merge `7cf28bb2…` |
+| MF-039 | DONE | Registry React-free `type@version`, 27 built-ins, plugins/migraciones; PR #42; Gate #1519; merge `0db52d1c…` |
+| MF-040 | DONE | Field Groups, 20 tipos disponibles, orden/config/defaults e integridad de Taxonomy; PR #44; Gate #1524; merge `dcef1c33…` |
+| MF-041 | DONE | Records v1, draft/published/archived, defaults/required, slug por CPT, integridad Field Group, Studio Pro CRUD + IndexedDB E2E; PR #46; Gate #1528; merge `2aa05132…` |
+| MF-042 | NEXT | Advanced Fields. Portar contratos/runtime históricos sin adelantar Relations MF-043; habilitar solo los tipos avanzados que pertenecen a MF-042 y revalidar Field Groups/Records/UI |
+| MF-043 | BLOCKED | Relations/reference fields; depende de MF-042 verde e integrado |
+| MF-044 | BLOCKED | Dynamic bindings; depende de MF-042 y MF-043 |
 
-## Design system del editor
-- Fuente de verdad: `design-system/electrocms-editor/MASTER.md`.
-- Override del workspace principal: `design-system/electrocms-editor/pages/editor.md`.
-- Arquetipo: productivity tool + design-system tooling + data-dense SaaS.
-- Sistema visual activo: **Studio Pro** único, responsive y accesible.
-- Frontend/backend project themes permanecen independientes de la apariencia del editor.
-- No traer superficies, CSS o layouts de la rama histórica F05; solo recuperar contratos de dominio/tests y adaptarlos a Studio Pro.
-
-## Invariantes consolidadas
-- El DOM nunca es fuente de verdad; el canvas es proyección del modelo canónico.
-- `CanonicalProject` y sus colecciones son la única fuente persistente de verdad; no crear stores paralelos para F05.
-- Widgets se resuelven por `type@version` mediante registries explícitos.
-- Field Types F05 también se resuelven por `type@version`; no promover tipos `modeled` antes de su microfase.
-- Mutaciones F05 entran por APIs públicas de core expuestas por `ProjectSession`, conservando validación, autosave y persistencia atómica.
-- Field Groups MF-040 solo permiten instanciar los 20 Field Types `available`; los 7 `modeled` permanecen bloqueados hasta sus microfases.
-- Los Field Groups preservan el orden de campos y bloquean borrado cuando una Taxonomía los referencia.
-- Undo/Redo de documentos usa comandos canónicos reversibles; UI transitoria no entra al proyecto.
-- Autosave reutiliza los repositorios F01 y no reemplaza contenido nuevo con callbacks stale.
-- Deployments de preview son manuales y solo bajo petición explícita del usuario.
+## Invariantes F05
+- Core content React-free; `CanonicalProject` es la única fuente persistente.
+- UI nunca muta maps canónicos directamente; usa `ProjectSession`.
+- Field Types se resuelven por `type@version`; `modeled` no significa funcional.
+- Records validan Content Type, Field Groups y valores mediante el registry.
+- Record IDs y `createdAt` son inmutables; slug es único dentro de su Content Type.
+- Field Group deletion se bloquea si lo referencia una Taxonomy o un Record.
+- No importar UI/CSS de `agent/f05-dynamic-content`.
+- No avanzar de microfase con gates rojos.
 
 ## Quality gate obligatorio
-Cada microfase portada a la línea moderna debe ejecutar y aprobar, contra el merge ref actual de `main`:
-1. `verify:repo`;
-2. lint con cero warnings;
-3. TypeScript strict;
-4. unit/integration tests;
-5. coverage;
-6. production build;
-7. Playwright E2E.
-
-No marcar una microfase como DONE por evidencia histórica únicamente. La evidencia histórica sirve para recuperar el contrato; el estado DONE exige un gate nuevo en la UI/arquitectura actual.
+Cada microfase moderna debe aprobar en GitHub Actions: `verify:repo`, lint zero-warning, TypeScript strict, unit/integration, coverage, production build y Playwright E2E.
 
 ## Regla de salida
-Continuar F05 secuencialmente. **Próximo trabajo: MF-041 Records CRUD**. No saltar a Advanced Fields/Relations/Dynamic Bindings hasta que MF-041 esté integrado y verde en `main`.
+**Próximo trabajo: MF-042 Advanced Fields.** No iniciar MF-043 Relations hasta que MF-042 esté validada y fusionada en `main`.
