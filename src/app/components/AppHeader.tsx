@@ -1,11 +1,14 @@
+import { useEffect, useRef, useState } from 'react';
 import { useProjectSession } from '../project/project-session-context';
 import { useDocumentHistoryShortcuts } from '../project/use-document-history-shortcuts';
 import type { WorkspaceId } from '../routing/workspaces';
+import type { ResolvedEditorTheme } from '../workspace/editor-theme';
 import { useWorkspacePreferences } from '../workspace/workspace-preferences-store';
-import { Icon } from './Icon';
+import { Icon, type IconName } from './Icon';
 
 export interface AppHeaderProps {
   compactLayout: boolean;
+  resolvedTheme: ResolvedEditorTheme;
   activeWorkspace: WorkspaceId;
   onOpenNavigation(): void;
   onNavigate(workspaceId: WorkspaceId): void;
@@ -18,53 +21,115 @@ const saveLabels = {
   error: 'Save error',
 } as const;
 
-const selectClass = 'ec-control h-8 min-w-0 px-2.5 text-[11px] font-semibold';
-const iconButtonClass = 'ec-control ec-focus-ring group inline-grid size-8 shrink-0 place-items-center text-[var(--color-ec-text-muted)] hover:text-[var(--color-ec-text)] max-[720px]:size-11';
-const segmentButtonClass = 'ec-focus-ring group grid size-7 place-items-center rounded-[var(--ec-radius-sm)] text-[var(--color-ec-text-muted)] transition-colors hover:bg-[var(--color-ec-surface-muted)] hover:text-[var(--color-ec-text)] disabled:cursor-not-allowed disabled:opacity-30';
+type AppearanceMode = 'light' | 'dark';
+type HeaderBreakpointDevice = 'desktop' | 'tablet' | 'mobile';
 
-export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, onNavigate }: AppHeaderProps) {
+const appearanceModes: readonly { id: AppearanceMode; label: string; icon: IconName }[] = [
+  { id: 'light', label: 'Light', icon: 'sun' },
+  { id: 'dark', label: 'Dark', icon: 'moon' },
+];
+
+const headerBreakpointTargets: readonly {
+  device: HeaderBreakpointDevice;
+  preferredId: string;
+  targetWidth: number;
+  icon: IconName;
+}[] = [
+  { device: 'desktop', preferredId: 'desktop', targetWidth: 1440, icon: 'desktop' },
+  { device: 'tablet', preferredId: 'tablet-portrait', targetWidth: 768, icon: 'tablet' },
+  { device: 'mobile', preferredId: 'mobile-small', targetWidth: 360, icon: 'mobile' },
+];
+
+const iconButtonClass = 'header-icon-button ec-focus-ring group inline-grid size-8 shrink-0 place-items-center text-[var(--color-ec-text-muted)] hover:text-[var(--color-ec-text)] max-[720px]:size-11';
+const segmentButtonClass = 'header-segment-button ec-focus-ring group grid size-7 place-items-center text-[var(--color-ec-text-muted)] transition-colors hover:bg-[var(--color-ec-surface-muted)] hover:text-[var(--color-ec-text)] disabled:cursor-not-allowed disabled:opacity-30';
+
+function breakpointDevice(width: number): HeaderBreakpointDevice {
+  if (width >= 1100) return 'desktop';
+  if (width >= 700) return 'tablet';
+  return 'mobile';
+}
+
+export function AppHeader({ compactLayout, resolvedTheme, activeWorkspace, onOpenNavigation, onNavigate }: AppHeaderProps) {
   const session = useProjectSession();
   const { preferences, setEditorThemeMode } = useWorkspacePreferences();
+  const [pageMenuOpen, setPageMenuOpen] = useState(false);
+  const pageMenuRef = useRef<HTMLDivElement>(null);
+  const pageTriggerRef = useRef<HTMLButtonElement>(null);
   const activeDocument = session.project.documents[session.activeDocumentId];
+  const activeBreakpoint = session.project.breakpoints.find((breakpoint) => breakpoint.id === session.activeBreakpointId);
+  const activeBreakpointDevice = breakpointDevice(activeBreakpoint?.width ?? 1440);
+  const headerBreakpoints = headerBreakpointTargets.flatMap((target) => {
+    const exact = session.project.breakpoints.find((breakpoint) => breakpoint.id === target.preferredId);
+    if (exact) return [{ ...target, breakpoint: exact }];
+
+    const candidates = session.project.breakpoints.filter(
+      (breakpoint) => breakpointDevice(breakpoint.width) === target.device,
+    );
+    const nearest = candidates.sort(
+      (left, right) => Math.abs(left.width - target.targetWidth) - Math.abs(right.width - target.targetWidth),
+    )[0];
+    return nearest ? [{ ...target, breakpoint: nearest }] : [];
+  });
   useDocumentHistoryShortcuts(session.undo, session.redo);
 
+  useEffect(() => {
+    if (!pageMenuOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Node && !pageMenuRef.current?.contains(target)) {
+        setPageMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      setPageMenuOpen(false);
+      pageTriggerRef.current?.focus();
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [pageMenuOpen]);
+
+  const focusPageOption = (index: number) => {
+    const options = [...(pageMenuRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? [])];
+    if (options.length === 0) return;
+    const nextIndex = (index + options.length) % options.length;
+    options[nextIndex]?.focus();
+  };
+
+  const openPageMenuAndFocus = (index: number) => {
+    setPageMenuOpen(true);
+    requestAnimationFrame(() => focusPageOption(index));
+  };
+
   return (
-    <header
-      className="app-header relative z-40 flex min-h-[54px] items-center gap-2 border-b border-[var(--color-ec-border)] bg-[color:var(--color-ec-surface)] px-2.5 shadow-[0_1px_0_rgb(16_19_18_/_0.03)]"
-      data-testid="app-header"
-    >
-      <div className="header-project flex min-w-0 shrink-0 items-center gap-2.5 lg:w-[236px]">
+    <header className="app-header" data-testid="app-header">
+      <div className="header-project">
         {compactLayout ? (
           <button className={iconButtonClass} type="button" aria-label="Open navigation" onClick={onOpenNavigation}>
-            <Icon name="menu" size={16} />
+            <Icon name="menu" size={17} />
           </button>
         ) : null}
 
-        <div
-          className="brand-mark grid size-8 shrink-0 place-items-center rounded-[var(--ec-radius-md)] bg-[var(--color-ec-chrome)] text-[var(--color-ec-accent)] shadow-sm"
-          aria-hidden="true"
-        >
+        <div className="brand-mark" aria-hidden="true">
           <Icon name="bolt" size={16} />
         </div>
 
-        <div className="project-identity min-w-0 leading-tight">
-          <div className="flex min-w-0 items-center gap-1.5">
-            <strong
-              className="project-name block truncate text-[12px] font-semibold tracking-[-.01em] text-[var(--color-ec-text)]"
-              title={session.project.name}
-            >
-              {session.project.name}
-            </strong>
-            <span className="hidden text-[9px] font-semibold uppercase tracking-[.14em] text-[var(--color-ec-text-muted)] xl:inline">Local</span>
+        <div className="project-identity">
+          <div className="project-title-row">
+            <strong className="project-name" title={session.project.name}>{session.project.name}</strong>
+            <span className="project-local-label">Local</span>
           </div>
-          <span
-            className="save-state mt-0.5 flex items-center gap-1.5 text-[9px] font-medium text-[var(--color-ec-text-muted)]"
-            data-state={session.saveState}
-            role="status"
-            aria-live="polite"
-          >
+          <span className="save-state" data-state={session.saveState} role="status" aria-live="polite">
             <span
-              className={`save-dot size-1.5 rounded-full ${session.saveState === 'error' ? 'bg-[var(--color-ec-danger-600)]' : session.saveState === 'dirty' ? 'bg-[var(--color-ec-warning-600)]' : session.saveState === 'saving' ? 'bg-[var(--color-ec-violet-600)]' : 'bg-[var(--color-ec-success-600)]'}`}
+              className={`save-dot ${session.saveState === 'error' ? 'bg-[var(--color-ec-danger-600)]' : session.saveState === 'dirty' ? 'bg-[var(--color-ec-warning-600)]' : session.saveState === 'saving' ? 'bg-[var(--color-ec-violet-600)]' : 'bg-[var(--color-ec-success-600)]'}`}
               aria-hidden="true"
             />
             {saveLabels[session.saveState]}
@@ -72,67 +137,113 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
         </div>
       </div>
 
-      <div
-        className="header-controls flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        role="toolbar"
-        aria-label="Editor controls"
-      >
-        <div
-          className="flex h-9 shrink-0 items-center gap-1 rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface-subtle)] p-0.5"
-          role="group"
-          aria-label="Document and breakpoint"
-        >
-          <label className="compact-field shrink-0">
-            <span className="sr-only">Active document</span>
-            <select
-              className={`${selectClass} min-w-[126px] max-w-[190px] border-0 bg-transparent shadow-none`}
+      <div className="header-controls" role="toolbar" aria-label="Editor controls">
+        <div className="header-document-group" role="group" aria-label="Document and breakpoint">
+          <div className="header-page-picker" ref={pageMenuRef}>
+            <button
+              ref={pageTriggerRef}
+              className="header-page-trigger ec-focus-ring"
+              type="button"
               aria-label="Active document"
-              value={session.activeDocumentId}
-              onChange={(event) => session.setActiveDocumentId(event.target.value)}
+              aria-haspopup="listbox"
+              aria-expanded={pageMenuOpen}
+              aria-controls="header-page-menu"
+              onClick={() => setPageMenuOpen((open) => !open)}
+              onKeyDown={(event) => {
+                if (event.key === 'ArrowDown') {
+                  event.preventDefault();
+                  openPageMenuAndFocus(0);
+                }
+                if (event.key === 'ArrowUp') {
+                  event.preventDefault();
+                  openPageMenuAndFocus(-1);
+                }
+              }}
             >
-              {session.project.documentOrder.map((documentId) => {
-                const document = session.project.documents[documentId];
-                return document ? <option key={document.id} value={document.id}>{document.name}</option> : null;
-              })}
-            </select>
-          </label>
+              <span className="header-control-icon" aria-hidden="true"><Icon name="pages" size={14} /></span>
+              <span className="header-page-name">{activeDocument?.name ?? 'No page'}</span>
+              <Icon name="arrow-down" size={12} className="header-page-chevron" />
+            </button>
 
-          <span className="h-4 w-px bg-[var(--color-ec-border)]" aria-hidden="true" />
+            {pageMenuOpen ? (
+              <div id="header-page-menu" className="header-page-menu" role="listbox" aria-label="Pages">
+                <div className="header-menu-label">Pages</div>
+                <div className="header-page-options">
+                  {session.project.documentOrder.map((documentId, index) => {
+                    const document = session.project.documents[documentId];
+                    if (!document) return null;
+                    const selected = document.id === session.activeDocumentId;
+                    return (
+                      <button
+                        key={document.id}
+                        className="header-page-option ec-focus-ring"
+                        type="button"
+                        role="option"
+                        aria-selected={selected}
+                        onClick={() => {
+                          session.setActiveDocumentId(document.id);
+                          setPageMenuOpen(false);
+                          pageTriggerRef.current?.focus();
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === 'ArrowDown') {
+                            event.preventDefault();
+                            focusPageOption(index + 1);
+                          } else if (event.key === 'ArrowUp') {
+                            event.preventDefault();
+                            focusPageOption(index - 1);
+                          } else if (event.key === 'Home') {
+                            event.preventDefault();
+                            focusPageOption(0);
+                          } else if (event.key === 'End') {
+                            event.preventDefault();
+                            focusPageOption(session.project.documentOrder.length - 1);
+                          }
+                        }}
+                      >
+                        <span className="header-page-option-icon" aria-hidden="true"><Icon name="pages" size={13} /></span>
+                        <span className="header-page-option-name">{document.name}</span>
+                        {selected ? <Icon name="check" size={13} className="header-page-option-check" /> : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+          </div>
 
-          <label className="compact-field breakpoint-field hidden shrink-0 sm:block">
-            <span className="sr-only">Preview breakpoint</span>
-            <select
-              className={`${selectClass} min-w-[138px] border-0 bg-transparent shadow-none`}
-              aria-label="Preview breakpoint"
-              value={session.activeBreakpointId}
-              onChange={(event) => session.setActiveBreakpointId(event.target.value)}
-            >
-              {session.project.breakpoints.map((breakpoint) => (
-                <option key={breakpoint.id} value={breakpoint.id}>{breakpoint.label} · {breakpoint.width}px</option>
-              ))}
-            </select>
-          </label>
+          <span className="header-control-divider" aria-hidden="true" />
+
+          <div className="header-breakpoint-picker" role="group" aria-label="Preview breakpoint">
+            {headerBreakpoints.map(({ device, icon, breakpoint }) => (
+              <button
+                key={device}
+                className="header-breakpoint-button ec-focus-ring"
+                type="button"
+                data-breakpoint-id={breakpoint.id}
+                data-breakpoint-device={device}
+                aria-label={`${device} breakpoint ${breakpoint.width}px`}
+                aria-pressed={activeBreakpointDevice === device}
+                title={`${device[0]?.toUpperCase()}${device.slice(1)} · ${breakpoint.width}px`}
+                onClick={() => session.setActiveBreakpointId(breakpoint.id)}
+              >
+                <Icon name={icon} size={15} />
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div
-          className="segmented-control zoom-control flex h-8 shrink-0 items-center rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] p-0.5"
-          role="group"
-          aria-label="Canvas zoom"
-        >
+        <div className="segmented-control zoom-control" role="group" aria-label="Canvas zoom">
           <button className={segmentButtonClass} type="button" aria-label="Zoom out" disabled={session.zoom <= 50} onClick={() => session.setZoom(session.zoom - 10)}>
             <Icon name="minus" size={13} />
           </button>
-          <output className="min-w-11 px-1 text-center text-[10px] font-semibold tabular-nums text-[var(--color-ec-text)]" aria-label="Zoom level">{session.zoom}%</output>
+          <output className="header-zoom-output" aria-label="Zoom level">{session.zoom}%</output>
           <button className={segmentButtonClass} type="button" aria-label="Zoom in" disabled={session.zoom >= 200} onClick={() => session.setZoom(session.zoom + 10)}>
             <Icon name="plus" size={13} />
           </button>
         </div>
 
-        <div
-          className="segmented-control history-control flex h-8 shrink-0 items-center rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] p-0.5"
-          role="group"
-          aria-label="Document history"
-        >
+        <div className="segmented-control history-control" role="group" aria-label="Document history">
           <button className={segmentButtonClass} type="button" aria-label="Undo" disabled={!session.canUndo} title={session.canUndo ? 'Undo last document command' : 'Nothing to undo'} onClick={session.undo}>
             <Icon name="undo" size={13} />
           </button>
@@ -140,41 +251,47 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
             <Icon name="redo" size={13} />
           </button>
         </div>
-
-        <label className="compact-field theme-field hidden shrink-0 lg:block">
-          <span className="sr-only">Editor appearance</span>
-          <select
-            className={`${selectClass} border-0 bg-transparent shadow-none`}
-            aria-label="Editor theme mode"
-            value={preferences.editorThemeMode}
-            onChange={(event) => setEditorThemeMode(event.target.value as 'light' | 'dark' | 'auto')}
-          >
-            <option value="auto">Auto appearance</option>
-            <option value="dark">Dark appearance</option>
-            <option value="light">Light appearance</option>
-          </select>
-        </label>
       </div>
 
-      <div className="header-actions ml-auto flex shrink-0 items-center gap-1">
+      <div className="header-actions">
+        <div className="appearance-toggle" role="group" aria-label="Editor appearance">
+          {appearanceModes.map((mode) => (
+            <button
+              key={mode.id}
+              className="appearance-toggle-button"
+              type="button"
+              aria-label={`Use ${mode.label.toLowerCase()} appearance`}
+              aria-pressed={preferences.editorThemeMode === 'auto' ? resolvedTheme === mode.id : preferences.editorThemeMode === mode.id}
+              title={`${mode.label} appearance`}
+              onClick={() => setEditorThemeMode(mode.id)}
+            >
+              <Icon name={mode.icon} size={14} />
+              <span>{mode.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <span className="header-actions-divider" aria-hidden="true" />
+
         <button
-          className="ec-focus-ring group inline-flex h-8 items-center gap-1.5 rounded-[var(--ec-radius-md)] px-2.5 text-[10px] font-semibold text-[var(--color-ec-text-muted)] transition-colors hover:bg-[var(--color-ec-surface-muted)] hover:text-[var(--color-ec-text)]"
+          className="header-preview-button ec-focus-ring group"
           type="button"
           aria-pressed={activeWorkspace === 'preview'}
           onClick={() => onNavigate('preview')}
         >
-          <Icon name="preview" size={13} />
-          <span className="hidden sm:inline">Preview</span>
+          <Icon name="preview" size={14} />
+          <span>Preview</span>
         </button>
+
         <button
-          className="ec-focus-ring group inline-flex h-8 items-center gap-1.5 rounded-[var(--ec-radius-md)] bg-[var(--color-ec-accent)] px-3 text-[10px] font-semibold text-white shadow-sm transition-[filter,transform] hover:brightness-95 active:translate-y-px"
+          className="header-publish-button ec-focus-ring group"
           type="button"
           aria-label="Export"
           aria-pressed={activeWorkspace === 'export'}
           onClick={() => onNavigate('export')}
         >
-          <Icon name="export" size={13} />
-          <span className="hidden sm:inline">Publish</span>
+          <Icon name="export" size={14} />
+          <span>Publish</span>
         </button>
       </div>
 

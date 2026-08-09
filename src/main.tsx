@@ -11,6 +11,9 @@ import './app/editor/builder-v2.css';
 import './app/editor/builder-v2-polish.css';
 import './app/ui/studio-pro.css';
 import './app/ui/studio-pro-compact.css';
+import './app/ui/studio-pro-header.css';
+import './app/ui/studio-pro-header-responsive.css';
+import './app/ui/studio-pro-ux-audit.css';
 
 const rootElement = document.getElementById('root');
 

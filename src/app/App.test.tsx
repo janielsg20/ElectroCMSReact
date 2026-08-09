@@ -51,9 +51,10 @@ describe('ElectroCMS editor shell', () => {
       <App initialProject={makeProject()} preferencesRepository={preferencesRepository} />,
     );
 
-    await user.selectOptions(screen.getByLabelText('Editor theme mode'), 'dark');
+    await user.click(screen.getByRole('button', { name: 'Use dark appearance' }));
 
     expect(container.querySelector('.electrocms-app')).toHaveAttribute('data-theme', 'dark');
+    expect(screen.getByRole('button', { name: 'Use dark appearance' })).toHaveAttribute('aria-pressed', 'true');
     expect(preferencesRepository.load().editorThemeMode).toBe('dark');
   });
 

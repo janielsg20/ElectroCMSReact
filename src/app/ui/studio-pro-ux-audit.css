@@ -1,0 +1,436 @@
+/* Studio Pro UX audit -------------------------------------------------------
+ * Final responsive/accessibility contract derived from the UI/UX Pro Max
+ * checklist and the supplied builder reference. This file does not introduce a
+ * new visual theme; it hardens the single Studio Pro system across device sizes.
+ */
+
+.electrocms-app[data-editor-preset="studio-pro"] {
+  /* Keeps secondary copy above WCAG AA contrast on every light Studio surface. */
+  --color-ec-text-muted: #626b79;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"][data-theme="dark"] {
+  --color-ec-text-muted: #a4aebe;
+}
+
+/* Keep primary action color token-driven instead of screen-local hex values. */
+.electrocms-app[data-editor-preset="studio-pro"] .header-publish-button,
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions .header-publish-button:last-child {
+  border-color: color-mix(in srgb, var(--ec-ref-blue) 82%, black) !important;
+  background: var(--ec-ref-blue) !important;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-publish-button:hover,
+.electrocms-app[data-editor-preset="studio-pro"] .header-actions .header-publish-button:last-child:hover {
+  background: color-mix(in srgb, var(--ec-ref-blue) 88%, black) !important;
+}
+
+/* Tablet / compact contract -------------------------------------------------
+ * 1024px is the canonical compact-shell boundary. The authored document keeps
+ * its own project breakpoints; this only controls the ElectroCMS chrome.
+ */
+@media (max-width: 1024px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .app-header {
+    grid-template-columns: 44px minmax(0, 1fr) auto !important;
+    gap: 6px;
+    height: 60px;
+    min-height: 60px;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: max(6px, env(safe-area-inset-left));
+    padding-right: max(6px, env(safe-area-inset-right));
+    overflow: visible;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-project {
+    width: 44px;
+    min-width: 44px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-project > button[aria-label="Open navigation"] {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-project .brand-mark,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-project .project-identity {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls {
+    display: flex !important;
+    min-width: 0;
+    gap: 6px;
+    overflow: visible !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .header-document-group {
+    display: flex !important;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    height: 48px;
+    min-height: 48px;
+    flex: 1 1 auto;
+    padding: 2px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-page-picker {
+    min-width: 96px;
+    flex: 1 1 150px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-page-trigger {
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-page-menu {
+    top: calc(100% + 7px);
+    width: min(268px, calc(100vw - 28px));
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-page-option {
+    min-height: 44px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-picker {
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-button,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-button:not([aria-pressed="true"]),
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-button[aria-pressed="true"] {
+    display: inline-flex !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .zoom-control {
+    display: flex !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    flex: none;
+    padding: 0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .zoom-control .header-segment-button {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .history-control {
+    display: none !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions {
+    gap: 4px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions > .appearance-toggle {
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions .appearance-toggle .appearance-toggle-button {
+    display: grid !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions > .header-preview-button,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions > .header-publish-button {
+    width: 44px;
+    min-width: 44px;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-preview-button span,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-publish-button span,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions-divider {
+    display: none;
+  }
+
+  /* Neutralize desktop grid rules that otherwise leak into 961–1024px. */
+  .electrocms-app[data-editor-preset="studio-pro"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"] .studio-pro-builder--mobile {
+    display: block !important;
+    grid-template-columns: none !important;
+    width: 100%;
+    height: 100%;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"] .studio-pro-builder--mobile > .studio-editor-region {
+    grid-column: auto !important;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"] .studio-pro-builder--mobile .editor-canvas-v2 {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    width: 100%;
+    height: 100%;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"] .studio-pro-builder--mobile .canvas-command-bar-v2 {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    overflow-x: auto;
+    border-right: 0;
+    scrollbar-width: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"] .studio-pro-builder--mobile .canvas-stage-v2 {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    scrollbar-gutter: auto;
+    padding: 18px 12px 112px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder--mobile .canvas-command-cluster--insert {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder--mobile .canvas-command-bar-v2 button,
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder--mobile .canvas-command-bar-v2 select,
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-pro-builder--mobile .canvas-geometry-controls input {
+    min-height: 44px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"]
+    .studio-pro-builder--mobile .editor-canvas-v2[data-selection-count="0"] > .canvas-command-bar-v2 {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock {
+    right: max(6px, env(safe-area-inset-right));
+    bottom: max(6px, env(safe-area-inset-bottom));
+    left: max(6px, env(safe-area-inset-left));
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock button {
+    min-height: 52px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-panel,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-canvas-sheet-panel {
+    max-height: min(78dvh, 680px);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-content .builder-context-tabs button,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-content .builder-page-row,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-content [aria-label="Element categories"] button,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-content .builder-components-panel .ec-control,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-sheet-content button,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-inspector-content button,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-inspector-content select,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-inspector-content input:not([type="checkbox"]) {
+    min-height: 44px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-navigation-drawer {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-navigation-drawer .studio-rail-button,
+  .electrocms-app[data-editor-preset="studio-pro"] .studio-navigation-drawer summary,
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-compact="true"] .workspace-settings-popover :where(button, select) {
+    min-height: 44px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .production-studio[data-compact="true"] .workspace-settings-popover {
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(56px, calc(env(safe-area-inset-bottom) + 48px));
+    left: max(8px, env(safe-area-inset-left));
+    max-height: min(60dvh, 480px);
+    overflow-y: auto;
+  }
+}
+
+/* Phone: keep all critical header destinations reachable without horizontal
+ * root scrolling. The page trigger becomes icon-only; its custom listbox and
+ * accessible name remain intact.
+ */
+@media (max-width: 720px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .app-header {
+    grid-template-columns: 44px minmax(0, 1fr) auto !important;
+    gap: 4px;
+    padding-left: max(4px, env(safe-area-inset-left));
+    padding-right: max(4px, env(safe-area-inset-right));
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-project,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-project > button[aria-label="Open navigation"] {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls {
+    width: 100%;
+    min-width: 0;
+    gap: 0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .header-document-group {
+    width: 176px;
+    min-width: 176px;
+    max-width: 176px;
+    height: 44px;
+    min-height: 44px;
+    flex: 0 0 176px;
+    gap: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-page-picker {
+    width: 44px;
+    min-width: 44px;
+    flex: 0 0 44px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-page-trigger {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-page-name,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-page-chevron,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-control-divider {
+    display: none !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-control-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-picker {
+    width: 132px;
+    min-width: 132px;
+    flex: 0 0 132px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions {
+    gap: 0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions > .appearance-toggle {
+    width: 88px;
+    min-width: 88px;
+    height: 44px !important;
+    min-height: 44px !important;
+    justify-content: center;
+    gap: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions .appearance-toggle .appearance-toggle-button,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions .appearance-toggle > button:first-child,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions .appearance-toggle > button:last-child {
+    display: grid !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-preview-button {
+    display: none !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-actions > .header-publish-button {
+    display: inline-flex !important;
+    width: 44px;
+    min-width: 44px;
+    height: 44px !important;
+    min-height: 44px !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-page-menu {
+    position: fixed;
+    top: 56px;
+    left: max(4px, env(safe-area-inset-left));
+    width: min(268px, calc(100vw - 8px));
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"] .studio-pro-builder--mobile .canvas-stage-v2 {
+    padding: 10px 6px 112px;
+  }
+}
+
+/* Very narrow devices can reach Pages from the persistent bottom dock, so the
+ * duplicated header page trigger yields its space to the three device targets.
+ */
+@media (max-width: 360px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .header-page-picker {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .header-document-group {
+    width: 132px;
+    min-width: 132px;
+    max-width: 132px;
+    flex-basis: 132px;
+  }
+}
+
+/* Short landscape: convert the bottom dock into a compact vertical tool rail
+ * so the canvas keeps useful height and the gesture area remains unobstructed.
+ */
+@media (max-width: 1024px) and (max-height: 520px) and (orientation: landscape) {
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-dock {
+    top: 8px;
+    right: max(6px, env(safe-area-inset-right));
+    bottom: 8px;
+    left: auto;
+    width: 72px;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, minmax(52px, 1fr));
+    padding: 4px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"]
+    .production-studio[data-workspace="editor"][data-editor-module="builder"] .studio-pro-builder--mobile .canvas-stage-v2 {
+    padding-right: 88px;
+    padding-bottom: 16px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-builder-sheet-panel,
+  .electrocms-app[data-editor-preset="studio-pro"] .mobile-canvas-sheet-panel {
+    max-height: calc(100dvh - 72px);
+  }
+}

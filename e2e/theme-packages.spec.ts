@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const customFrontendThemePackage = JSON.stringify({
   schemaVersion: 1,
@@ -53,11 +53,18 @@ const customFrontendThemePackage = JSON.stringify({
   },
 });
 
+async function expectSinglePageInHeader(page: Page) {
+  const activeDocument = page.getByRole('button', { name: 'Active document' });
+  await activeDocument.click();
+  const pages = page.getByRole('listbox', { name: 'Pages' });
+  await expect(pages.getByRole('option')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+}
+
 test('reviews a package, imports selected resources, persists theme and exports it again', async ({ page }) => {
   await page.goto('/preview');
 
-  const activeDocument = page.getByLabel('Active document');
-  await expect(activeDocument.locator('option')).toHaveCount(1);
+  await expectSinglePageInHeader(page);
 
   await page.getByLabel('Choose theme package').setInputFiles({
     name: 'custom-ocean.electrocms-theme.json',
@@ -75,7 +82,7 @@ test('reviews a package, imports selected resources, persists theme and exports 
   await page.getByRole('button', { name: 'Apply selected import' }).click();
   await expect(page.getByText(/Installed frontend\.custom-ocean\./)).toBeVisible();
   await expect(page.getByText(/1 resources imported; 0 existing IDs preserved/)).toBeVisible();
-  await expect(activeDocument.locator('option')).toHaveCount(1);
+  await expectSinglePageInHeader(page);
 
   const frontendTheme = page.getByLabel('Frontend theme', { exact: true });
   await expect(frontendTheme.locator('option[value="frontend.custom-ocean"]')).toHaveCount(1);

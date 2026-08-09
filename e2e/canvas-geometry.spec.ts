@@ -1,4 +1,8 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+async function chooseBreakpoint(page: Page, id: string) {
+  await page.locator(`.header-breakpoint-button[data-breakpoint-id="${id}"]`).click();
+}
 
 test('geometry controls snap position and resize per breakpoint with undo support', async ({ page }) => {
   await page.goto('/editor');
@@ -21,12 +25,12 @@ test('geometry controls snap position and resize per breakpoint with undo suppor
   await expect(node).toHaveAttribute('data-geometry-width', '');
   await expect(node).toHaveAttribute('data-geometry-x', '16');
 
-  await page.getByLabel('Preview breakpoint').selectOption('mobile-large');
-  await expect(page.getByTestId('canvas-renderer')).toHaveAttribute('data-breakpoint-id', 'mobile-large');
+  await chooseBreakpoint(page, 'mobile-small');
+  await expect(page.getByTestId('canvas-renderer')).toHaveAttribute('data-breakpoint-id', 'mobile-small');
   await expect(node).toHaveAttribute('data-geometry-x', '0');
   await page.getByLabel('X position').fill('9');
   await expect(node).toHaveAttribute('data-geometry-x', '8');
 
-  await page.getByLabel('Preview breakpoint').selectOption('desktop');
+  await chooseBreakpoint(page, 'desktop');
   await expect(node).toHaveAttribute('data-geometry-x', '16');
 });

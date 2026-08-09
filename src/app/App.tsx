@@ -23,8 +23,54 @@ export interface AppProps {
   projectThemeRegistry?: ProjectThemeRegistry;
 }
 
+const MODAL_FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled]):not([type="hidden"])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  'summary',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',');
+
+function useModalFocusContainment() {
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') return;
+
+      const dialogs = [...document.querySelectorAll<HTMLElement>('[role="dialog"][aria-modal="true"]')]
+        .filter((dialog) => dialog.getClientRects().length > 0);
+      const dialog = dialogs.at(-1);
+      if (!dialog) return;
+
+      const focusable = [...dialog.querySelectorAll<HTMLElement>(MODAL_FOCUSABLE_SELECTOR)]
+        .filter((element) => element.getClientRects().length > 0 && element.getAttribute('aria-hidden') !== 'true');
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      const active = document.activeElement;
+      if (!first || !last) return;
+
+      if (event.shiftKey && (active === first || !dialog.contains(active))) {
+        event.preventDefault();
+        last.focus();
+        return;
+      }
+
+      if (!event.shiftKey && (active === last || !dialog.contains(active))) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+}
+
 function useCompactStudioLayout(): boolean {
-  const query = '(max-width: 960px)';
+  const query = '(max-width: 1024px)';
   const [compact, setCompact] = useState(() =>
     typeof globalThis.matchMedia === 'function' ? globalThis.matchMedia(query).matches : false,
   );
@@ -49,6 +95,7 @@ function EditorApplicationShell() {
   const activeEditorModule = route.editorModuleId ?? 'builder';
   const compactLayout = useCompactStudioLayout();
   const [navigationOpen, setNavigationOpen] = useState(false);
+  useModalFocusContainment();
 
   const navigate = useCallback(
     (workspaceId: WorkspaceId) => {
@@ -69,6 +116,26 @@ function EditorApplicationShell() {
     }
   }, [preferences.lastWorkspace, route, setLastWorkspace]);
 
+  useEffect(() => {
+    if (!navigationOpen) return undefined;
+
+    const focusFrame = requestAnimationFrame(() => {
+      document.querySelector<HTMLButtonElement>('[role="dialog"][aria-label="Workspace navigation"] button[aria-label="Close navigation"]')?.focus();
+    });
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      setNavigationOpen(false);
+      requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('button[aria-label="Open navigation"]')?.focus());
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      cancelAnimationFrame(focusFrame);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [navigationOpen]);
+
   return (
     <div
       className="electrocms-app"
@@ -81,6 +148,7 @@ function EditorApplicationShell() {
       <a className="skip-link" href="#workspace-main">Skip to workspace</a>
       <AppHeader
         compactLayout={compactLayout}
+        resolvedTheme={resolvedTheme}
         activeWorkspace={activeWorkspace}
         onOpenNavigation={() => setNavigationOpen(true)}
         onNavigate={navigate}

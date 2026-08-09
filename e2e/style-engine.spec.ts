@@ -1,4 +1,8 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+async function chooseBreakpoint(page: Page, id: string) {
+  await page.locator(`.header-breakpoint-button[data-breakpoint-id="${id}"]`).click();
+}
 
 test('edits an explicit responsive style, keeps breakpoint isolation and supports undo', async ({ page }) => {
   await page.goto('/editor');
@@ -18,11 +22,11 @@ test('edits an explicit responsive style, keeps breakpoint isolation and support
   await expect.poll(async () => headingNode.evaluate((element) => (element as HTMLElement).style.fontSize)).toBe('36px');
   await expect(inspector.getByText('Explicit on desktop')).toBeVisible();
 
-  await page.getByLabel('Preview breakpoint').selectOption('mobile-small');
+  await chooseBreakpoint(page, 'mobile-small');
   await expect.poll(async () => headingNode.evaluate((element) => (element as HTMLElement).style.fontSize)).toBe('');
   await expect(inspector.getByText('Unset').first()).toBeVisible();
 
-  await page.getByLabel('Preview breakpoint').selectOption('desktop');
+  await chooseBreakpoint(page, 'desktop');
   await expect.poll(async () => headingNode.evaluate((element) => (element as HTMLElement).style.fontSize)).toBe('36px');
 
   await page.getByRole('button', { name: 'Undo' }).click();
