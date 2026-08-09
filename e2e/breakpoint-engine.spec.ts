@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test';
 
+async function chooseBreakpoint(page: Parameters<typeof test>[0] extends never ? never : any, id: string) {
+  await page.locator(`.header-breakpoint-button[data-breakpoint-id="${id}"]`).click();
+}
+
 test('inherits a style from the nearest wider breakpoint and follows later source edits', async ({ page }) => {
   await page.goto('/editor');
 
@@ -15,17 +19,17 @@ test('inherits a style from the nearest wider breakpoint and follows later sourc
   await desktopFontSize.blur();
   await expect.poll(async () => headingNode.evaluate((element) => (element as HTMLElement).style.fontSize)).toBe('40px');
 
-  await page.getByLabel('Preview breakpoint').selectOption('laptop');
+  await chooseBreakpoint(page, 'laptop');
   await inspector.getByRole('button', { name: 'Inherit Font size from Desktop' }).click();
   await expect(inspector.getByText('Inherited from desktop')).toBeVisible();
   await expect.poll(async () => headingNode.evaluate((element) => (element as HTMLElement).style.fontSize)).toBe('40px');
 
-  await page.getByLabel('Preview breakpoint').selectOption('desktop');
+  await chooseBreakpoint(page, 'desktop');
   const updatedDesktopFontSize = inspector.getByLabel('Style Font size');
   await updatedDesktopFontSize.fill('44');
   await updatedDesktopFontSize.blur();
 
-  await page.getByLabel('Preview breakpoint').selectOption('laptop');
+  await chooseBreakpoint(page, 'laptop');
   await expect.poll(async () => headingNode.evaluate((element) => (element as HTMLElement).style.fontSize)).toBe('44px');
 
   await inspector.getByRole('button', { name: 'Unset Font size' }).click();
