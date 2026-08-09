@@ -1,32 +1,29 @@
 # KNOWN_ISSUES.md
 
 ## Blocking
-Ningún defecto funcional de código conocido en el head actual. El PR #36 permanece bloqueado para merge hasta obtener un quality gate completo verde del último commit.
+Ningún defecto funcional conocido bloquea el `main` actual después de MF-040. El último gate funcional completo es GitHub Actions #1524 PASS.
 
 ## Environment
-- El sandbox actual no resuelve `registry.npmjs.org`; no es un defecto de ElectroCMS.
-- GitHub Actions continúa siendo el entorno oficial de `npm ci`, tests y build.
+- GitHub Actions es el entorno oficial para `npm ci`, lint, types, tests, coverage, build y Playwright.
+- El sandbox/local tooling puede tener restricciones de red; no se interpreta automáticamente como defecto del proyecto.
 - Vercel auto-deploy está desactivado con `git.deploymentEnabled=false`; desplegar solo bajo petición explícita.
-- GitHub hosted runners pueden cancelar ocasionalmente una operación en curso sin reportar fallo de aserción (`The operation was canceled`). Una cancelación no se acepta como evidencia verde; se requiere una ejecución completa.
+- Una cancelación de hosted runner no cuenta como evidencia verde; se requiere ejecución completa.
 
-## Known scope boundaries
-- Widgets dynamic/commerce/form/filter de F04 son contratos `modeled`; su comportamiento real pertenece a fases posteriores.
-- Preview/Backend/Export conservan sus contratos honestos; capacidades no implementadas no deben presentarse como funcionales.
-- La biblioteca local de themes resuelve definiciones instaladas; el bundling final dentro de exporters pertenece a fases de export/publish.
-- Los paquetes F04 transfieren solo los grupos modelados explícitamente soportados por `ProjectThemePackageResources`.
-- El clipboard de MF-024 sigue siendo transitorio a la sesión del editor; integración con System Clipboard no fue requisito de F03/F04.
+## Current F05 scope boundaries
+- MF-037 Content Types, MF-038 Taxonomies, MF-039 Field Type Registry y MF-040 Custom Field Groups están integrados en Studio Pro.
+- MF-041 Records CRUD es el próximo trabajo y aún no debe presentarse como integrado.
+- Los 7 Field Types `modeled` — Relation, User, Taxonomy, Repeater, Group, Calculated y Conditional — siguen sin poder instanciarse en MF-040; se habilitan solo en sus microfases posteriores.
+- Advanced Fields, Relations y Dynamic Bindings siguen bloqueados hasta completar las microfases previas de F05.
+- Widgets dynamic/commerce/form/filter de F04 mantienen contratos `modeled` hasta que sus motores correspondientes estén realmente implementados.
+- Preview/Backend/Export deben seguir mostrando estados honestos para capacidades no implementadas.
 
-## Resolved during Bento UI hardening
-- Los presets UI seleccionables quedaron retirados; el editor usa únicamente `bento-high-density` con modos light/dark/auto.
-- El selector residual de preset en Settings fue retirado.
-- El popover de Workspace Settings queda contenido dentro del drawer compacto.
-- El header móvil se reorganizó en dos filas para evitar competencia horizontal entre identidad, acciones y controles del editor.
-- El trigger móvil de navegación declara explícitamente 44×44px en <=720px; un E2E dedicado evita regresiones del touch target.
-- Capability labels se distinguen visual y semánticamente de acciones deshabilitadas.
-- Header commands exponen toolbar/group semantics y el save state usa live status.
-- Focusables usan scroll margin para reducir riesgo de foco oculto por chrome denso/sticky.
-- El warning React de `GridPreview` propagando props internas al DOM quedó corregido durante el cierre F04.
+## Studio Pro
+- `studio-pro` es el único sistema visual del editor.
+- No reintroducir presets Bento ni UI/CSS de la rama histórica `agent/f05-dynamic-content`.
+- `light` / `dark` / `auto` son modos de apariencia de Studio Pro; frontend/backend themes del proyecto son independientes.
+- Root horizontal overflow sigue prohibido y browser zoom permanece habilitado.
 
 ## Non-blocking maintenance
-- El lint oficial es zero-warning; cualquier nuevo warning inesperado bloquea el gate.
-- GitHub hosted runners muestran advertencias de transición del runtime interno Node usado por algunas versiones de `actions/*`; Node 22 configurado para ElectroCMS sigue funcionando correctamente.
+- Lint oficial es zero-warning; cualquier warning nuevo bloquea el gate.
+- Algunas versiones de `actions/*` pueden mostrar warnings de transición de runtime Node interno. ElectroCMS continúa configurando Node 22 para sus comandos de proyecto.
+- PR #39 es una rama UI histórica abierta y divergente; no usarla como base para F05 ni mezclarla con el port secuencial actual.
