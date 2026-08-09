@@ -123,7 +123,7 @@ describe('ProductionStudio', () => {
     await user.click(within(resources).getByRole('button', { name: /Home/i }));
 
     expect(screen.getByTestId('editor-canvas')).toBeInTheDocument();
-    expect(screen.getByLabelText('Active document')).toHaveDisplayValue('Home');
+    expect(screen.getByLabelText('Active document')).toHaveTextContent('Home');
   });
 
   it('switches Media to the canonical Assets view without inventing resources', async () => {
