@@ -1,14 +1,19 @@
 # TRACKING.md — Estado de ejecución
 
 ## Estado global
-- Estado: CLOSING
-- Fase completada: F03 — Canvas, nodos, DnD e historial
-- Fase actual: F04 — Widgets, inspector, responsive y themes
-- Microfase actual: MF-036 — DONE; cierre documental/CI de fase en curso
-- Último quality gate funcional completo: GitHub Actions run #688 PASS
+- Estado: IN_PROGRESS
+- Fase completada: F04 — Widgets, inspector, responsive y themes
+- Fase actual: **F05 — Dynamic Content**
+- Microfase actual: **MF-040 — Custom Field Groups — NEXT**
 - Repositorio oficial: `janielsg20/ElectroCMSReact`
-- PR de fase: #5 `agent/f04-widgets-inspector-themes -> main`
+- UI activa: Studio Pro único; no reintroducir UI/CSS legacy de F05.
+- Estrategia F05: portar cada microfase validada desde `agent/f05-dynamic-content` a una rama fresca desde `main`, ejecutar gate completo y fusionar secuencialmente.
 - Preview deployment: MANUAL ONLY. `vercel.json` usa `git.deploymentEnabled: false`; no desplegar por push/PR.
+
+## Evidencia reciente F05
+- MF-037 Content Types: PR #34 → merge `748c6e61af114640a176665903b5f3bc0336ca07`; Quality Gate #1515 PASS.
+- MF-038 Taxonomies: PR #41 → merge `7cf28bb23d2825fd6174f90720fd80cbe0314666`; Quality Gate #1517 PASS.
+- MF-039 Field Type Registry: PR #42 → merge `0db52d1c8db88b70a6ce5c6275f14803397c9691`; Quality Gate #1519 PASS.
 
 ## F00
 | Microfase | Estado | Evidencia |
@@ -65,48 +70,49 @@
 | MF-033 | DONE | Breakpoint engine, cadena wider/narrower, herencia desde breakpoint superior y E2E; run #529 PASS |
 | MF-034 | DONE | 10 presets de editor separados de proyecto + DnD con hit areas estables/no rerender durante gesto; run #568 PASS |
 | MF-035 | DONE | Themes frontend/backend separados, 15 built-ins, duplicación editable local, versionado automático y autosave/reload; run #662 PASS |
-| MF-036 | DONE | Paquetes versionados, export/import selectivo, demo data opt-in, merge no destructivo, biblioteca local y round-trip; run #688 PASS |
+| MF-036 | DONE | Paquetes versionados, export/import selectivo, demo data opt-in, merge no destructivo, biblioteca local y round-trip; run #688 PASS; F04 posteriormente cerrada y fusionada |
+
+## F05
+| Microfase | Estado | Evidencia |
+|---|---|---|
+| MF-037 | DONE | Content Types canónicos + Studio Pro CRUD + autosave/persistencia E2E; PR #34; Quality Gate #1515 PASS; merge `748c6e61…` |
+| MF-038 | DONE | Taxonomías canónicas, asociaciones/referencias validadas + Studio Pro CRUD + reload E2E; PR #41; Quality Gate #1517 PASS; merge `7cf28bb2…` |
+| MF-039 | DONE | Registry React-free `type@version`, 27 contratos builtin, plugins externos, migraciones explícitas; PR #42; Quality Gate #1519 PASS; merge `0db52d1c…` |
+| MF-040 | NEXT | Custom Field Groups. Portar contrato histórico validado sobre `main` moderno y habilitar edición Studio Pro solo después del core/session |
+| MF-041 | BLOCKED | Records CRUD; depende de MF-040 |
+| MF-042 | BLOCKED | Advanced fields; la rama histórica tiene implementación, pero debe portarse y revalidarse sobre current `main` |
+| MF-043 | BLOCKED | Relations; la rama histórica tiene implementación/hardening, pero debe portarse y revalidarse después de MF-042 |
+| MF-044 | BLOCKED | Dynamic bindings; no iniciar hasta cerrar MF-042 y MF-043 en la línea moderna |
 
 ## Design system del editor
 - Fuente de verdad: `design-system/electrocms-editor/MASTER.md`.
 - Override del workspace principal: `design-system/electrocms-editor/pages/editor.md`.
-- Referencias externas seleccionadas: `ui-ux-pro-max`, `design-system` y `ui-styling` de `nextlevelbuilder/ui-ux-pro-max-skill`.
 - Arquetipo: productivity tool + design-system tooling + data-dense SaaS.
-- Base visual: Minimal/Flat + Data-Dense + Accessible, con micro-interacciones funcionales.
-- El editor debe sentirse como un no-code builder profesional: header global, canvas dominante, navegación/paleta lateral y inspector contextual.
-- El DnD usa hit areas estables y cambios de pintura transitorios; no re-renderizar React en medio de un gesto nativo.
-- No forzar migración a Tailwind/shadcn; adaptar las reglas al React/CSS actual salvo que una fase futura justifique explícitamente esa migración.
-
-## Sistema de themes F04
-- Editor theme mode (`light`/`dark`/`auto`) y editor theme preset viven en workspace preferences, nunca en el proyecto exportado.
-- `frontendThemeId` y `backendThemeId` viven en `CanonicalProject` y se guardan por autosave.
-- `ProjectThemeRegistry` es framework-neutral y valida scope, id, versión y tokens JSON portables.
-- Built-ins actuales: 8 frontend + 7 backend; son inmutables.
-- `Duplicate to edit` crea copies locales collision-safe; cada edición incrementa la versión.
-- Los themes importados/duplicados viven en `electrocms:project-theme-packages:v1`, separados de `CanonicalProject`; el proyecto referencia solo su ID activo.
-- Formato exportable: `kind=electrocms-theme-package`, `schemaVersion=1`, máximo 256 KB.
-- Export/import puede incluir recursos seleccionados del proyecto.
-- Demo data está desactivada por defecto.
-- Importar es un proceso de validar → revisar → aplicar; elegir el archivo no muta el proyecto.
-- Merge de recursos es no destructivo: los IDs existentes se preservan y se reportan como conflictos saltados.
-- Usuarios, credenciales y binarios de media no forman parte del paquete F04.
+- Sistema visual activo: **Studio Pro** único, responsive y accesible.
+- Frontend/backend project themes permanecen independientes de la apariencia del editor.
+- No traer superficies, CSS o layouts de la rama histórica F05; solo recuperar contratos de dominio/tests y adaptarlos a Studio Pro.
 
 ## Invariantes consolidadas
-- El DOM nunca es fuente de verdad; el canvas es una proyección de `CanonicalDocument`.
-- Los widgets se resuelven por `type@version` mediante registries explícitos.
-- El editor core no contiene branching por cada tipo de widget.
-- Factories producen `DocumentNode` canónicos y las props se validan antes de aceptar el nodo.
-- Inserción de widgets estructurales usa el registry; Container y Group ya no dependen de factories locales paralelas.
-- Widgets dinámicos/commerce/form/filter de F04 permanecen `modeled` hasta que F05/F06 implementen comportamiento real.
-- Inspector UI es transitorio; solo los patches de props validados entran al modelo mediante comandos reversibles.
-- Selección, clipboard UI, guides y estado de interacción son transitorios y no entran al proyecto.
-- Undo/Redo usa comandos canónicos reversibles por documento.
-- Geometría usa `ResponsiveStyleSet` por breakpoint.
-- Autosave reutiliza repositorios F01 y no reemplaza contenido nuevo con callbacks stale.
-- Editor theme/preset vive en workspace preferences; frontend/backend theme IDs viven en `CanonicalProject`.
-- Imported theme library es local al editor; solo IDs seleccionados entran al proyecto.
-- Theme resource merge nunca sobrescribe IDs existentes.
-- Los deployments de preview son manuales y solo se ejecutan bajo petición explícita del usuario.
+- El DOM nunca es fuente de verdad; el canvas es proyección del modelo canónico.
+- `CanonicalProject` y sus colecciones son la única fuente persistente de verdad; no crear stores paralelos para F05.
+- Widgets se resuelven por `type@version` mediante registries explícitos.
+- Field Types F05 también se resuelven por `type@version`; no promover tipos `modeled` antes de su microfase.
+- Mutaciones de Content Types/Taxonomies y futuras entidades F05 deben entrar por APIs públicas de core expuestas por `ProjectSession`, conservando validación, autosave y persistencia atómica.
+- Undo/Redo de documentos usa comandos canónicos reversibles; UI transitoria no entra al proyecto.
+- Autosave reutiliza los repositorios F01 y no reemplaza contenido nuevo con callbacks stale.
+- Deployments de preview son manuales y solo bajo petición explícita del usuario.
+
+## Quality gate obligatorio
+Cada microfase portada a la línea moderna debe ejecutar y aprobar, contra el merge ref actual de `main`:
+1. `verify:repo`;
+2. lint con cero warnings;
+3. TypeScript strict;
+4. unit/integration tests;
+5. coverage;
+6. production build;
+7. Playwright E2E.
+
+No marcar una microfase como DONE por evidencia histórica únicamente. La evidencia histórica sirve para recuperar el contrato; el estado DONE exige un gate nuevo en la UI/arquitectura actual.
 
 ## Regla de salida
-F04 solo puede marcarse como fase completada/mergeada cuando el cierre documental y cualquier higiene final vuelvan a pasar el gate completo. No avanzar a F05 con ningún gate rojo.
+Continuar F05 secuencialmente. **Próximo trabajo: MF-040 Custom Field Groups**. No saltar a Records/Advanced Fields/Relations hasta que MF-040 esté integrado y verde en `main`.
