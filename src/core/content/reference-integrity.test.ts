@@ -9,12 +9,15 @@ import {
   createDefaultCustomFieldDefinition,
   createDefaultFieldGroupDefinition,
   createDefaultRelationDefinition,
+  createDefaultTaxonomyDefinition,
   createFieldGroup,
   createRelation,
+  createTaxonomy,
   removeContentRecord,
   removeContentType,
   removeFieldGroup,
   removeRelation,
+  removeTaxonomy,
   updateRelation,
   validateContentRecordDefinition,
 } from './index';
@@ -92,6 +95,55 @@ function createReferenceProject() {
   return { project, registry };
 }
 
+function createUserTaxonomyProject() {
+  let project = createCanonicalProject({
+    id: 'project_user_taxonomy_integrity',
+    name: 'User taxonomy integrity',
+    now: NOW,
+  });
+
+  for (const [id, plural, singular] of [
+    ['product', 'Products', 'Product'],
+    ['brand', 'Brands', 'Brand'],
+  ] as const) {
+    project = mustProject(createContentType(project, {
+      ...createDefaultContentTypeDefinition(id, plural),
+      singularLabel: singular,
+      slug: plural.toLowerCase(),
+    }));
+  }
+
+  project = mustProject(createTaxonomy(project, {
+    ...createDefaultTaxonomyDefinition('categories', 'Categories', ['product']),
+    singularLabel: 'Category',
+  }));
+  project = {
+    ...project,
+    users: {
+      ...project.users,
+      editor: { id: 'editor', name: 'Editor' },
+    },
+  };
+
+  const registry = createContentFieldTypeRegistry();
+  const ownerField = {
+    ...createDefaultCustomFieldDefinition(registry, 'core/user', 'owner', 'Owner'),
+    name: 'owner',
+  };
+  const taxonomyField = {
+    ...createDefaultCustomFieldDefinition(registry, 'core/taxonomy', 'categories', 'Categories'),
+    name: 'categories',
+    config: { taxonomyId: 'categories' },
+    defaultValue: [],
+  };
+  project = mustProject(createFieldGroup(project, {
+    ...createDefaultFieldGroupDefinition('publishing-meta', 'Publishing Meta'),
+    fields: [ownerField, taxonomyField],
+  }, registry));
+
+  return { project, registry };
+}
+
 describe('MF-043 reference integrity', () => {
   it('rejects reference values that violate relation cardinality or endpoint type', () => {
     const { project, registry } = createReferenceProject();
@@ -123,6 +175,64 @@ describe('MF-043 reference integrity', () => {
     expect(wrongEndpoint.ok).toBe(false);
     if (!wrongEndpoint.ok) {
       expect(wrongEndpoint.issues.some((issue) => issue.message.includes('must belong to Content Type brand'))).toBe(true);
+    }
+  });
+
+  it('validates User and Taxonomy fields through the full ContentRecord mutation path', () => {
+    const { project, registry } = createUserTaxonomyProject();
+    const productRecord = {
+      ...createDefaultContentRecordDefinition(project, 'product', 'product-reference-record', NOW),
+      title: 'Reference Product',
+      slug: 'reference-product',
+      fieldGroupIds: ['publishing-meta'],
+      fieldValues: {
+        'publishing-meta': {
+          owner: 'editor',
+          categories: ['featured'],
+        },
+      },
+    };
+
+    const valid = createContentRecord(project, productRecord, registry);
+    expect(valid.ok).toBe(true);
+
+    const missingUser = validateContentRecordDefinition({
+      ...productRecord,
+      id: 'missing-user-record',
+      slug: 'missing-user-record',
+      fieldValues: {
+        'publishing-meta': {
+          owner: 'missing-user',
+          categories: ['featured'],
+        },
+      },
+    }, project, registry);
+    expect(missingUser.ok).toBe(false);
+    if (!missingUser.ok) {
+      expect(missingUser.issues.some((issue) => issue.message.includes('User missing-user does not exist'))).toBe(true);
+    }
+
+    const wrongTaxonomyScope = validateContentRecordDefinition({
+      ...createDefaultContentRecordDefinition(project, 'brand', 'brand-reference-record', NOW),
+      title: 'Brand Reference',
+      slug: 'brand-reference',
+      fieldGroupIds: ['publishing-meta'],
+      fieldValues: {
+        'publishing-meta': {
+          owner: 'editor',
+          categories: ['featured'],
+        },
+      },
+    }, project, registry);
+    expect(wrongTaxonomyScope.ok).toBe(false);
+    if (!wrongTaxonomyScope.ok) {
+      expect(wrongTaxonomyScope.issues.some((issue) => issue.message.includes('not assigned to Content Type brand'))).toBe(true);
+    }
+
+    const taxonomyDelete = removeTaxonomy(project, 'categories');
+    expect(taxonomyDelete.ok).toBe(false);
+    if (!taxonomyDelete.ok) {
+      expect(taxonomyDelete.error.message).toContain('referenced by Field Group publishing-meta');
     }
   });
 
