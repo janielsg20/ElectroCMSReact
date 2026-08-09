@@ -11,7 +11,7 @@ The supplied professional visual-builder screenshot is the direct layout referen
 Required visual rules:
 - continuous white/light-gray work surfaces;
 - fine 1px separators;
-- no decorative card mosaics or floating panel grid;
+- no decorative card mosaics or card-grid composition;
 - control radii are intentionally small: roughly 2–6px;
 - larger radii are reserved only for transient mobile sheets/dialogs and stay restrained;
 - secondary icons and menus remain monochrome;
