@@ -2,14 +2,14 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { App } from '../App';
-import { createInitialProject } from '../../core/project';
+import { createCanonicalProject } from '../../core/project';
 import { MemoryWorkspacePreferencesRepository } from '../workspace/workspace-preferences-repository';
 
 function renderSettings() {
   window.history.replaceState({}, '', '/editor/settings');
   render(
     <App
-      initialProject={createInitialProject({ name: 'Global Test' })}
+      initialProject={createCanonicalProject({ name: 'Global Test' })}
       preferencesRepository={new MemoryWorkspacePreferencesRepository()}
     />,
   );
