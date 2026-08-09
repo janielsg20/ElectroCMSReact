@@ -193,6 +193,7 @@ export function AppHeader({ compactLayout, activeWorkspace, onOpenNavigation, on
                 key={breakpoint.id}
                 className="header-breakpoint-button ec-focus-ring"
                 type="button"
+                data-breakpoint-id={breakpoint.id}
                 aria-label={`${breakpoint.label} breakpoint ${breakpoint.width}px`}
                 aria-pressed={session.activeBreakpointId === breakpoint.id}
                 title={`${breakpoint.label} · ${breakpoint.width}px`}
