@@ -58,14 +58,16 @@ function advancedProject() {
 }
 
 describe('MF-042 advanced fields', () => {
-  it('activates only repeater, group, calculated and conditional as version 2', () => {
+  it('keeps MF-042 advanced v2 available while MF-043 promotes reference types to v2', () => {
     const registry = createContentFieldTypeRegistry();
     for (const type of ['core/repeater', 'core/group', 'core/calculated', 'core/conditional']) {
       expect(registry.resolve(type)).toMatchObject({ version: 2, availability: 'available' });
     }
-    expect(registry.resolve('core/relation')).toMatchObject({ version: 1, availability: 'modeled' });
-    expect(registry.resolve('core/user')).toMatchObject({ version: 1, availability: 'modeled' });
-    expect(registry.resolve('core/taxonomy')).toMatchObject({ version: 1, availability: 'modeled' });
+    for (const type of ['core/relation', 'core/user', 'core/taxonomy']) {
+      expect(registry.resolve(type, 1)).toMatchObject({ version: 1, availability: 'modeled' });
+      expect(registry.resolve(type, 2)).toMatchObject({ version: 2, availability: 'available' });
+      expect(registry.resolve(type)).toMatchObject({ version: 2, availability: 'available' });
+    }
   });
 
   it('creates reusable group/repeater/conditional schemas and blocks reference cycles', () => {

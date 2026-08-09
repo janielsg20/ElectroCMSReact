@@ -6,6 +6,7 @@ import { CapabilityStatus } from './CapabilityStatus';
 import { ContentTypesCrudPanel } from './ContentTypesCrudPanel';
 import { FieldGroupsCrudPanel } from './FieldGroupsCrudPanel';
 import { RecordsCrudPanel } from './RecordsCrudPanel';
+import { RelationsCrudPanel } from './RelationsCrudPanel';
 import { TaxonomiesCrudPanel } from './TaxonomiesCrudPanel';
 
 type DynamicResourceKind =
@@ -79,7 +80,7 @@ export function DynamicContentWorkspace({ initialResource = 'content-types' }: D
 
   const definition = resources.find((candidate) => candidate.id === resource) ?? resources[0]!;
   const entries = useMemo(() => {
-    if (resource === 'content-types' || resource === 'taxonomies' || resource === 'field-groups' || resource === 'records') return [];
+    if (resource === 'content-types' || resource === 'taxonomies' || resource === 'field-groups' || resource === 'records' || resource === 'relations') return [];
     const normalized = query.trim().toLowerCase();
     return Object.entries(source)
       .map(([id, value]) => ({ id, value, name: asDisplayName(id, value) }))
@@ -100,7 +101,9 @@ export function DynamicContentWorkspace({ initialResource = 'content-types' }: D
         ? { aria: 'Field Groups CRUD enabled', icon: 'form' as IconName }
         : resource === 'records'
           ? { aria: 'Records CRUD enabled', icon: 'list' as IconName }
-          : null;
+          : resource === 'relations'
+            ? { aria: 'Relations CRUD enabled', icon: 'link' as IconName }
+            : null;
 
   return (
     <section className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-ec-app)]" aria-label="Dynamic Content Studio">
@@ -139,6 +142,8 @@ export function DynamicContentWorkspace({ initialResource = 'content-types' }: D
             <FieldGroupsCrudPanel query={query} />
           ) : resource === 'records' ? (
             <RecordsCrudPanel query={query} />
+          ) : resource === 'relations' ? (
+            <RelationsCrudPanel query={query} />
           ) : (
             <div className="grid min-h-0 h-full gap-3 lg:grid-cols-[minmax(0,1fr)_340px]">
               <div className="min-h-0 overflow-y-auto">

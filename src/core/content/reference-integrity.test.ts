@@ -1,0 +1,141 @@
+import { describe, expect, it } from 'vitest';
+import { createCanonicalProject, type CanonicalProject } from '../project';
+import {
+  createContentFieldTypeRegistry,
+  createContentRecord,
+  createContentType,
+  createDefaultContentRecordDefinition,
+  createDefaultContentTypeDefinition,
+  createDefaultCustomFieldDefinition,
+  createDefaultFieldGroupDefinition,
+  createDefaultRelationDefinition,
+  createDefaultTaxonomyDefinition,
+  createFieldGroup,
+  createRelation,
+  createTaxonomy,
+  removeContentRecord,
+  removeContentType,
+  removeFieldGroup,
+  removeRelation,
+  removeTaxonomy,
+  updateRelation,
+  validateContentRecordDefinition,
+} from './index';
+
+const NOW = '2026-08-08T12:00:00.000Z';
+
+function mustProject<T extends { ok: boolean; project?: CanonicalProject; error?: { message: string } }>(result: T): CanonicalProject {
+  if (!result.ok || !result.project) throw new Error(result.error?.message ?? 'Expected a successful project mutation.');
+  return result.project;
+}
+
+function createReferenceProject() {
+  let project = createCanonicalProject({ id: 'project_reference_integrity', name: 'Reference integrity', now: NOW });
+  for (const [id, plural, singular] of [['product', 'Products', 'Product'], ['brand', 'Brands', 'Brand']] as const) {
+    project = mustProject(createContentType(project, { ...createDefaultContentTypeDefinition(id, plural), singularLabel: singular, slug: plural.toLowerCase() }));
+  }
+  project = mustProject(createRelation(project, {
+    ...createDefaultRelationDefinition('product', 'brand', 'product-brand'),
+    label: 'Product brand', sourceCardinality: 'one', targetCardinality: 'many',
+  }));
+  const registry = createContentFieldTypeRegistry();
+  const relationField = {
+    ...createDefaultCustomFieldDefinition(registry, 'core/relation', 'brand', 'Brand'),
+    name: 'brand', config: { relationId: 'product-brand', side: 'source' }, defaultValue: [],
+  };
+  project = mustProject(createFieldGroup(project, { ...createDefaultFieldGroupDefinition('product-relations', 'Product Relations'), fields: [relationField] }, registry));
+  project = mustProject(createContentRecord(project, { ...createDefaultContentRecordDefinition(project, 'brand', 'brand-nike', NOW), title: 'Nike', slug: 'nike' }, registry));
+  project = mustProject(createContentRecord(project, { ...createDefaultContentRecordDefinition(project, 'brand', 'brand-adidas', NOW), title: 'Adidas', slug: 'adidas' }, registry));
+  project = mustProject(createContentRecord(project, {
+    ...createDefaultContentRecordDefinition(project, 'product', 'product-shoe', NOW), title: 'Shoe', slug: 'shoe',
+    fieldGroupIds: ['product-relations'], fieldValues: { 'product-relations': { brand: ['brand-nike'] } },
+  }, registry));
+  return { project, registry };
+}
+
+function createUserTaxonomyProject() {
+  let project = createCanonicalProject({ id: 'project_user_taxonomy_integrity', name: 'User taxonomy integrity', now: NOW });
+  for (const [id, plural, singular] of [['product', 'Products', 'Product'], ['brand', 'Brands', 'Brand']] as const) {
+    project = mustProject(createContentType(project, { ...createDefaultContentTypeDefinition(id, plural), singularLabel: singular, slug: plural.toLowerCase() }));
+  }
+  project = mustProject(createTaxonomy(project, { ...createDefaultTaxonomyDefinition('categories', 'Categories', ['product']), singularLabel: 'Category' }));
+  project = { ...project, users: { ...project.users, editor: { id: 'editor', name: 'Editor' } } };
+  const registry = createContentFieldTypeRegistry();
+  const ownerField = { ...createDefaultCustomFieldDefinition(registry, 'core/user', 'owner', 'Owner'), name: 'owner' };
+  const taxonomyField = {
+    ...createDefaultCustomFieldDefinition(registry, 'core/taxonomy', 'categories', 'Categories'),
+    name: 'categories', config: { taxonomyId: 'categories' }, defaultValue: [],
+  };
+  project = mustProject(createFieldGroup(project, { ...createDefaultFieldGroupDefinition('publishing-meta', 'Publishing Meta'), fields: [ownerField, taxonomyField] }, registry));
+  return { project, registry };
+}
+
+describe('MF-043 reference integrity', () => {
+  it('rejects reference values that violate relation cardinality or endpoint type', () => {
+    const { project, registry } = createReferenceProject();
+    const current = project.records['product-shoe'];
+    if (!current) throw new Error('Expected product-shoe to exist.');
+    const tooMany = validateContentRecordDefinition({ ...current, fieldValues: { 'product-relations': { brand: ['brand-nike', 'brand-adidas'] } } }, project, registry);
+    expect(tooMany.ok).toBe(false);
+    if (!tooMany.ok) expect(tooMany.issues.some((issue) => issue.message.includes('allows only one referenced record'))).toBe(true);
+    const wrongEndpoint = validateContentRecordDefinition({ ...current, fieldValues: { 'product-relations': { brand: ['product-shoe'] } } }, project, registry);
+    expect(wrongEndpoint.ok).toBe(false);
+    if (!wrongEndpoint.ok) expect(wrongEndpoint.issues.some((issue) => issue.message.includes('must belong to Content Type brand'))).toBe(true);
+  });
+
+  it('validates User and Taxonomy fields through the full ContentRecord mutation path', () => {
+    const { project, registry } = createUserTaxonomyProject();
+    const productRecord = {
+      ...createDefaultContentRecordDefinition(project, 'product', 'product-reference-record', NOW),
+      title: 'Reference Product', slug: 'reference-product', fieldGroupIds: ['publishing-meta'],
+      fieldValues: { 'publishing-meta': { owner: 'editor', categories: ['featured'] } },
+    };
+    expect(createContentRecord(project, productRecord, registry).ok).toBe(true);
+    const missingUser = validateContentRecordDefinition({ ...productRecord, id: 'missing-user-record', slug: 'missing-user-record', fieldValues: { 'publishing-meta': { owner: 'missing-user', categories: ['featured'] } } }, project, registry);
+    expect(missingUser.ok).toBe(false);
+    if (!missingUser.ok) expect(missingUser.issues.some((issue) => issue.message.includes('User missing-user does not exist'))).toBe(true);
+    const wrongTaxonomyScope = validateContentRecordDefinition({
+      ...createDefaultContentRecordDefinition(project, 'brand', 'brand-reference-record', NOW), title: 'Brand Reference', slug: 'brand-reference',
+      fieldGroupIds: ['publishing-meta'], fieldValues: { 'publishing-meta': { owner: 'editor', categories: ['featured'] } },
+    }, project, registry);
+    expect(wrongTaxonomyScope.ok).toBe(false);
+    if (!wrongTaxonomyScope.ok) expect(wrongTaxonomyScope.issues.some((issue) => issue.message.includes('not assigned to Content Type brand'))).toBe(true);
+    const taxonomyDelete = removeTaxonomy(project, 'categories');
+    expect(taxonomyDelete.ok).toBe(false);
+    if (!taxonomyDelete.ok) expect(taxonomyDelete.error.message).toContain('referenced by Field Group publishing-meta');
+  });
+
+  it('protects referenced records, relation definitions and endpoint Content Types', () => {
+    const { project } = createReferenceProject();
+    const recordDelete = removeContentRecord(project, 'brand-nike');
+    expect(recordDelete.ok).toBe(false);
+    if (!recordDelete.ok) expect(recordDelete.error.message).toContain('referenced by relation fields in record product-shoe');
+    const relationDelete = removeRelation(project, 'product-brand');
+    expect(relationDelete.ok).toBe(false);
+    if (!relationDelete.ok) expect(relationDelete.error.message).toContain('referenced by a Field Group');
+    const contentTypeDelete = removeContentType(project, 'brand');
+    expect(contentTypeDelete.ok).toBe(false);
+    if (!contentTypeDelete.ok) expect(contentTypeDelete.error.message).toContain('used by relation product-brand');
+  });
+
+  it('deletes an unassigned Field Group that contains MF-043 reference fields', () => {
+    const { project } = createReferenceProject();
+    const recordDelete = removeContentRecord(project, 'product-shoe');
+    expect(recordDelete.ok).toBe(true);
+    if (!recordDelete.ok) return;
+    const groupDelete = removeFieldGroup(recordDelete.project, 'product-relations');
+    expect(groupDelete.ok).toBe(true);
+  });
+
+  it('rejects relation updates that would invalidate existing reference records', () => {
+    const { project } = createReferenceProject();
+    const currentRelation = project.relations['product-brand'];
+    if (!currentRelation) throw new Error('Expected product-brand relation to exist.');
+    const update = updateRelation(project, 'product-brand', { ...currentRelation, targetContentTypeId: 'product' });
+    expect(update.ok).toBe(false);
+    if (!update.ok) {
+      expect(update.error.code).toBe('RELATION_IN_USE');
+      expect(update.error.message).toContain('record product-shoe would become invalid');
+    }
+  });
+});
