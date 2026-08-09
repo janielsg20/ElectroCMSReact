@@ -16,8 +16,9 @@ This compact log mirrors durable architectural decisions from `DECISIONS.md` for
 - ADR-024: project theme definitions live in an extensible framework-neutral registry; project stores selected IDs.
 - ADR-025: imported theme definitions are local editor-library data, not duplicated inside canonical projects.
 - ADR-026: theme package format is versioned, max 256 KB, deep portable JSON validated and collision-safe.
-- ADR-027: adapt UX/design-system principles from `nextlevelbuilder/ui-ux-pro-max-skill`; do not force an unrelated framework rewrite.
+- ADR-027: adapt professional UX/design-system principles without forcing an unrelated framework rewrite.
 - ADR-028: Vercel Git auto-deploy is disabled; previews deploy only on explicit user request.
 
-## Unified Studio UI
-- ADR-029: ElectroCMS editor uses one visual language only: `bento-high-density`. Selectable editor UI presets are retired. `light`/`dark`/`auto` are appearance modes of the same system; legacy preset IDs normalize to the unified ID. Project frontend/backend themes remain independent canonical/project-library concerns.
+## Studio UI
+- ADR-029 (superseded): the first unified editor system used `bento-high-density` after selectable UI presets were retired.
+- ADR-030: `studio-pro` supersedes Bento as the only editor visual system. It is Tailwind-first, preserves light/dark/auto as appearance modes, keeps project themes independent, and uses persistent desktop panels but a canvas-first mobile dock with accessible Pages/Add/Layers/Properties sheets. Legacy Bento preference IDs normalize to `studio-pro` without a workspace schema bump.
