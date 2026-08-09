@@ -1,7 +1,9 @@
 # HANDOFF.md
 
 ## Current state
-User-directed visual refinement is active on `agent/studio-reference-ui-polish` / draft PR #38.
+F04 is closed and merged. The active development phase is **F05 — Dynamic Content** on the current Studio Pro `main` line.
+
+The historical branch `agent/f05-dynamic-content` remains useful as a contract/evidence source only. **Do not merge it wholesale**: it is based on the pre-hardening UI and would reintroduce retired editor surfaces. Port F05 microphases sequentially onto fresh branches from current `main`.
 
 ## Active UI rule
 One editor visual system only: **Studio Pro (`studio-pro`)**.
@@ -9,80 +11,77 @@ One editor visual system only: **Studio Pro (`studio-pro`)**.
 - No selectable editor visual presets.
 - `light` / `dark` / `auto` are appearance modes of Studio Pro.
 - Frontend/backend project themes remain independent.
-- Unknown persisted editor preset IDs normalize to `studio-pro`.
+- Do not reintroduce legacy F05 UI/CSS while porting domain capabilities.
 
-## Product reference
-The supplied professional visual-builder screenshot is the primary composition reference.
+## F05 modern integration state
+Completed on the current Studio Pro line with executable GitHub Actions evidence:
 
-Desktop target:
-- continuous application toolbar ≈64px;
-- technical icon rail ≈60px;
-- Pages/Components navigator ≈300px;
-- dominant flexible canvas;
-- Properties inspector ≈336px;
-- navigator tabs / canvas toolbar / inspector aligned at the same top edge.
+- **MF-037 — Content Types: DONE.** PR #34 merged as `748c6e61af114640a176665903b5f3bc0336ca07`. Quality Gate #1515 PASS.
+- **MF-038 — Taxonomies: DONE.** PR #41 merged as `7cf28bb23d2825fd6174f90720fd80cbe0314666`. Quality Gate #1517 PASS.
+- **MF-039 — Field Type Registry: DONE.** PR #42 merged as `0db52d1c8db88b70a6ce5c6275f14803397c9691`. Quality Gate #1519 PASS.
+- **MF-040 — Custom Field Groups: NEXT.** Port its historical validated core/runtime contract onto current `main`, then adapt the editor to Studio Pro.
 
-The rail must not repeat the application logo. Use restrained 1px separators, modest radii and minimal elevation.
+Historical F05 work beyond MF-039 exists on `agent/f05-dynamic-content`, but it is **not considered integrated into current `main`** until each microphase is ported, validated and merged separately.
 
-## Monochrome color contract
-The reference is predominantly neutral. The editor must not use a different accent hue per module.
+## Recovery findings that must not be repeated
+- The old F05 branch ended up dozens of commits behind the current editor and was non-mergeable against Studio Pro.
+- GitHub Actions hosted runners recovered; the previous zero-step/zero-run infrastructure incident is no longer the active blocker.
+- Temporary quality PRs used to diagnose the legacy branch were closed without merge.
+- The correct integration strategy is a clean sequential port from historical F05 contracts into current `main`.
 
-- rail icons are neutral and consistent;
-- component-library icons are neutral;
-- mobile Pages/Add/Layers/Properties dock icons are neutral;
-- Preview, breakpoint, Settings and secondary toolbar actions are neutral;
-- active/current navigation is communicated by neutral surface/weight plus, when useful, one thin blue indicator;
-- saturated blue is reserved mainly for primary actions such as Publish/Export and Insert Widget, plus precise selection/focus indicators;
-- semantic save/error/warning status indicators may retain their status colors because they communicate state, not decoration.
+## MF-037 durable facts
+- Content Types use the canonical `project.contentTypes` map only.
+- Mutations route through `ProjectSession` and autosave; no direct UI map mutations.
+- The Studio Pro CRUD panel supports create/edit/delete and explicit selection.
+- Deletion feedback remains visible even when the final Content Type is removed.
+- Persistence E2E proves create → save → reload → edit → reload → delete → reload.
 
-Do not reintroduce violet/cyan/green/amber module icon palettes.
+## MF-038 durable facts
+- Taxonomy schema version 1 includes id, labels, slug, description, hierarchical mode, content type associations, optional field groups and optional archive template.
+- At least one unique Content Type association is required.
+- Referenced Content Types, Field Groups and Archive Templates are validated before mutation.
+- Taxonomy IDs are immutable after creation; duplicate IDs/slugs are rejected.
+- Mutations route through `ProjectSession` and the same local-first autosave path.
+- Studio Pro Taxonomies CRUD is enabled; Field Groups/Records/Relations/Queries remain read-only until their microphases.
 
-## Motion contract
-Microinteraction target: 140–180ms, mostly transform/color/opacity. Icons may lift/scale slightly on hover; pressed states compress slightly and active destinations may use a short one-shot pop. Motion never changes precision hit geometry. Respect `prefers-reduced-motion`.
+## MF-039 durable facts
+- Core registry is React-free and resolves field types by **`type@version`**.
+- The registry is extensible; external plugin field definitions register without modifying registry implementation.
+- Definitions are defensively cloned so consumers cannot mutate registry state.
+- Config migration is explicit and one version step at a time.
+- The master-prompt minimum is represented by 27 builtin field contracts.
+- **20 types are `available`; 7 later-runtime types remain `modeled`.** Do not mark modeled types functional early.
+- Modeled types include later F05 behavior such as Relation, User, Taxonomy-term references, Repeater, Group, Calculated and Conditional.
 
-## Compact/mobile Builder
-At <=960px persistent left navigator and right inspector stay out of layout flow.
+## F05 invariants
+- Core content runtime remains React-free.
+- Canonical Project collections are the only project source of truth; no parallel stores.
+- UI mutations must enter through public core APIs exposed by `ProjectSession` so validation, autosave and persistence remain atomic.
+- Runtime behavior resolves by type + version, never by type name alone.
+- Historical modeled v1 contracts are not silently promoted to later runtime semantics.
+- Never weaken tests to make a port pass; fix the implementation or update genuinely obsolete UI selectors while preserving behavioral coverage.
+- Do not import historical UI/CSS from the legacy F05 branch.
 
-Default experience:
-- one-row compact header;
-- canvas-first;
-- bottom dock: Pages / Add / Layers / Properties;
-- each destination opens an accessible bottom sheet;
-- `Escape`, explicit Close and backdrop dismissal supported;
-- close action receives initial focus;
-- touch targets >=48px;
-- phone dock controls >=52px;
-- dock respects safe-area inset;
-- root horizontal overflow forbidden.
+## Quality gate
+GitHub Actions is authoritative. Every port must pass:
 
-Tablet keeps Active document + Preview breakpoint + Zoom visible. Phone remains intentionally more minimal to protect canvas space.
+1. repository contract verification;
+2. zero-warning lint;
+3. TypeScript strict check;
+4. unit/integration tests;
+5. coverage gate;
+6. production build;
+7. Playwright E2E.
 
-## Inspector
-Visible tabs are **Properties** and **Design**. This is presentation language only; underlying canonical content/style mutation APIs remain unchanged.
+A microphase is not DONE until a real workflow executes all required steps successfully against the current `main` merge ref.
 
-## Invariants
-- Canvas DOM remains projection of canonical state.
-- DnD hit geometry remains stable.
-- Widget Tree derives from canonical document nodes/children.
-- Layers/Inspector mobile presentation does not create parallel project state.
-- Project theme registry/package system remains separate from editor appearance.
-- Browser zoom remains enabled.
-
-## Files
-- `src/app/ui/studio-pro-tailwind.css` → Tailwind-first base.
-- `src/app/ui/studio-pro.css` → reference geometry, compatibility and interaction layer.
-- `src/app/ui/studio-pro-compact.css` → final monochrome reference refinements + tablet compact-shell rules.
-- `src/app/editor/inspector/WidgetInspector.tsx` → Properties/Design language.
-- `e2e/reference-builder-fidelity.spec.ts` → desktop geometry, monochrome rail, primary CTA and motion contract.
-- `e2e/studio-pro-mobile.spec.ts` → mobile canvas, monochrome dock, touch and sheet contract.
-
-## Validation
-GitHub Actions is authoritative: repository verification, zero-warning lint, TypeScript, unit/integration, coverage, production build and Playwright E2E must all pass.
-
-Latest known fully green baseline before the monochrome pass: Quality Gate #1382. The monochrome pass must obtain a newer complete green gate before being considered final.
+## Resume protocol
+1. Read `AI_ENTRYPOINT.md`, `RULES.md`, `TRACKING.md`, this handoff, `QUALITY_GATES.md`, `.ai/memory/DECISIONS_LOG.md`, `.ai/memory/IMPLEMENTATION_MEMORY.md` and `.ai/memory/KNOWN_ISSUES.md`.
+2. Treat older F04/PR #38 instructions in stale memory as superseded by this F05 handoff.
+3. Start **MF-040** from fresh current `main`, using historical `agent/f05-dynamic-content` only to recover its validated contract/tests.
+4. Port core domain first, then `ProjectSession`, then Studio Pro UI, then persistence E2E.
+5. Open a PR to current `main`, require a full green quality gate, merge only after PASS.
+6. Update this handoff and `TRACKING.md` with exact PR/commit/run evidence before moving to MF-041.
 
 ## Next action
-1. Inspect the latest PR #38 Quality Gate for the current monochrome head.
-2. Fix concrete regressions rather than weakening geometry/mobile accessibility tests.
-3. Update PR #38 with the definitive green run.
-4. Keep PR draft until the user explicitly asks to merge.
+**Implement MF-040 — Custom Field Groups on top of current Studio Pro main.**
