@@ -1,193 +1,116 @@
 # MEMORY.md — Memoria técnica durable
 
-## Proyecto
-ElectroCMS es un CMS visual local-first construido en React + TypeScript. El proyecto se desarrolla con quality gates estrictos y ninguna capacidad se considera cerrada con lint, tipos, tests, E2E o build en rojo.
-
-## Toolchain confirmado
-- React 19 + TypeScript strict + Vite.
-- Tailwind CSS v4 está disponible en la capa Studio, junto con CSS semántico propio.
-- Vitest para unit/integration.
-- Playwright para E2E en navegador real.
-- GitHub Actions es el entorno oficial de instalación/test/build porque el sandbox de ChatGPT no alcanza el registry npm público.
-- `package-lock.json` está versionado y CI usa `npm ci`.
-- Vercel es solo para previews manuales bajo petición explícita; `vercel.json` mantiene auto-deploy desactivado.
+## Proyecto y quality contract
+ElectroCMS es un CMS visual local-first construido en React 19 + TypeScript strict + Vite. Tailwind CSS v4 está disponible para el Studio. Vitest cubre unit/integration y Playwright cubre E2E. GitHub Actions es el entorno oficial de verificación. No cerrar ni mergear trabajo con verify/lint/types/tests/coverage/E2E/build en rojo.
 
 ## Arquitectura durable
-- Dependencias: Domain → Application → Infrastructure → Presentation.
-- El modelo canónico no depende de React ni del DOM.
-- UI/editor, renderer y exporters permanecen desacoplados.
-- Persistencia se consume mediante contratos; componentes no acceden directamente a IndexedDB.
-- Registries explícitos resuelven widgets y themes de proyecto; el core no debe crecer mediante `switch` por cada tipo.
-- El DOM del canvas es proyección, nunca fuente de verdad.
-
-## Modelo, persistencia y recovery
+- Domain → Application → Infrastructure → Presentation.
 - `CanonicalProject.schemaVersion = 1`.
-- `DocumentNode.version = 1`.
-- Breakpoints canónicos: desktop, laptop, tablet landscape, tablet portrait, mobile large y mobile small.
-- Responsive distingue `explicit`, `inherited` y `unset`.
-- Web primary adapter: IndexedDB nativo.
-- Stores iniciales: `projects` y `recoverySnapshots`.
-- `load` pasa por hydration/migration antes de exponer datos editables.
-- Autosave es debounced y serializado, con revisiones monotónicas y recovery snapshots limitados.
-- Callbacks de save fusionan metadata y nunca sustituyen contenido editor más nuevo.
+- El modelo canónico no depende de React/DOM.
+- Canvas/renderer es proyección, nunca fuente de verdad.
+- Persistencia se consume mediante contratos; IndexedDB es el adapter web principal.
+- Widgets y project themes se resuelven por registries explícitos.
+- Mutaciones estructurales/props/styles pasan por comandos canónicos reversibles.
 
-## Editor shell y routing
-- Routing interno usa History API + `useSyncExternalStore`, sin dependencia de router externa.
-- Workspaces estables: Editor, Preview, Backend y Export.
-- El Studio dispone además de deep links para módulos de editor.
-- `ProjectSessionProvider` vive por encima del outlet lógico; cambiar workspace no remonta proyecto, documento, breakpoint ni zoom.
-- El threshold compacto del shell es 960px y es independiente de los breakpoints canónicos del proyecto generado.
-- Desktop usa navegación persistente/resizable; tablet/móvil usan drawer accesible.
-- Scroll horizontal denso se contiene localmente; el root no debe desbordar horizontalmente.
+## Routing y shell
+- Workspaces: Editor, Preview, Backend, Export.
+- Studio modules tienen deep links.
+- `ProjectSessionProvider` permanece por encima del outlet lógico.
+- El shell compacto se activa a 960px y es independiente de los breakpoints del proyecto generado.
+- Desktop usa rail persistente; compact usa drawer accesible.
+- Root horizontal overflow está prohibido.
 
-## Workspace preferences
-- `WorkspacePreferences.schemaVersion = 1`.
-- Se persisten separadas de `CanonicalProject`.
-- Incluyen posición/ancho/collapse/display de navegación, orden de workspaces, density, last workspace, appearance mode y el identificador del editor visual system.
-- Apariencia/layout del editor nunca altera frontend/backend generado.
+## Editor visual system vigente — Studio Pro
+Desde 2026-08-08/09, ElectroCMS usa un único visual system para el editor: **`studio-pro`**.
 
-## Regla UI/UX vigente — Bento High Density único
-Desde la revisión de UI del 2026-08-08, ElectroCMS usa **un único tema UI/UX para el editor: `bento-high-density`**.
+- El anterior `bento-high-density` está retirado.
+- No existen hojas `bento-high-density.css`, `bento-modern-polish.css` ni las capas `reference-builder-*` anteriores en el bundle.
+- `EDITOR_THEME_PRESET_IDS` contiene únicamente `studio-pro`.
+- Workspace preferences legacy con Bento u otros preset IDs normalizan automáticamente a `studio-pro` sin cambiar `WorkspacePreferences.schemaVersion = 1`.
+- No existe selector de visual preset en UI.
+- `light` / `dark` / `auto` son modos de apariencia del mismo Studio Pro.
+- Frontend/backend project themes siguen siendo independientes y exportables.
 
-- Los antiguos presets seleccionables (High Density, Bento, Minimal, Material Expressive, SaaS, Enterprise, Glassmorphism, Sophisticated Dark, Monochrome y Developer Console) están retirados del producto.
-- `EDITOR_THEME_PRESET_IDS` contiene solo `bento-high-density`.
-- Payloads legacy de workspace preferences con IDs antiguos normalizan automáticamente al nuevo identificador único.
-- La UI ya no expone selector de preset.
-- `light` / `dark` / `auto` permanecen como **modos de apariencia del mismo tema**, no como temas distintos.
-- Themes frontend/backend del proyecto siguen siendo un sistema independiente y exportable.
-
-## Design system del editor
-Fuentes de verdad:
+## Implementación visual
+Fuente de verdad:
 - `design-system/electrocms-editor/MASTER.md`.
-- `design-system/electrocms-editor/pages/editor.md` para el workspace Builder.
-- Base unificada de implementación: `src/app/ui/bento-high-density.css`.
-- Refinamiento de composición del mismo tema: `src/app/ui/bento-modern-polish.css`, cargado al final de la cascada V2.
+- `design-system/electrocms-editor/pages/editor.md`.
+- `src/app/ui/studio-pro-tailwind.css` como única capa visual final de Studio Pro.
 
-Arquetipo vigente:
-- professional no-code builder;
-- Bento Grid workspace;
-- high-density productivity tool;
-- design-system tooling;
-- responsive/accessibility first.
+Studio Pro es **Tailwind-first**: layout/spacing/typography/states usan utilities y `@apply`; custom properties quedan para roles semánticos, canvas/elevation y casos que no deben convertirse en clases ad-hoc. No acumular nuevas hojas “polish/fix/fidelity”; corregir el sistema o componente fuente.
 
-Reglas visuales durables:
-- gaps principales 6–10px según viewport y contexto;
-- superficies principales agrupadas como módulos Bento, no cada fila como card;
-- navegación con iconografía compartida en todos los workspaces/módulos principales;
-- estados hover/focus/pressed/selected/disabled explícitos;
-- micro-motion funcional en botones, iconos, drawers y popovers;
-- motion basado preferentemente en transform/opacity;
-- `prefers-reduced-motion` elimina motion no esencial;
-- `prefers-contrast: more` fortalece límites;
-- `forced-colors` conserva límites/focus de controles;
-- controles críticos touch >=44px;
-- dense desktop no implica texto ilegible.
+## Desktop Builder
+Composición objetivo inspirada en constructores visuales profesionales:
+- app toolbar ≈60px;
+- icon rail ≈60px;
+- Pages/Components navigator ≈276–304px;
+- canvas flexible/dominante;
+- Properties inspector ≈318–344px.
 
-## Modern Bento composition vigente
-- AppHeader usa jerarquía grid en desktop y dos filas en móvil: project/actions arriba y editor controls abajo.
-- Header editor controls exponen semántica `toolbar`; document/breakpoint, zoom e historial usan groups; save state usa live `status`.
-- Workspace context bar es visualmente secundario al task content.
-- Root workspace headers son Bento surfaces compactas de ancho útil completo, con jerarquía de título/descripción consistente.
-- Tabs de Pages, Dynamic Content, Forms, Backend y Settings comparten selected/focus language.
-- Legacy panel/card shadows se normalizan visualmente mediante la capa Bento final sin introducir otro sistema de estado.
-- Capability labels son status chips informativos, no disabled-action lookalikes.
-- Navigation rail usa icon tiles, active surface clara y floating settings surface.
-- En compact layout, settings popover queda contenido dentro del drawer.
-- Container queries pueden refinar tab overflow según el ancho real del workspace cuando el navegador las soporta.
+Pages/Components tabs, canvas toolbar e inspector comparten origen vertical. `studio-context-bar` y `builder-document-bar` se ocultan en desktop Builder porque duplican contexto. El toolbar V2 neutraliza offsets legacy del canvas.
 
-## Production Studio
-- Navegación principal vive en `ProductionStudio`/`StudioRail`.
-- Rail soporta left/right, resize accesible, collapse y modes icons/labels/both.
-- Módulos principales usan shared `Icon` system.
-- Builder combina insert library + editor/canvas dominante.
-- Otras superficies Studio (Pages, Dynamic Content, Forms/Filters, Backend/Roles, Themes/Blueprints/Settings, Preview/Publishing) reutilizan el mismo sistema visual.
-- Capacidades aún no implementadas se presentan con estado honesto, no CTAs engañosos.
+## Compact/mobile Builder — canvas-first
+En `compactLayout` no se renderizan persistentemente Pages/Components ni Inspector.
 
-## Canvas y árbol
-- `CanonicalDocument.nodes + children` es la única fuente estructural persistente.
-- `parentId`, depth y traversals se derivan runtime.
-- Validator/tree engine rechazan missing/duplicate children, multiple parents, cycles y orphans.
-- `CanvasRenderer` es proyección recursiva; overlays/drop targets no son datos del proyecto.
-- DnD usa semántica `{nodeId,parentId,index}` y nunca reordena DOM como fuente de verdad.
-- No usar React state que provoque rerender estructural durante `dragstart`; transient paint puede usar `data-*`.
-- Hit areas deben permanecer geométricamente estables durante native drag.
+Vista default:
+- header compacto;
+- canvas ocupando el workspace;
+- contextual command bar solo cuando hay selección;
+- bottom dock: **Pages / Add / Layers / Properties**.
 
-## Canvas compatibility / responsive vigente
-- Canvas sigue siendo la superficie dominante.
-- Stage usa scroll local contenido y `overscroll-behavior` intencional.
-- Documento escalado conserva transform origin estable `top center`.
-- Padding del stage se reduce progresivamente en tablet/móvil.
-- En layouts estrechos, inspector baja debajo del canvas y mantiene altura acotada.
-- Insert library se convierte en strip horizontal en tablet/móvil con altura útil suficiente para búsqueda/categorías/items.
-- Command bars pueden usar scroll horizontal local.
-- Nunca deshabilitar browser zoom.
-- Root document no debe producir overflow horizontal.
+Panels:
+- Pages → sheet con documentos + Widget Tree canónico.
+- Add → sheet con búsqueda/categorías/widget insertion; se cierra tras insertar.
+- Layers → sheet reutilizando `LayersNavigator` canónico.
+- Properties → sheet reutilizando `WidgetInspector` schema-driven.
 
-## Selección, historial y geometría
-- Selección simple/múltiple es estado transitorio y accesible por teclado.
-- `DocumentCommand` guarda before/after de `CanonicalDocument`, nunca snapshots DOM.
-- History es por documento; nuevo command limpia redo.
-- Copy/Cut/Paste, Group/Ungroup, Lock/Hide y geometry edits son reversibles.
-- Paste remapea IDs antes de insertar.
-- X/Y/W/H usan `ResponsiveStyleSet` con `layout.x/y/width/height`.
-- Grid snapping por defecto: 8px; threshold: 4px.
-- Viewport edges/center tienen prioridad sobre grid dentro del threshold.
-- Guides son transitorias.
+Los sheets usan `role=dialog`, `aria-modal`, Close visible, `Escape`, backdrop dismissal y autofocus en Close. Hidden desktop panels no quedan focusables en móvil. Touch targets compactos usan floor 48px y el dock respeta `env(safe-area-inset-bottom)`.
 
-## Widget system e inspector
-- `WidgetRegistry` core es framework-neutral y resuelve `type@version`.
-- Binding React vive en `EditorWidgetRegistry`; core no importa React.
-- Inspector se genera desde schema y no mantiene copia persistente de props.
-- Patch → nodo candidato → validación registry → command reversible.
-- Campos/errores viven en UI transitoria.
-- Inspector admite secciones colapsables para schemas largos.
-- Layers navigator profesional permite search/rename/lock/hide/reorder mediante acciones canónicas.
+A <=720px el header se reduce a una sola fila de ~60px: navegación + documento + primary action area. Secondary desktop chrome puede ocultarse para proteger el canvas siempre que no se convierta en la única ruta a una función crítica.
 
-## Style + breakpoint engine
-- `DocumentNode.styles` es la única fuente de estilo responsive.
-- Style engine resuelve `explicit`, `inherited`, `unset`.
-- Renderer convierte solo subset seguro a `CSSProperties`.
-- Breakpoint engine resuelve wider/narrower e inheritance chain nearest-first.
-- Geometría y estilo visual comparten `ResponsiveStyleSet` sin mezclar responsabilidades.
+## Canvas
+- `CanonicalDocument.nodes + children` es la única estructura persistente.
+- DnD usa `{nodeId,parentId,index}`.
+- Hit areas permanecen geométricamente estables durante drag.
+- Stage tiene scroll local, overscroll containment y stable top-center transform origin.
+- Browser zoom permanece habilitado.
+- Grid/guides/snapping son overlays transitorios.
+- Compact stage reserva padding inferior para el dock.
+- Compact command bar se oculta cuando `data-selection-count=0`; cuando aparece, controles touch son >=48px y el strip puede scrollear localmente.
+
+## Inspector / Layers / Widgets
+- Widget registry core es framework-neutral.
+- Inspector se genera desde schema; no duplica props persistentes.
+- Layers search/rename/lock/hide/reorder ejecutan acciones canónicas.
+- Mobile sheets solo cambian presentación, no introducen estado persistente paralelo.
+
+## Responsive styles y breakpoints
+- `DocumentNode.styles` es la única fuente responsive.
+- Estados: `explicit`, `inherited`, `unset`.
+- Breakpoint inheritance nearest-first.
+- Geometría X/Y/W/H usa el mismo `ResponsiveStyleSet` sin mezclar responsabilidades.
+- Breakpoints del proyecto y breakpoint del shell del editor son conceptos separados.
 
 ## Project themes frontend/backend
-Estos permanecen separados del editor Bento:
-- `frontendThemeId` y `backendThemeId` viven en `CanonicalProject` y autosavean.
-- `ProjectThemeRegistry` es framework-neutral y valida scope, ID, versión y tokens JSON portables.
-- Built-ins siguen siendo inmutables y se duplican para editar.
-- Copias locales incrementan versión en cada save.
-- Theme packages usan `kind=electrocms-theme-package`, `schemaVersion=1`, máximo 256 KB.
-- Imports/duplicados viven en librería local del editor; el proyecto referencia IDs.
-- Import review precede apply.
-- Merge de recursos es no destructivo.
-- Demo data permanece opt-in.
-- Usuarios, credenciales y binarios de media quedan fuera de los paquetes de theme.
+- `frontendThemeId` / `backendThemeId` permanecen en `CanonicalProject`.
+- ProjectThemeRegistry valida scope/id/version/tokens.
+- Built-ins son inmutables; se duplican para editar.
+- Theme packages siguen schema portable y no incluyen credenciales/usuarios/binarios.
+- Nunca usar editor appearance/Studio Pro para mutar output themes.
 
 ## Accesibilidad durable
-- WCAG AA como baseline.
-- Focus visible para controles keyboard-operable.
-- Focusable controls usan scroll margin para reducir riesgo de quedar ocultos bajo chrome denso/sticky.
-- ARIA en icon-only controls.
-- Labels semánticos en inputs/selects.
-- No hover-only functionality.
-- Status usa más que color.
-- Reduced motion, increased contrast y forced-colors se respetan.
-- Touch floor 44px en móvil.
-- E2E debe verificar no-root-overflow y containment de drawer/settings en móvil.
-
-## Quality gates
-No cerrar/mergear trabajo con fallos en:
-- repository verification;
-- lint con cero warnings inesperados;
-- TypeScript;
-- unit/integration tests;
-- coverage gate;
-- Playwright E2E;
-- production build.
+- WCAG AA baseline.
+- focus-visible en controles keyboard-operable.
+- icon-only controls con accessible names.
+- no hover-only functionality.
+- no gesture-only dismissal.
+- touch targets compactos >=48px.
+- reduced motion / increased contrast / forced colors soportados.
+- browser zoom habilitado.
+- no root horizontal overflow.
+- E2E debe cubrir dock/sheets/drawer y geometría desktop.
 
 ## Trabajo actual
-Rama: `agent/unified-bento-high-density-ui` / PR #36.
+Rama: `agent/unified-bento-high-density-ui` / draft PR #36 (nombre histórico de rama; el producto ya no usa Bento).
 
-Objetivo: consolidar definitivamente el editor en Bento High Density único, mejorar jerarquía, motion/estados, layout responsive, accesibilidad y compatibilidad del canvas, preservando arquitectura canónica y themes frontend/backend.
-
-Antes de mergear, el quality gate completo de GitHub Actions del último head debe estar verde.
+Objetivo actual: reemplazar completamente la UI Bento por Studio Pro Tailwind, mantener el desktop similar a la referencia de visual builder y convertir móvil/tablet en canvas-first con dock y sheets accesibles. Antes de mergear, el quality gate del último head debe quedar completamente verde.
