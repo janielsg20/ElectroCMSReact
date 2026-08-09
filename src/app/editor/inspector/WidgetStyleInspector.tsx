@@ -1,7 +1,7 @@
 import { useState, type FocusEvent } from 'react';
 import type { JsonValue } from '../../../core/domain';
 import {
-  getNearestWiderBreakpoint,
+  getBreakpointInheritanceChain,
   resolveResponsiveStyle,
   type BreakpointDefinition,
   type DocumentNode,
@@ -50,7 +50,7 @@ export function WidgetStyleInspector({
   onInheritStyle,
 }: WidgetStyleInspectorProps) {
   const [issues, setIssues] = useState<Readonly<Record<string, string>>>({});
-  const widerBreakpoint = breakpoints.length > 0 ? getNearestWiderBreakpoint(breakpoints, breakpointId) : null;
+  const widerBreakpoints = breakpoints.length > 0 ? getBreakpointInheritanceChain(breakpoints, breakpointId) : [];
 
   const commit = (field: StyleField, rawValue: string) => {
     if (!onSetStyle) return;
@@ -98,9 +98,9 @@ export function WidgetStyleInspector({
     commit(field, event.currentTarget.value);
   };
 
-  const inherit = (field: StyleField) => {
-    if (!onInheritStyle || !widerBreakpoint) return;
-    const result = onInheritStyle(node.id, field.key, widerBreakpoint.id);
+  const inherit = (field: StyleField, sourceBreakpoint: BreakpointDefinition) => {
+    if (!onInheritStyle) return;
+    const result = onInheritStyle(node.id, field.key, sourceBreakpoint.id);
     setIssues((current) => {
       const next = { ...current };
       if (result.applied) delete next[field.key];
@@ -127,6 +127,10 @@ export function WidgetStyleInspector({
         const currentSlot = node.styles[field.key]?.[breakpointId];
         const inherited = currentSlot?.state === 'inherited';
         const issue = issues[field.key];
+        const inheritanceSource = widerBreakpoints.find(
+          (candidate) => resolveResponsiveStyle(node.styles, field.key, candidate.id) !== null,
+        ) ?? null;
+
         return (
           <div className="widget-style-row" key={field.key}>
             <label className="widget-inspector-field widget-style-field">
@@ -152,12 +156,12 @@ export function WidgetStyleInspector({
               {issue ? <span className="widget-inspector-error" role="alert">{issue}</span> : null}
             </label>
             <div className="widget-style-actions">
-              {widerBreakpoint ? (
+              {inheritanceSource ? (
                 <button
                   type="button"
-                  aria-label={`Inherit ${field.label} from ${widerBreakpoint.label}`}
+                  aria-label={`Inherit ${field.label} from ${inheritanceSource.label}`}
                   disabled={!onInheritStyle}
-                  onClick={() => inherit(field)}
+                  onClick={() => inherit(field, inheritanceSource)}
                 >
                   Inherit
                 </button>
