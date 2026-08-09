@@ -91,8 +91,8 @@ async function createProductRelationFieldGroup(page: Page) {
   await panel.getByLabel('Field label').fill('Brand');
   await panel.getByLabel('Field ID').fill('brand');
   await panel.getByLabel('Field name').fill('brand');
-  await panel.getByLabel('Field config Relation Id').fill('product-brand');
-  await panel.getByLabel('Field config Side').fill('source');
+  await panel.getByLabel('Field config Relation Id').selectOption('product-brand');
+  await panel.getByLabel('Field config Side').selectOption('source');
   await expect(panel.getByRole('button', { name: 'Create field group' })).toBeEnabled();
   await panel.getByRole('button', { name: 'Create field group' }).click();
   await expect(panel.getByText('Created Product Relations.')).toBeVisible();
