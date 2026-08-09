@@ -42,7 +42,8 @@ export function useCanvasDynamicBindingActions(): CanvasDynamicBindingActions {
     try {
       const nextDocument = updateDocumentNode(document, nodeId, (current) => {
         if (validation.value.length === 0) {
-          const { bindings: _removed, ...withoutBindings } = current;
+          const withoutBindings = { ...current };
+          delete withoutBindings.bindings;
           return withoutBindings;
         }
         return { ...current, bindings: structuredClone(validation.value) };
