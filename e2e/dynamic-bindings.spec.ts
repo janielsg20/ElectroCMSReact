@@ -35,15 +35,16 @@ async function readPersistedBindingState(page: Page): Promise<PersistedBindingSt
         .flatMap((document) => Object.values(document.nodes ?? {}))
         .find((node) => node.type === 'core/heading' && Array.isArray(node.bindings) && node.bindings.length > 0);
       const rawBinding = heading?.bindings?.[0];
+      const binding = rawBinding
+        ? {
+            ...(typeof rawBinding.source === 'string' ? { source: rawBinding.source } : {}),
+            ...(typeof rawBinding.target === 'string' ? { target: rawBinding.target } : {}),
+            ...(typeof rawBinding.kind === 'string' ? { kind: rawBinding.kind } : {}),
+            ...(rawBinding.fallback === undefined ? {} : { fallback: rawBinding.fallback }),
+          }
+        : null;
       return {
-        binding: rawBinding
-          ? {
-              source: typeof rawBinding.source === 'string' ? rawBinding.source : undefined,
-              target: typeof rawBinding.target === 'string' ? rawBinding.target : undefined,
-              kind: typeof rawBinding.kind === 'string' ? rawBinding.kind : undefined,
-              fallback: rawBinding.fallback,
-            }
-          : null,
+        binding,
         recordTitle: typeof project.records['products-record']?.title === 'string'
           ? project.records['products-record'].title ?? null
           : null,
