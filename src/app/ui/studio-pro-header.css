@@ -1,13 +1,14 @@
 /* App header fidelity layer -------------------------------------------------
  * Matches the supplied editor reference: one continuous top bar, compact flat
- * controls, monochrome utilities, and one saturated primary action.
+ * controls, a custom page picker, device breakpoint buttons, monochrome
+ * utilities, and one saturated primary action.
  */
 
 .electrocms-app[data-editor-preset="studio-pro"] .app-header {
   position: relative;
   z-index: 40;
   display: grid;
-  grid-template-columns: minmax(210px, 248px) minmax(420px, 1fr) auto;
+  grid-template-columns: minmax(210px, 248px) minmax(440px, 1fr) auto;
   align-items: center;
   gap: 12px;
   width: 100%;
@@ -96,13 +97,8 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  overflow-x: auto;
+  overflow: visible;
   padding: 0;
-  scrollbar-width: none;
-}
-
-.electrocms-app[data-editor-preset="studio-pro"] .header-controls::-webkit-scrollbar {
-  display: none;
 }
 
 .electrocms-app[data-editor-preset="studio-pro"] .header-document-group,
@@ -120,44 +116,151 @@
 }
 
 .electrocms-app[data-editor-preset="studio-pro"] .header-document-group {
-  min-width: 300px;
-  max-width: 430px;
-  flex: 0 1 430px;
-  padding: 0 3px;
+  min-width: 340px;
+  max-width: 470px;
+  flex: 0 1 470px;
+  padding: 2px;
+}
+
+/* App-designed page picker -------------------------------------------------- */
+.electrocms-app[data-editor-preset="studio-pro"] .header-page-picker {
+  position: relative;
+  min-width: 0;
+  flex: 1 1 180px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-page-trigger {
+  display: flex;
+  width: 100%;
+  height: 28px;
+  min-height: 28px;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px 0 2px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--color-ec-text);
+  box-shadow: none;
+  font-size: 11px;
+  font-weight: 650;
+  text-align: left;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-page-trigger:hover,
+.electrocms-app[data-editor-preset="studio-pro"] .header-page-trigger[aria-expanded="true"] {
+  background: var(--color-ec-surface-subtle);
 }
 
 .electrocms-app[data-editor-preset="studio-pro"] .header-control-icon {
   display: grid;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   flex: none;
   place-items: center;
   color: var(--color-ec-text-muted);
 }
 
-.electrocms-app[data-editor-preset="studio-pro"] .header-document-field {
+.electrocms-app[data-editor-preset="studio-pro"] .header-page-name {
   min-width: 0;
-  flex: 1 1 170px;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.electrocms-app[data-editor-preset="studio-pro"] .header-select {
-  height: 30px;
-  min-height: 30px;
+.electrocms-app[data-editor-preset="studio-pro"] .header-page-chevron {
+  flex: none;
+  color: var(--color-ec-text-muted);
+  transition: transform var(--ec-motion-fast) var(--ec-ease-product);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-page-trigger[aria-expanded="true"] .header-page-chevron {
+  transform: rotate(180deg);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-page-menu {
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 7px);
+  left: -3px;
+  width: 248px;
+  max-height: min(360px, 58vh);
+  overflow: hidden;
+  padding: 5px;
+  border: 1px solid var(--ec-studio-line-strong);
+  border-radius: 4px;
+  background: var(--color-ec-surface);
+  box-shadow: 0 14px 34px rgb(15 23 42 / .16);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-menu-label {
+  height: 28px;
+  padding: 7px 8px 5px;
+  color: var(--color-ec-text-muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-page-options {
+  display: grid;
+  gap: 1px;
+  max-height: 315px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-page-option {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 20px;
+  min-height: 36px;
+  align-items: center;
+  gap: 5px;
+  padding: 0 7px;
   border: 0;
   border-radius: 3px;
+  background: transparent;
+  color: var(--color-ec-text-muted);
   box-shadow: none;
-  cursor: pointer;
+  font-size: 10.5px;
+  font-weight: 550;
+  text-align: left;
 }
 
-.electrocms-app[data-editor-preset="studio-pro"] .header-document-select {
-  width: 100%;
+.electrocms-app[data-editor-preset="studio-pro"] .header-page-option:hover,
+.electrocms-app[data-editor-preset="studio-pro"] .header-page-option:focus-visible {
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text);
 }
 
-.electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-select {
-  width: 148px;
+.electrocms-app[data-editor-preset="studio-pro"] .header-page-option[aria-selected="true"] {
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+  box-shadow: inset 2px 0 0 var(--ec-ref-blue);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-page-option-icon {
+  display: grid;
+  place-items: center;
   color: var(--color-ec-text-muted);
 }
 
+.electrocms-app[data-editor-preset="studio-pro"] .header-page-option-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-page-option-check {
+  justify-self: end;
+  color: var(--ec-ref-blue);
+}
+
+/* Breakpoints mirror the reference: device buttons, not a native select. ---- */
 .electrocms-app[data-editor-preset="studio-pro"] .header-control-divider,
 .electrocms-app[data-editor-preset="studio-pro"] .header-actions-divider {
   width: 1px;
@@ -166,6 +269,54 @@
   background: var(--ec-studio-line);
 }
 
+.electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-picker {
+  display: flex;
+  height: 28px;
+  flex: none;
+  align-items: center;
+  gap: 1px;
+  padding: 0 1px;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-button {
+  display: inline-flex;
+  height: 28px;
+  min-height: 28px;
+  min-width: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--color-ec-text-muted);
+  box-shadow: none;
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-button:hover {
+  background: var(--color-ec-surface-subtle);
+  color: var(--color-ec-text);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-button[aria-pressed="true"] {
+  background: var(--color-ec-surface-muted);
+  color: var(--color-ec-text);
+  box-shadow: inset 0 -2px 0 var(--ec-ref-blue);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-button[aria-pressed="true"] svg {
+  color: var(--ec-ref-blue);
+}
+
+.electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-width {
+  color: inherit;
+  font-size: 8.5px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Zoom / history ------------------------------------------------------------ */
 .electrocms-app[data-editor-preset="studio-pro"] .segmented-control {
   padding: 2px;
 }
@@ -191,6 +342,7 @@
   text-align: center;
 }
 
+/* Appearance / actions ------------------------------------------------------ */
 .electrocms-app[data-editor-preset="studio-pro"] .header-actions {
   display: flex;
   flex: none;
@@ -292,17 +444,23 @@
 
 @media (max-width: 1180px) {
   .electrocms-app[data-editor-preset="studio-pro"] .app-header {
-    grid-template-columns: minmax(190px, 220px) minmax(330px, 1fr) auto;
+    grid-template-columns: minmax(180px, 210px) minmax(360px, 1fr) auto;
     gap: 8px;
     padding-inline: 9px;
   }
 
   .electrocms-app[data-editor-preset="studio-pro"] .header-document-group {
-    min-width: 270px;
+    min-width: 310px;
   }
 
-  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-select {
-    width: 132px;
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-width {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-button {
+    min-width: 30px;
+    width: 30px;
+    padding: 0;
   }
 
   .electrocms-app[data-editor-preset="studio-pro"] .project-local-label {
@@ -323,12 +481,46 @@
     width: 48px;
   }
 
-  .electrocms-app[data-editor-preset="studio-pro"] .header-document-group {
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls {
+    display: flex !important;
+    overflow: visible !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .header-document-group {
+    display: flex !important;
     width: 100%;
     min-width: 0;
     max-width: none;
     height: 40px;
     min-height: 40px;
+    border: 1px solid var(--ec-studio-line);
+    background: var(--color-ec-surface);
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .zoom-control,
+  .electrocms-app[data-editor-preset="studio-pro"] .header-controls > .history-control {
+    display: none !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-page-trigger {
+    height: 34px;
+    min-height: 34px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-page-menu {
+    top: calc(100% + 9px);
+    width: min(260px, calc(100vw - 86px));
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-picker {
+    height: 34px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-button {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    min-height: 34px;
   }
 
   .electrocms-app[data-editor-preset="studio-pro"] .appearance-toggle {
@@ -383,6 +575,32 @@
   .electrocms-app[data-editor-preset="studio-pro"] .header-actions {
     gap: 5px;
   }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-document-group {
+    padding-right: 1px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-control-divider {
+    display: none !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-picker {
+    padding: 0;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-button:not([aria-pressed="true"]) {
+    display: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-breakpoint-button[aria-pressed="true"] {
+    width: 34px;
+    min-width: 34px;
+    box-shadow: none;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-page-menu {
+    width: min(248px, calc(100vw - 82px));
+  }
 }
 
 @media (max-width: 420px) {
@@ -395,5 +613,13 @@
     min-width: 30px !important;
     height: 34px !important;
     min-height: 34px !important;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-page-trigger {
+    padding-right: 3px;
+  }
+
+  .electrocms-app[data-editor-preset="studio-pro"] .header-control-icon {
+    width: 20px;
   }
 }
