@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import { createDefaultContentTypeDefinition } from '../../core/content';
+import { createDefaultContentTypeDefinition, serializeContentTypeDefinition } from '../../core/content';
 import { createCanonicalProject } from '../../core/project';
 import { App } from '../App';
 import { MemoryWorkspacePreferencesRepository } from '../workspace/workspace-preferences-repository';
@@ -20,11 +20,11 @@ function makeProject() {
 
 function makeDynamicProject() {
   const project = makeProject();
-  const product = {
+  const product = serializeContentTypeDefinition({
     ...createDefaultContentTypeDefinition('product', 'Products'),
     singularLabel: 'Product',
     slug: 'products',
-  };
+  });
   return {
     ...project,
     contentTypes: {
