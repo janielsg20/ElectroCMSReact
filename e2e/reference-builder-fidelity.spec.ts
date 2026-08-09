@@ -72,7 +72,7 @@ test('Studio Pro desktop builder keeps the supplied flat visual-builder geometry
       headerControlRadius: radius('.header-controls > div'),
       pageRowRadius: radius('.builder-page-row'),
       canvasDocumentRadius: radius('.canvas-scaled-document'),
-      inspectorTabRadius: radius('.widget-inspector-tabs button'),
+      inspectorDockRadius: radius('.canvas-inspector-dock'),
     };
   });
 
@@ -105,7 +105,7 @@ test('Studio Pro desktop builder keeps the supplied flat visual-builder geometry
   expect(geometry.headerControlRadius ?? 99).toBeLessThanOrEqual(4.5);
   expect(geometry.pageRowRadius ?? 99).toBeLessThanOrEqual(3.5);
   expect(geometry.canvasDocumentRadius ?? 99).toBeLessThanOrEqual(4.5);
-  expect(geometry.inspectorTabRadius ?? 99).toBeLessThanOrEqual(3.5);
+  expect(geometry.inspectorDockRadius ?? 99).toBeLessThanOrEqual(0.5);
 
   await componentsTab.click();
   await expect(navigator.getByLabel('Search elements')).toBeVisible();
