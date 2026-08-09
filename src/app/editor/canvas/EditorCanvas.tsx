@@ -8,11 +8,13 @@ import {
   type SnapGuide,
 } from '../../../core/project';
 import { Icon } from '../../components/Icon';
+import { useProjectSession } from '../../project/project-session-context';
 import { WidgetInspector } from '../inspector/WidgetInspector';
 import { useEditorWidgetRegistry } from '../../widgets/editor-widget-registry-context';
 import { CanvasOverlayLayer } from './CanvasOverlayLayer';
 import { CanvasRenderer } from './CanvasRenderer';
 import { LayersNavigator } from './LayersNavigator';
+import { useCanvasDynamicBindingActions } from './use-canvas-dynamic-binding-actions';
 import type { CanvasDocumentActions } from './use-canvas-document-actions';
 import { useCanvasSelection } from './use-canvas-selection';
 
@@ -43,6 +45,8 @@ export function EditorCanvas({
   mobilePanel = null,
   onMobilePanelChange,
 }: EditorCanvasProps) {
+  const session = useProjectSession();
+  const bindingActions = useCanvasDynamicBindingActions();
   const widgetRegistry = useEditorWidgetRegistry();
   const selection = useCanvasSelection(Object.keys(document.nodes));
   const clearSelection = selection.clearSelection;
@@ -172,8 +176,10 @@ export function EditorCanvas({
   const inspector = (
     <WidgetInspector
       node={selectedNodes.length === 1 ? primaryNode : null}
+      project={session.project}
       breakpointId={breakpointId}
       breakpoints={breakpoints}
+      onSetBindings={bindingActions.setBindings}
       {...(actions
         ? {
             onSetProps: actions.setProps,
@@ -261,6 +267,7 @@ export function EditorCanvas({
       <div className="editor-canvas-layers canvas-stage-v2">
         {!compactLayout && layersOpen ? layersNavigator : null}
         <CanvasRenderer
+          project={session.project}
           document={document}
           breakpointId={breakpointId}
           viewportWidth={viewportWidth}
