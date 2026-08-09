@@ -142,7 +142,7 @@ test('authors Group Repeater Calculated and Conditional fields with durable inte
 
   await expect(recordEditor.getByRole('button', { name: 'Create record' })).toBeEnabled();
   await recordEditor.getByRole('button', { name: 'Create record' }).click();
-  await expect(recordEditor.getByRole('status')).toContainText('Record saved.');
+  await expect(recordEditor.getByText('Record saved.', { exact: true })).toBeVisible();
   await expect(page.getByText('Saved locally')).toBeVisible({ timeout: 10_000 });
 
   await expect.poll(async () => {
@@ -170,7 +170,7 @@ test('authors Group Repeater Calculated and Conditional fields with durable inte
   await reloadedEditor.getByLabel('Show extra address').uncheck();
   await expect(reloadedEditor.getByText('Condition not met')).toBeVisible();
   await reloadedEditor.getByRole('button', { name: 'Save changes' }).click();
-  await expect(reloadedEditor.getByRole('status')).toContainText('Record saved.');
+  await expect(reloadedEditor.getByText('Record saved.', { exact: true })).toBeVisible();
   await expect(page.getByText('Saved locally')).toBeVisible({ timeout: 10_000 });
   await expect.poll(async () => {
     const record = await readPersistedRecord(page, 'products-record') as { fieldValues?: Record<string, Record<string, unknown>> } | null;
