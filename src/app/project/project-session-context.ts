@@ -6,6 +6,8 @@ import type {
   ContentTypeMutationErrorCode,
   FieldGroupDefinition,
   FieldGroupMutationErrorCode,
+  RelationDefinition,
+  RelationMutationErrorCode,
   TaxonomyDefinition,
   TaxonomyMutationErrorCode,
 } from '../../core/content';
@@ -40,6 +42,10 @@ export type ContentRecordSessionMutationResult =
   | { ok: true; value: ContentRecordDefinition; changed: boolean }
   | { ok: false; code: ContentRecordMutationErrorCode; message: string };
 
+export type RelationSessionMutationResult =
+  | { ok: true; value: RelationDefinition; changed: boolean }
+  | { ok: false; code: RelationMutationErrorCode; message: string };
+
 export interface ProjectSessionState {
   project: CanonicalProject;
   activeDocumentId: string;
@@ -68,6 +74,9 @@ export interface ProjectSessionState {
   createContentRecord(input: unknown): ContentRecordSessionMutationResult;
   updateContentRecord(id: string, input: unknown): ContentRecordSessionMutationResult;
   removeContentRecord(id: string): ContentRecordSessionMutationResult;
+  createRelation(input: unknown): RelationSessionMutationResult;
+  updateRelation(id: string, input: unknown): RelationSessionMutationResult;
+  removeRelation(id: string): RelationSessionMutationResult;
   executeDocumentCommand(command: DocumentCommand): boolean;
   undo(): boolean;
   redo(): boolean;
