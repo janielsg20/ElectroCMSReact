@@ -11,43 +11,45 @@ Use `agent/f05-dynamic-content` only as a historical contract/test source. Never
 - MF-039 Field Type Registry: DONE — PR #42, Gate #1519, merge `0db52d1c8db88b70a6ce5c6275f14803397c9691`.
 - MF-040 Custom Field Groups: DONE — PR #44, Gate #1524, merge `dcef1c3302c2520a1911884624fb059eef09f4c0`.
 - MF-041 Records CRUD: DONE — PR #46, Gate #1528, merge `2aa05132b7c8303071ec33936fff9ca1d1c14fa1`.
-- **MF-042 Advanced Fields: NEXT.** Recover only its historical domain/runtime/test contract, port onto fresh current `main`, adapt Studio Pro and prove persistence/runtime behavior before MF-043.
+- MF-042 Advanced Fields: DONE — PR #48, Gate #1533, merge `899a4fdc2d3ad65ced9f3086c43e7fc8d4b859ad`.
+- **MF-043 Relations: NEXT.** Recover only the exact historical relation/reference runtime and tests; port onto fresh current `main`, preserve MF-042 behavior, then adapt Studio Pro and prove persistence/integrity before MF-044.
 
-## Durable MF-041 facts
-- `ContentRecordDefinition` v1 is React-free and portable.
-- Statuses: `draft`, `published`, `archived`.
-- Record IDs and `createdAt` are immutable; slugs are unique per Content Type.
-- Records reference an existing Content Type and optional existing Field Groups.
-- Missing field values normalize from Field Group defaults; required values remain enforced.
-- Custom field values validate through `FieldTypeRegistry` at stored `type@version`.
-- Unknown/unselected groups and unknown field storage names are rejected.
-- Field Group deletion is blocked while any canonical Record references that group, while the underlying taxonomy-aware deletion rule remains intact.
-- Record create/update/remove goes through `ProjectSession` and the existing autosave/recovery runtime.
-- `RecordsCrudPanel` provides Studio Pro search, CPT/status filters, supports-aware core fields, Field Group assignment, registry-driven value controls, validation and two-step deletion.
-- E2E proves actual IndexedDB create → reload → filter → edit/archive → durable write → delete → durable removal.
+## Durable MF-042 facts
+- `createContentFieldTypeRegistry()` preserves v1 modeled definitions and adds v2 available runtime for `core/group`, `core/repeater`, `core/calculated` and `core/conditional`.
+- `core/relation`, `core/user` and `core/taxonomy` remain modeled at the MF-042 boundary.
+- Advanced Field Groups validate reusable-group references, direct/indirect cycles and a maximum reference depth of 8.
+- Repeater runtime hard cap is 100 rows.
+- Calculated expressions support sibling Number/Currency names, numbers, `+ - * /`, unary minus and parentheses; no `eval`, `Function` or dynamic code execution.
+- Conditional source must be a non-advanced sibling; numeric comparison operators require Number/Currency sources.
+- Record normalization resolves Group/Repeater first, Calculated second and Conditional last so behavior is independent of schema order.
+- Field Group deletion is blocked while advanced fields reference it.
+- Field Group updates revalidate reusable-group ancestors and affected direct/nested Records before commit; destructive schema updates are rejected atomically.
+- Studio Pro Field Groups exposes 24 available latest field types after MF-042 and keeps 3 reference types modeled.
+- Studio Pro Records recursively edits Group/Repeater/Conditional values and displays Calculated results live.
+- E2E proves nested values and calculations persist in IndexedDB, conditional false normalizes to null, and a child schema change that would invalidate an existing nested Record is rejected and not persisted.
 
 ## F05 invariants
 - Core content runtime remains React-free.
 - `CanonicalProject` collections are the sole persistent source of truth.
 - UI mutations enter through public core APIs exposed by `ProjectSession`.
 - Runtime behavior resolves by `type@version`; modeled contracts are not silently promoted.
-- Do not weaken tests to make a port pass.
+- Never weaken tests to make a port pass.
 - Studio Pro is the only editor visual system; frontend/backend themes remain independent.
 - Vercel deployment remains manual-only.
 
-## MF-042 boundary
-MF-042 may enable advanced non-relation field runtime only as defined by its historical contract. Do **not** pull MF-043 Relations/reference semantics forward. Reference/Relation/User/Taxonomy behavior that belongs to MF-043 must remain unavailable until that microphase.
+## MF-043 boundary
+MF-043 owns Relations/reference behavior. Do not pull MF-044 Dynamic Bindings forward. Preserve all MF-042 safety and schema-integrity rules while enabling only the reference contracts explicitly present in the historical MF-043 scope.
 
 ## Quality gate
 Every modern port requires an executed PASS for repository verification, zero-warning lint, TypeScript strict, unit/integration, coverage, production build and Playwright E2E.
 
 ## Resume protocol
 1. Read `AI_ENTRYPOINT.md`, `RULES.md`, `MEMORY.md`, `TRACKING.md`, this file, `QUALITY_GATES.md`, `.ai/memory/DECISIONS_LOG.md`, `.ai/memory/IMPLEMENTATION_MEMORY.md` and `.ai/memory/KNOWN_ISSUES.md`.
-2. Start **MF-042** from fresh current `main`.
-3. Recover exact historical MF-042 core/runtime/tests before designing modern UI changes.
-4. Port core first, then integrate Field Groups/Records/Public core APIs, then Studio Pro UI, then E2E.
+2. Start **MF-043** from fresh current `main`.
+3. Recover exact historical relation domain/runtime/tests before designing modern UI.
+4. Port core/integrity first, then public APIs/ProjectSession as needed, then Studio Pro, then E2E.
 5. Require a full green quality gate before merge.
-6. Update living documentation before moving to MF-043.
+6. Update living documentation before moving to MF-044.
 
 ## Next action
-**Implement MF-042 — Advanced Fields on top of current Studio Pro main.**
+**Implement MF-043 — Relations on top of current Studio Pro main.**
