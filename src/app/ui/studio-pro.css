@@ -1,2 +1,25 @@
 @import "./studio-pro-tailwind.css";
 @reference "../studio/studio.css";
+
+@layer components {
+  .electrocms-app[data-editor-preset="studio-pro"] .app-header {
+    height: 60px;
+    min-height: 60px;
+  }
+
+  /* The mobile sheet already supplies the visible, autofocus Close action.
+   * Hide the nested LayersNavigator close button so the dialog has one clear
+   * dismissal control instead of two identically named actions. */
+  .electrocms-app[data-editor-preset="studio-pro"]
+    .mobile-layers-content
+    .canvas-layers-popover > header button[aria-label="Close layers"] {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .electrocms-app[data-editor-preset="studio-pro"] .app-header {
+    height: 60px;
+    min-height: 60px;
+  }
+}
