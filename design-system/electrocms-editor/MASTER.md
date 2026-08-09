@@ -6,9 +6,9 @@ This document is the source of truth for the ElectroCMS **authoring chrome**. It
 ElectroCMS is a professional local-first no-code/low-code builder. The editor prioritizes canvas space, predictable navigation, information density, accessible interaction and confidence while editing.
 
 ## One visual system: Studio Pro
-ElectroCMS exposes one editor UI/UX system: **Studio Pro** (`studio-pro`). `light`, `dark` and `auto` are appearance modes of the same system. Frontend/backend project themes remain independent.
+ElectroCMS exposes one editor UI/UX system: **Studio Pro** (`studio-pro`). `light`, `dark` and `auto` are appearance states of the same system. Frontend/backend project themes remain independent.
 
-Do not introduce selectable editor visual presets, Bento variants or parallel chrome skins. Improve the shared system at the component/source level.
+Do not introduce selectable editor visual presets or parallel chrome skins. Improve the shared system at the component/source level.
 
 ## Product reference
 The primary composition reference is the supplied professional visual-builder screenshot.
@@ -30,14 +30,14 @@ Use:
 - 1px separators;
 - neutral white/light-gray chrome in light mode;
 - restrained dark surfaces in dark mode;
-- modest 6–12px radii;
+- precision radii of approximately 2–6px for authoring chrome;
 - minimal elevation except floating menus, dialogs and authored-document separation;
 - compact but readable typography;
 - strong spatial alignment;
 - one restrained blue accent family.
 
 Avoid:
-- decorative mosaic/Bento layouts;
+- decorative mosaic layouts;
 - oversized cards;
 - stacked card-on-card compositions;
 - heavy gradients;
@@ -103,7 +103,9 @@ Rules:
 - Preview and other secondary actions remain neutral;
 - controls are compact with fine borders;
 - avoid large shadows and decorative color blocks;
-- save state stays readable but visually quiet.
+- save state stays readable but visually quiet;
+- the header exposes only three primary responsive shortcuts: Desktop, Tablet and Mobile;
+- responsive shortcuts are icon-only in the visible chrome and retain accessible names/tooltips with their canonical resolutions.
 
 ## Studio rail
 Desktop navigation is a 60px icon rail.
@@ -144,7 +146,7 @@ The canvas is always the dominant working surface.
 - drag hit areas must not move because of decorative hover animation;
 - structural edits go through canonical commands.
 
-On compact layouts, stage bottom padding accounts for the mobile dock and safe-area inset.
+On compact layouts, stage padding accounts for the mobile dock and safe-area insets. Short landscape layouts move builder destinations to a compact right-side rail so the dock does not consume the canvas height.
 
 ## Canvas command toolbar
 Desktop toolbar aligns with Builder navigator tabs and top of the inspector.
@@ -173,7 +175,7 @@ Visible top-level tabs are **Properties** and **Design**.
 - no parallel mobile project state is allowed.
 
 ## Mobile and compact layout contract
-At `<= 960px`, ElectroCMS switches to a **canvas-first authoring mode**.
+At `<= 1024px`, ElectroCMS switches to a **canvas-first authoring mode**.
 
 Persistent desktop side panels are removed from layout flow. Default view:
 - one-row compact application header;
@@ -183,34 +185,41 @@ Persistent desktop side panels are removed from layout flow. Default view:
 
 Pages/Add/Layers/Properties open as temporary bottom sheets.
 
-Sheets:
+Sheets and drawers:
 - use `role="dialog"` + `aria-modal="true"`;
 - expose a visible Close action;
 - close with `Escape` and backdrop activation;
 - autofocus the Close action when opened;
+- contain keyboard focus while open and return focus to the opener when dismissed;
 - never leave hidden focusable controls in document flow;
 - keep canvas/model state intact while open;
-- cap height so spatial context remains clear.
+- cap height so spatial context remains clear;
+- respect top/bottom/left/right safe-area insets where applicable.
 
-Critical touch targets are at least 48px.
+General compact touch targets are at least **44×44px**. The persistent phone builder dock remains at least **52px high per destination**.
 
 ## Tablet header
-Tablet keeps these responsive-authoring controls visible:
+Tablet/compact keeps these responsive-authoring controls visible:
 - Active document;
-- Preview breakpoint;
-- Zoom.
+- the three Desktop / Tablet / Mobile breakpoint icons;
+- Zoom;
+- Light / Dark appearance;
+- Publish/Export.
 
-History/appearance may move out of the compact row to protect available workspace.
+History is hidden from the compact row to protect workspace. Preview may become icon-only or move out at smaller widths.
 
 ## Phone header
 Phone header is a single row of approximately 60px:
-- menu trigger: 48px;
-- active document: flexible center region;
-- primary Publish/Export action: 48px;
-- Preview may be removed from the smallest header when another explicit route exists;
-- secondary zoom/history/theme controls may be omitted from the phone header when they remain reachable elsewhere.
+- menu trigger: 44px;
+- custom page selector: icon-only 44px on normal phones;
+- Desktop / Tablet / Mobile breakpoint icons: 44px each;
+- Light / Dark controls: 44px each;
+- primary Publish/Export action: 44px;
+- Preview is removed from the smallest header because it remains available through workspace navigation.
 
-The root document must not horizontally scroll.
+At extremely narrow widths (`<=360px`) the duplicated header page trigger may be hidden because **Pages** remains permanently reachable from the bottom dock.
+
+The root document must not horizontally scroll. Mobile editable inputs/selects/textareas use a 16px text floor to avoid browser auto-zoom and preserve readability.
 
 ## Mobile dock
 The bottom dock is the primary phone navigation for Builder context.
@@ -219,7 +228,8 @@ The bottom dock is the primary phone navigation for Builder context.
 - no per-destination color palette;
 - active state uses neutral background/weight and `aria-pressed` semantics;
 - each control is at least 52px high on phone;
-- dock respects `env(safe-area-inset-bottom)`.
+- dock respects `env(safe-area-inset-bottom)` and horizontal safe areas;
+- short landscape switches to a vertical right-side rail so canvas height remains useful.
 
 ## Motion
 Motion explains interaction and must not disturb precision.
@@ -242,7 +252,7 @@ Typical icon behavior:
 ## Tailwind / CSS implementation rules
 Studio Pro is authored primarily through Tailwind utilities and `@apply` in `src/app/ui/studio-pro-tailwind.css`.
 
-`src/app/ui/studio-pro.css` owns reference geometry/interaction compatibility. `src/app/ui/studio-pro-compact.css` contains the final monochrome reference overrides plus compact/tablet rules. Both are part of the same Studio Pro system, not separate themes.
+`src/app/ui/studio-pro.css` owns reference geometry/interaction compatibility. `src/app/ui/studio-pro-compact.css` contains the final monochrome reference overrides. `src/app/ui/studio-pro-header.css` and `studio-pro-header-responsive.css` own the supplied-header fidelity contract. `src/app/ui/studio-pro-ux-audit.css` is the final responsive/accessibility hardening layer. All belong to the same Studio Pro system; none is a selectable parallel theme.
 
 Rules:
 - prefer Tailwind layout/spacing/typography/state utilities for component source;
@@ -260,24 +270,28 @@ Rules:
 - no hover-only functions;
 - browser zoom remains available;
 - no root horizontal overflow;
-- compact touch targets >=48px;
+- compact touch targets >=44px;
+- phone builder-dock destinations >=52px high;
+- mobile form text floor 16px;
 - `prefers-reduced-motion` and increased/forced contrast are supported;
-- modal sheets have explicit non-gesture dismissal.
+- modal sheets and drawer have explicit non-gesture dismissal and focus containment;
+- safe areas are respected by fixed navigation and modal surfaces.
 
 ## Responsive philosophy
 Editor responsiveness is separate from the breakpoints of the site/app being authored.
 
 - **Wide desktop:** toolbar + rail + navigator + canvas + inspector.
 - **Laptop:** same architecture with fixed panel widths and flexible canvas.
-- **Tablet/compact:** canvas-first with bottom dock and sheets, plus document/breakpoint/zoom in header.
+- **Tablet/compact (`<=1024px`):** canvas-first with bottom dock and sheets, plus document/breakpoint/zoom/appearance in header.
 - **Phone:** one-row header + canvas + neutral dock + sheets.
+- **Short landscape:** canvas-first + right-side vertical builder rail.
 
 Do not stack Pages, canvas and a large inspector permanently on a phone.
 
 ## Project theme separation
 Keep these independent:
 1. Studio Pro editor UI (`studio-pro`).
-2. Editor appearance (`light` / `dark` / `auto`).
+2. Editor appearance (`light` / `dark` / `auto` internally; Light/Dark are the direct header controls).
 3. Frontend/backend project themes used by generated output.
 
 ## Quality checklist
@@ -290,11 +304,15 @@ Before completing an editor UI change:
 - [ ] Current/selected secondary controls avoid large colored fills.
 - [ ] Buttons/icons have consistent hover/press/current states.
 - [ ] Motion respects reduced-motion and does not alter precision hit geometry.
-- [ ] Phone default view is canvas-first.
+- [ ] Exactly three primary breakpoint shortcuts are shown in the header: Desktop, Tablet, Mobile.
+- [ ] `1024×768` enters compact canvas-first mode cleanly.
+- [ ] Common phone width (`375px`) has no root horizontal overflow.
+- [ ] Phone editable controls use a 16px text floor.
+- [ ] Short landscape preserves useful canvas height.
 - [ ] Pages/Add/Layers/Properties are reachable from the mobile dock.
-- [ ] Mobile sheets are keyboard-dismissable and have visible Close actions.
-- [ ] Touch targets are >=48px in compact mode.
-- [ ] No root horizontal overflow exists.
+- [ ] Mobile sheets/drawer are keyboard-dismissable, focus-contained and have visible Close actions.
+- [ ] General compact touch targets are >=44px; phone dock targets are >=52px high.
+- [ ] Safe-area insets are honored by fixed/mobile chrome.
 - [ ] Focus/selected/disabled states are explicit.
 - [ ] Canonical data/commands remain unchanged by presentation work.
 - [ ] Lint, typecheck, unit, coverage, build and E2E gates pass.
