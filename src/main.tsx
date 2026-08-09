@@ -10,6 +10,7 @@ import './app/studio/studio.css';
 import './app/editor/builder-v2.css';
 import './app/editor/builder-v2-polish.css';
 import './app/ui/studio-pro.css';
+import './app/ui/studio-pro-compact.css';
 
 const rootElement = document.getElementById('root');
 
