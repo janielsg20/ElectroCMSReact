@@ -29,7 +29,7 @@ export function ContentTypesCrudPanel({ query }: ContentTypesCrudPanelProps) {
   const [message, setMessage] = useState<{ tone: 'error' | 'success'; text: string } | null>(null);
   const [deleteArmed, setDeleteArmed] = useState(false);
 
-  const selected = definitions.find((definition) => definition.id === selectedId) ?? definitions[0] ?? null;
+  const selected = selectedId ? definitions.find((definition) => definition.id === selectedId) ?? null : null;
   const editing = creating ? draft : selected ?? draft;
 
   const selectDefinition = (definition: ContentTypeDefinition) => {
@@ -95,6 +95,14 @@ export function ContentTypesCrudPanel({ query }: ContentTypesCrudPanelProps) {
   };
 
   const activeDraft = creating || selected ? draft : editing;
+  const feedback = message ? (
+    <div
+      role={message.tone === 'error' ? 'alert' : 'status'}
+      className={`rounded-[var(--ec-radius-md)] border px-3 py-2 text-[11px] ${message.tone === 'error' ? 'border-[var(--color-ec-danger-600)] text-[var(--color-ec-danger-600)]' : 'border-[var(--color-ec-success-600)] text-[var(--color-ec-success-600)]'}`}
+    >
+      {message.text}
+    </div>
+  ) : null;
 
   return (
     <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1fr)_390px]">
@@ -121,6 +129,7 @@ export function ContentTypesCrudPanel({ query }: ContentTypesCrudPanelProps) {
 
       <aside className="min-h-0 overflow-y-auto rounded-[var(--ec-radius-lg)] border border-[var(--color-ec-border)] bg-[var(--color-ec-surface)] shadow-[var(--ec-shadow-panel)]" aria-label="Content type editor">
         <header className="border-b border-[var(--color-ec-border)] px-3 py-3"><span className="text-[10px] font-bold uppercase tracking-[.12em] text-[var(--color-ec-accent)]">{creating ? 'Create' : selected ? 'Edit' : 'Content type'}</span><strong className="mt-1 block text-[13px] text-[var(--color-ec-text)]">{creating ? 'New content type' : selected?.label ?? 'Select or create a content type'}</strong></header>
+        {message && !creating && !selected ? <div className="p-3 pb-0">{feedback}</div> : null}
         {(creating || selected) ? (
           <div className="space-y-4 p-3">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
@@ -135,7 +144,7 @@ export function ContentTypesCrudPanel({ query }: ContentTypesCrudPanelProps) {
 
             <fieldset className="rounded-[var(--ec-radius-md)] border border-[var(--color-ec-border)] p-3"><legend className="px-1 text-[10px] font-bold uppercase tracking-[.1em] text-[var(--color-ec-text-muted)]">Supports</legend><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">{([['title', 'Title'], ['editor', 'Editor'], ['excerpt', 'Excerpt'], ['featuredImage', 'Featured image']] as const).map(([key, label]) => <label key={key} className="flex items-center gap-2 text-[11px] text-[var(--color-ec-text)]"><input type="checkbox" checked={activeDraft.supports[key]} onChange={(event) => updateSupport(key, event.target.checked)} />{label}</label>)}</div></fieldset>
 
-            {message ? <div role={message.tone === 'error' ? 'alert' : 'status'} className={`rounded-[var(--ec-radius-md)] border px-3 py-2 text-[11px] ${message.tone === 'error' ? 'border-[var(--color-ec-danger-600)] text-[var(--color-ec-danger-600)]' : 'border-[var(--color-ec-success-600)] text-[var(--color-ec-success-600)]'}`}>{message.text}</div> : null}
+            {message ? feedback : null}
 
             <div className="flex flex-wrap gap-2 border-t border-[var(--color-ec-border)] pt-3">
               <button type="button" className="ec-focus-ring inline-flex h-9 items-center justify-center rounded-[var(--ec-radius-md)] bg-[var(--color-ec-accent)] px-3 text-[11px] font-semibold text-white" onClick={save}>{creating ? 'Create content type' : 'Save changes'}</button>
