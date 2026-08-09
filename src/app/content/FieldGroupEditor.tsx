@@ -1,14 +1,19 @@
 import { useMemo, useState, type ChangeEvent } from 'react';
 import {
   CONDITIONAL_OPERATORS,
+  RELATION_FIELD_SIDES,
   createContentFieldTypeRegistry,
   createDefaultCustomFieldDefinition,
   createDefaultFieldGroupDefinition,
   listFieldGroupDefinitions,
+  listRelationDefinitions,
+  listTaxonomyDefinitions,
   validateFieldGroupDefinition,
   type CustomFieldDefinition,
   type FieldGroupDefinition,
   type FieldTypeDefinition,
+  type RelationDefinition,
+  type TaxonomyDefinition,
 } from '../../core/content';
 import { isJsonObject, type JsonObject, type JsonValue } from '../../core/domain';
 import { useProjectSession } from '../project/project-session-context';
@@ -26,6 +31,8 @@ interface TypeConfigEditorProps {
   definition: FieldTypeDefinition;
   config: JsonObject;
   fieldGroups: readonly FieldGroupDefinition[];
+  relations: readonly RelationDefinition[];
+  taxonomies: readonly TaxonomyDefinition[];
   currentGroupId: string;
   selectedField: CustomFieldDefinition;
   siblingFields: readonly CustomFieldDefinition[];
@@ -91,6 +98,8 @@ function TypeConfigEditor({
   definition,
   config,
   fieldGroups,
+  relations,
+  taxonomies,
   currentGroupId,
   selectedField,
   siblingFields,
@@ -112,6 +121,64 @@ function TypeConfigEditor({
         const descriptor = typeof descriptorValue === 'string' ? descriptorValue : 'json';
         const currentValue = config[key];
         const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, (character) => character.toUpperCase());
+
+        if (descriptor === 'relation-id') {
+          return (
+            <label className="field-group-field field-group-field-wide" key={key}>
+              <span>{label}</span>
+              <select
+                aria-label={`Field config ${label}`}
+                value={typeof currentValue === 'string' ? currentValue : ''}
+                onChange={(event) => onChange(configWithValue(config, key, event.target.value))}
+              >
+                <option value="">Select Relation…</option>
+                {relations.map((relation) => (
+                  <option key={relation.id} value={relation.id}>
+                    {relation.label} · {relation.sourceContentTypeId} → {relation.targetContentTypeId}
+                  </option>
+                ))}
+              </select>
+              <small>Only canonical Relations already defined in this project can be selected.</small>
+            </label>
+          );
+        }
+
+        if (descriptor === 'relation-side') {
+          return (
+            <label className="field-group-field" key={key}>
+              <span>{label}</span>
+              <select
+                aria-label={`Field config ${label}`}
+                value={typeof currentValue === 'string' ? currentValue : 'source'}
+                onChange={(event) => onChange(configWithValue(config, key, event.target.value))}
+              >
+                {RELATION_FIELD_SIDES.map((side) => (
+                  <option key={side} value={side}>{side}</option>
+                ))}
+              </select>
+              <small>Choose which endpoint owns this field.</small>
+            </label>
+          );
+        }
+
+        if (descriptor === 'taxonomy-id') {
+          return (
+            <label className="field-group-field field-group-field-wide" key={key}>
+              <span>{label}</span>
+              <select
+                aria-label={`Field config ${label}`}
+                value={typeof currentValue === 'string' ? currentValue : ''}
+                onChange={(event) => onChange(configWithValue(config, key, event.target.value))}
+              >
+                <option value="">Select Taxonomy…</option>
+                {taxonomies.map((taxonomy) => (
+                  <option key={taxonomy.id} value={taxonomy.id}>{taxonomy.label} · {taxonomy.id}</option>
+                ))}
+              </select>
+              <small>Reference a canonical Taxonomy defined in this project.</small>
+            </label>
+          );
+        }
 
         if (descriptor === 'field-group-id') {
           return (
@@ -355,6 +422,14 @@ export function FieldGroupEditor() {
     () => listFieldGroupDefinitions(session.project, registry),
     [registry, session.project],
   );
+  const relations = useMemo(
+    () => listRelationDefinitions(session.project),
+    [session.project],
+  );
+  const taxonomies = useMemo(
+    () => listTaxonomyDefinitions(session.project),
+    [session.project],
+  );
   const availableTypes = useMemo(
     () => registry.listLatest({ availability: 'available' }),
     [registry],
@@ -516,7 +591,7 @@ export function FieldGroupEditor() {
     <section className="field-group-editor" aria-label="Field Groups">
       <header className="field-group-editor-header">
         <div>
-          <span className="field-group-editor-eyebrow">Dynamic content · MF-040/042</span>
+          <span className="field-group-editor-eyebrow">Dynamic content · MF-040/042/043</span>
           <h3>Custom Field Groups</h3>
           <p>Compose reusable portable schemas from the versioned field type registry.</p>
         </div>
@@ -591,8 +666,8 @@ export function FieldGroupEditor() {
                       {filteredTypes.length === 0 ? <div className="field-type-library-empty">No available field types match this search.</div> : null}
                     </div>
                     <div className="field-type-modeled-note">
-                      <strong>{modeledTypes.length} reference types stay modeled</strong>
-                      <span>Relation, User and Taxonomy references remain reserved for MF-043. Repeater, Group, Calculated and Conditional are active in MF-042.</span>
+                      <strong>{modeledTypes.length} contracts remain modeled</strong>
+                      <span>Relation, User and Taxonomy references are active in MF-043. Modeled contracts remain visible but cannot be authored as available runtime fields.</span>
                     </div>
                   </aside>
 
@@ -649,6 +724,8 @@ export function FieldGroupEditor() {
                             definition={selectedType}
                             config={selectedField.config}
                             fieldGroups={fieldGroups}
+                            relations={relations}
+                            taxonomies={taxonomies}
                             currentGroupId={draft.id}
                             selectedField={selectedField}
                             siblingFields={draft.fields}
@@ -657,10 +734,10 @@ export function FieldGroupEditor() {
                           {[...issuesByPath.entries()].filter(([path]) => path.startsWith(`fields.${selectedFieldIndex}.config`)).map(([path, message]) => <small className="field-group-inline-error" role="alert" key={path}>{message}</small>)}
                         </div>
                         <div className="field-modeled-capabilities" aria-label="Field capabilities">
-                          <strong>{selectedField.typeVersion >= 2 ? 'Advanced runtime active' : 'Portable field contract'}</strong>
+                          <strong>{selectedField.typeVersion >= 2 ? 'Versioned runtime active' : 'Portable field contract'}</strong>
                           <span>Conditions schema rules: {selectedField.conditions.length}</span>
                           <span>Role visibility rules: {selectedField.roleVisibility.length}</span>
-                          <small>MF-042 advanced values execute in the record runtime; role-visibility policy remains a later backend concern.</small>
+                          <small>MF-042 advanced fields and MF-043 reference fields execute in the record runtime; role-visibility policy remains a later backend concern.</small>
                         </div>
                       </div>
                     )}
